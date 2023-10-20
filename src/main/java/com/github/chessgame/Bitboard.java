@@ -3,6 +3,10 @@ package com.github.chessgame;
 public class Bitboard {
     private int board;
 
+    public int getBoard() {
+        return board;
+    }
+
     public boolean Set(int value) {
         if ((board&value) == 0) {
             this.board = this.board | value;
