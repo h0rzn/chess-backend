@@ -5,7 +5,12 @@ import com.github.chessgame.Bitboard;
 import java.util.BitSet;
 
 public class Board {
-    private Bitboard bitboard;
+
+    public Board(){
+        createBitBoards();
+        printBoard();
+        System.out.println(getPiece(2).name());
+    }
 
     //White Pieces
     private BitSet W_Pawn_BB = new BitSet(64);
@@ -34,6 +39,77 @@ public class Board {
         {"R","K","B","Q","A","B","K","R"}
     };
 
+    public void setPiece(){
+
+    }
+
+    public Piece getPiece(int square) {
+        for (Piece piece : Piece.values()) {
+            if (getPieceBitBoard(piece).get(square)) {
+                return piece;
+            }
+        }
+
+        return Piece.None;
+    }
+
+    public void printBoard() {
+        BitSet board = new BitSet(64);
+        board.or(W_Pawn_BB);
+        board.or(W_Rook_BB);
+        board.or(W_Knight_BB);
+        board.or(W_Bishop_BB);
+        board.or(W_Queen_BB);
+        board.or(W_King_BB);
+        board.or(B_Pawn_BB);
+        board.or(B_Rook_BB);
+        board.or(B_Knight_BB);
+        board.or(B_Bishop_BB);
+        board.or(B_Queen_BB);
+        board.or(B_King_BB);
+
+        for (int i = 0; i < 64; i++) {
+            if (board.get(i)) {
+                System.out.print("1");
+            } else {
+                System.out.print("0");
+            }
+            if ((i + 1) % 8 == 0) {
+                System.out.println();
+            }
+        }
+    }
+
+    public BitSet getPieceBitBoard(Piece piece) {
+        switch (piece) {
+            case WPawn:
+                return W_Pawn_BB;
+            case WRook:
+                return W_Rook_BB;
+            case WKnight:
+                return W_Knight_BB;
+            case WBishop:
+                return W_Bishop_BB;
+            case WQueen:
+                return W_Queen_BB;
+            case WKing:
+                return W_King_BB;
+            case BPawn:
+                return B_Pawn_BB;
+            case BRook:
+                return B_Rook_BB;
+            case BKnight:
+                return B_Knight_BB;
+            case BBishop:
+                return B_Bishop_BB;
+            case BQueen:
+                return B_Queen_BB;
+            case BKing:
+                return B_King_BB;
+            default:
+                throw new IllegalArgumentException("Ungültiger Spielstein: " + piece);
+        }
+    }
 
     public void createBitBoards() {
         for (int i = 0; i < 8; i++) {
@@ -78,11 +154,6 @@ public class Board {
                 }
             }
         }
-    }
-
-    public Board(){
-        createBitBoards();
-        System.out.println(W_Pawn_BB);
     }
 
     public static long convert(BitSet bits) {
