@@ -1,8 +1,6 @@
 package com.github.chessgame;
 
-//Deprecated weil die ganzen implementierten Methoden schon von BitSet implementiert werden.
-//Klasse kann entfernt werden.
-@Deprecated()
+
 public class Bitboard {
     private int board;
 

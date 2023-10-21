@@ -12,6 +12,9 @@ public class Board {
         System.out.println(getPiece(2).name());
     }
 
+    private BitSet[] WBitBoards = new BitSet[6];
+    private BitSet[] BBitBoards = new BitSet[6];
+
     //White Pieces
     private BitSet W_Pawn_BB = new BitSet(64);
     private BitSet W_Rook_BB = new BitSet(64);
@@ -110,6 +113,7 @@ public class Board {
                 throw new IllegalArgumentException("Ungültiger Spielstein: " + piece);
         }
     }
+
 
     public void createBitBoards() {
         for (int i = 0; i < 8; i++) {
