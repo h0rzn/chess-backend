@@ -1,7 +1,9 @@
 package com.github;
 
+import com.github.engine.Board;
+
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Hello world!");
+        Board board = new Board();
     }
 }
