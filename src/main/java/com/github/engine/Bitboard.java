@@ -1,5 +1,7 @@
 package com.github.engine;
 
+import lombok.Getter;
+
 import java.util.BitSet;
 
 public class Bitboard implements IBoard {
@@ -8,7 +10,9 @@ public class Bitboard implements IBoard {
         createBitBoards();
     }
 
+    @Getter
     private BitSet[] whitePieces;
+    @Getter
     private BitSet[] blackPieces;
 
     private static final int BOARD_SIZE = 64;
@@ -73,6 +77,46 @@ public class Bitboard implements IBoard {
         BitSet[] pieces = color == 0 ? whitePieces : blackPieces;
 
         pieces[pieceType].set(squareIndex);
+    }
+
+    public void printChessboard() {
+        char[] pieceSymbols = {'P', 'N', 'B', 'R', 'Q', 'K'}; // Pawn, kNight, Bishop, Rook, Queen, King
+
+        for (int row = 7; row >= 0; row--) {
+            System.out.println("  +---+---+---+---+---+---+---+---+");
+            System.out.print((row + 1) + " |");
+
+            for (int col = 0; col < 8; col++) {
+                int position = row * 8 + col;
+
+                char symbol = ' ';
+                boolean pieceFound = false;
+
+                for (int i = 0; i < 6; i++) {
+                    if (whitePieces[i].get(position)) {
+                        symbol = Character.toUpperCase(pieceSymbols[i]);
+                        pieceFound = true;
+                        break;
+                    }
+                }
+
+                if (!pieceFound) {
+                    for (int i = 0; i < 6; i++) {
+                        if (blackPieces[i].get(position)) {
+                            symbol = Character.toLowerCase(pieceSymbols[i]);
+                            break;
+                        }
+                    }
+                }
+
+                System.out.print(" " + symbol + " |");
+            }
+
+            System.out.println();
+        }
+
+        System.out.println("  +---+---+---+---+---+---+---+---+");
+        System.out.println("    a   b   c   d   e   f   g   h");
     }
 
 
