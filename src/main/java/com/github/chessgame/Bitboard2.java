@@ -1,6 +1,7 @@
 package com.github.chessgame;
 
-public class Bitboard {
+
+public class Bitboard2 {
     private int board;
 
     public int getBoard() {
@@ -29,7 +30,7 @@ public class Bitboard {
         System.out.println(board);
     }
 
-    public Bitboard() {
+    public Bitboard2() {
         this.board = 0;
     }
 }
