@@ -111,7 +111,7 @@ public class Bitboard2 {
 
         // KINGS 5
         long kingsW = 0b0001000;
-        this.boardBlack[4] = this.boardBlack[4] | kingsW;
-        this.boardBlack[4] = this.boardBlack[4] | (kingsW << 56);
+        this.boardBlack[5] = this.boardBlack[5] | kingsW;
+        this.boardBlack[5] = this.boardBlack[5] | (kingsW << 56);
     }
 }
