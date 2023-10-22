@@ -51,8 +51,8 @@ public class Bitboard2 {
         return -1;
     }
 
-    // Just for testing around
-    public void Print64() {
+    // Get all stored bitboards merged into one (returns long)
+    public long GetMerged() {
         long boardAll = 0L;
 
         for (long board : this.boardWhite) {
@@ -62,7 +62,14 @@ public class Bitboard2 {
             boardAll = boardAll | board;
         }
 
-        String binStr = Long.toBinaryString((long)boardAll);
+        return boardAll;
+    }
+
+    // Just for testing around
+    public void Print64() {
+        long boardAll = this.GetMerged();
+
+        String binStr = Long.toBinaryString(boardAll);
 
         String bin = String.format("%064d%n", new BigInteger(binStr));
 
