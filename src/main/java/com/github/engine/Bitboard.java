@@ -2,7 +2,7 @@ package com.github.engine;
 
 import java.util.BitSet;
 
-public class Bitboard {
+public class Bitboard implements IBoard {
 
     public Bitboard(){
         createBitBoards();
