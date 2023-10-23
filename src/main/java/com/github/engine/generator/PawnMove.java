@@ -3,6 +3,8 @@ package com.github.engine.generator;
 import com.github.engine.Bitboard;
 import com.github.engine.BitboardOld;
 import com.github.engine.IBoard;
+import com.github.engine.move.MoveType;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -11,6 +13,9 @@ import java.util.List;
 public class PawnMove implements IBoard {
     private final long[] boardWhite;
     private final long[] boardBlack;
+
+    @Getter
+    private MoveType moveType;
 
     public PawnMove(Bitboard board) {
         this.boardWhite = board.getBoardWhite();
@@ -37,12 +42,14 @@ public class PawnMove implements IBoard {
         long singleMask = 1L << t2.left().index() + 8;
         if ((singleMask & emptySquares) != 0) {
             moves.add(t2.left().index() + 8);
+            moveType = MoveType.Normal;
         }
 
         // Double Pawn Move
         long doubleMask = 1L << t2.left().index() + 16;
         if ((doubleMask & emptySquares) != 0 && t2.left().rank() == 1) {
             moves.add(t2.left().index() + 16);
+            moveType = MoveType.Normal;
         }
 
         // Pawn Capture
@@ -57,20 +64,24 @@ public class PawnMove implements IBoard {
                 leftCaptureMask = 1L << pawnPosition + 7;
                 if((leftCaptureMask & enemyPieces) != 0 && notOnLeftEdge){
                     moves.add(pawnPosition + 7);
+                    moveType = MoveType.Capture;
                 }
                 rightCaptureMask = 1L << pawnPosition + 9;
                 if((rightCaptureMask & enemyPieces) != 0 && notOnRightEdge){
                     moves.add(pawnPosition + 9);
+                    moveType = MoveType.Capture;
                 }
             }
             case 1 -> {
                 leftCaptureMask = 1L << pawnPosition - 7;
                 if((leftCaptureMask & enemyPieces) != 0 && notOnLeftEdge){
                     moves.add(pawnPosition - 7);
+                    moveType = MoveType.Capture;
                 }
                 rightCaptureMask = 1L << pawnPosition - 9;
                 if((rightCaptureMask & enemyPieces) != 0 && notOnRightEdge){
                     moves.add(pawnPosition - 9);
+                    moveType = MoveType.Capture;
                 }
             }
         }

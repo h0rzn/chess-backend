@@ -4,6 +4,8 @@ import com.github.engine.Bitboard;
 import com.github.engine.BitboardOld;
 import com.github.engine.IBoard;
 import com.github.engine.generator.Generator;
+import com.github.engine.move.Move;
+import lombok.Getter;
 
 import java.util.BitSet;
 import java.util.List;
@@ -11,9 +13,11 @@ import java.util.Optional;
 import java.util.Scanner;
 
 public class Main {
+    @Getter
+    static Bitboard bitboard;
     static final Scanner scanner = new Scanner(System.in);
     public static void main(String[] args) {
-       Bitboard bitboard = new Bitboard();
+        bitboard = new Bitboard();
 
         bitboard.printChessboard();
         while (true){
@@ -22,18 +26,58 @@ public class Main {
             if (parsedMove.isPresent()) {
                 IBoard.T2<IBoard.T3, IBoard.T3> t2 = parsedMove.get();
                 System.out.println(t2);
-                System.out.println(t2.left().index());
                 Generator generator = new Generator(bitboard);
                 List<Integer> moves = generator.generate(t2, 0);
                 if(moves.contains(t2.right().index())){
                     System.out.println("Valid move");
+                    makeMove(t2, 0);
+                    bitboard.printChessboard();
                 } else {
                     System.out.println("Invalid move");
                 }
             }
         }
+    }
 
+    private static boolean makeMove(IBoard.T2<IBoard.T3, IBoard.T3> t2, int color){
+       int from = t2.left().index();
+       int to = t2.right().index();
 
+       int pieceType = getBitboard().Get(from, color);
+       long fromMask = 1L << from;
+       long toMask = 1L << to;
+
+       // Remove piece from old position
+       if (color == 0){
+           getBitboard().getBoardWhite()[pieceType] &= ~fromMask;
+       } else {
+           getBitboard().getBoardBlack()[pieceType] &= ~fromMask;
+       }
+
+       // Remove captured piece from new position if there is one
+       for (int i = 0; i < 6; i++){
+           if ((toMask & (color == 0 ? getBitboard().getBoardBlack()[i] : getBitboard().getBoardWhite()[i])) != 0){
+                if (color == 0){
+                     getBitboard().getBoardBlack()[i] &= ~toMask;
+                } else {
+                     getBitboard().getBoardWhite()[i] &= ~toMask;
+                }
+                break;
+           }
+       }
+
+       // Add piece to new position
+       if (color == 0){
+           getBitboard().getBoardWhite()[pieceType] |= toMask;
+       } else {
+           getBitboard().getBoardBlack()[pieceType] |= toMask;
+       }
+
+       // TODO: En passant
+        // TODO: Castling
+        // TODO: Promotion
+
+       return true;
     }
 
     private static Optional<IBoard.T2<IBoard.T3, IBoard.T3>> parseMove(String move) {
