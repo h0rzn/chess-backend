@@ -23,7 +23,7 @@ public class Generator implements IBoard {
         SinglePiece piece = SinglePiece.fromNumber(pieceID);
         switch (piece){
             case Pawn -> {
-                PawnMove pawnMove = new PawnMove(bitboard);
+                PawnMoveGenerator pawnMove = new PawnMoveGenerator(bitboard);
                 return pawnMove.generate(color, t2);
             }
 

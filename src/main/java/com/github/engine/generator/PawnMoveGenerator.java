@@ -8,19 +8,20 @@ import lombok.Getter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PawnMove implements IBoard {
+public class PawnMoveGenerator implements IBoard, IGenerator {
     private final long[] boardWhite;
     private final long[] boardBlack;
 
     @Getter
     private MoveType moveType;
 
-    public PawnMove(Bitboard board) {
+    public PawnMoveGenerator(Bitboard board) {
         this.boardWhite = board.getBoardWhite();
         this.boardBlack = board.getBoardBlack();
     }
 
     // Color and T2 is passed (T2 contains move-from and move-to)
+    @Override
     public List<Integer> generate(int color, T2<T3, T3> t2){
         List<Integer> moves = new ArrayList<>();
 
@@ -36,6 +37,7 @@ public class PawnMove implements IBoard {
             ownPieces |= (color == 0 ? boardWhite[i] : boardBlack[i]);
         }
 
+        // TODO: Vorzeitiges Abbrechen falls Position und Target schon übereinstimmen (Performance)
         // Single Pawn Move
         if(color == 0){
             // Creates a mask with an 1 at the target-position of the pawn
