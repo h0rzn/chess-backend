@@ -5,6 +5,11 @@ import java.util.function.Function;
 
 public interface IBoard {
 
+    long NOT_A_FILE = 0xfefefefefefefefeL; // 1111111011111110111111101111111011111110111111101111111011111110
+    long NOT_H_FILE = 0x7f7f7f7f7f7f7f7fL; // 0111111101111111011111110111111101111111011111110111111101111111
+    long NOT_AB_FILE = 0xfcfcfcfcfcfcfcfcL; // 1111110011111100111111001111110011111100111111001111110011111100
+    long NOT_GH_FILE = 0x3f3f3f3f3f3f3f3fL; // 0011111100111111001111110011111100111111001111110011111100111111
+
     //Gets the row by an index (0-64)
     Function<Integer, Integer> rowFunction = index -> index / 8;
     //Gets the column by an index (0-64)

@@ -26,6 +26,10 @@ public class Generator implements IBoard {
                 PawnMoveGenerator pawnMove = new PawnMoveGenerator(bitboard);
                 return pawnMove.generate(color, t2);
             }
+            case Knight -> {
+                KnightMoveGenerator knightMove = new KnightMoveGenerator(bitboard);
+                return knightMove.generate(color, t2);
+            }
 
         }
         return null;

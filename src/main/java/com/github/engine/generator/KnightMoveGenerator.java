@@ -1,13 +1,52 @@
 package com.github.engine.generator;
 
+import com.github.engine.Bitboard;
 import com.github.engine.IBoard;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class KnightMoveGenerator implements IGenerator, IBoard {
+    private final long[] boardWhite;
+    private final long[] boardBlack;
+
+    public KnightMoveGenerator(Bitboard board) {
+        this.boardWhite = board.getBoardWhite();
+        this.boardBlack = board.getBoardBlack();
+    }
 
     @Override
     public List<Integer> generate(int color, T2<T3, T3> t2) {
+        List<Integer> moves = new ArrayList<>();
+
+        long knights = color == 0 ? boardWhite[1] : boardBlack[1];
+        // Creates an Array emptySquares where all Squares are 1 and enemyPieces where all Squares are 0
+        long emptySquares = ~0, enemyPieces = 0, ownPieces = 0;
+        for (int i = 0; i < 6; i++) {
+            // Sets all Squares where a piece is to 0, emptySquares is now a Bitboard with all empty Squares = 1
+            emptySquares &= ~(boardWhite[i] | boardBlack[i]);
+            // Sets all Squares where an enemy piece is to 1, enemyPieces is now a Bitboard with all enemy pieces = 1
+            enemyPieces |= (color == 0 ? boardBlack[i] : boardWhite[i]);
+            ownPieces |= (color == 0 ? boardWhite[i] : boardBlack[i]);
+        }
+
+        int knightPosition = t2.left().index();
+
+        long spots = (knightPosition >>> 17) & NOT_A_FILE; // Springe 2 hoch, 1 rechts
+        spots |= (knightPosition >>> 15) & NOT_H_FILE; // Springe 2 hoch, 1 links
+        spots |= (knightPosition >>> 10) & NOT_AB_FILE; // Springe 1 hoch, 2 rechts
+        spots |= (knightPosition >>> 6) & NOT_GH_FILE; // Springe 1 hoch, 2 links
+        spots |= (knightPosition << 17) & NOT_H_FILE; // Springe 2 runter, 1 rechts
+        spots |= (knightPosition << 15) & NOT_A_FILE; // Springe 2 runter, 1 links
+        spots |= (knightPosition << 10) & NOT_GH_FILE; // Springe 1 runter, 2 rechts
+        spots |= (knightPosition << 6) & NOT_AB_FILE;
+        spots &= ~ownPieces;
+        for (int j = 0; j < 64; j++) {
+            if ((spots & (1L << j)) != 0) {
+                moves.add(j);
+            }
+        }
+        System.out.println(moves);
         return null;
     }
 }
