@@ -1,9 +1,11 @@
-package com.github.engine;
+package com.github;
 
+import com.github.engine.IBoard;
 import lombok.Getter;
 
 import java.util.BitSet;
 
+@Deprecated
 public class BitboardOld implements IBoard {
 
     public BitboardOld(){

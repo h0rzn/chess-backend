@@ -1,10 +1,8 @@
 package com.github;
 
 import com.github.engine.Bitboard;
-import com.github.engine.BitboardOld;
 import com.github.engine.IBoard;
 import com.github.engine.generator.Generator;
-import com.github.engine.move.Move;
 import lombok.Getter;
 
 import java.util.BitSet;
@@ -21,17 +19,26 @@ public class Main {
 
         bitboard.printChessboard(bitboard.getColorToMove());
         while (true){
+            // Gets the input from user
             String move = getMove();
+            // Parses the input in T2 format
             Optional<IBoard.T2<IBoard.T3, IBoard.T3>> parsedMove = parseMove(move);
+            // Checks wether the input was a valid input
             if (parsedMove.isPresent()) {
+                // Contains the rank, file and index of the current position and the position to move to
                 IBoard.T2<IBoard.T3, IBoard.T3> t2 = parsedMove.get();
                 System.out.println(t2);
+                // Generates all possible moves for the current position and stores them in a list
                 Generator generator = new Generator(bitboard);
                 List<Integer> moves = generator.generate(t2, bitboard.getColorToMove());
+                // Checks wether the move from user is in validMove list -> is a valid move
                 if(moves.contains(t2.right().index())){
                     System.out.println("Valid move");
+                    // Executes the move
                     bitboard.makeMove(t2);
+                    // Turns the board
                     bitboard.turn();
+                    // Prints the board
                     bitboard.printChessboard(bitboard.getColorToMove());
                 } else {
                     System.out.println("Invalid move");

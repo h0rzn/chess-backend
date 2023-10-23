@@ -1,13 +1,11 @@
 package com.github.engine.generator;
 
 import com.github.engine.Bitboard;
-import com.github.engine.BitboardOld;
 import com.github.engine.IBoard;
 import com.github.engine.move.MoveType;
 import lombok.Getter;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.List;
 
 public class PawnMove implements IBoard {
@@ -40,12 +38,16 @@ public class PawnMove implements IBoard {
 
         // Single Pawn Move
         if(color == 0){
+            // Creates a mask with an 1 at the target-position of the pawn
             long singleMask = 1L << t2.left().index() + 8;
+            // Checks if the target-position is empty, if yes -> valid move
             if ((singleMask & emptySquares) != 0) {
+                // Adds the target-position to the list of valid moves
                 moves.add(t2.left().index() + 8);
                 moveType = MoveType.Normal;
             }
         } else {
+            // Same for other color, but with -8 instead of +8
             long singleMask = 1L << t2.left().index() - 8;
             if ((singleMask & emptySquares) != 0) {
                 moves.add(t2.left().index() - 8);
@@ -55,6 +57,7 @@ public class PawnMove implements IBoard {
 
         // Double Pawn Move
         if (color == 0){
+            // Same as above, but with double row move
             long doubleMask = 1L << t2.left().index() + 16;
             if ((doubleMask & emptySquares) != 0 && t2.left().rank() == 1) {
                 moves.add(t2.left().index() + 16);

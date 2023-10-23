@@ -2,7 +2,6 @@ package com.github.engine.generator;
 
 import com.github.engine.Bitboard;
 import com.github.engine.IBoard;
-import com.github.engine.Piece;
 import com.github.engine.SinglePiece;
 
 import java.util.List;
