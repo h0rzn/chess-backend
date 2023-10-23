@@ -34,22 +34,53 @@ public class PawnMove implements IBoard {
         }
 
         // Single Pawn Move
-        long mask = 1L << t2.left().index() + 8;
-        if ((mask & emptySquares) != 0) {
+        long singleMask = 1L << t2.left().index() + 8;
+        if ((singleMask & emptySquares) != 0) {
             moves.add(t2.left().index() + 8);
-            return moves;
         }
 
-
         // Double Pawn Move
+        long doubleMask = 1L << t2.left().index() + 16;
+        if ((doubleMask & emptySquares) != 0 && t2.left().rank() == 1) {
+            moves.add(t2.left().index() + 16);
+        }
 
         // Pawn Capture
+        int pawnPosition = t2.left().index();
+        long leftCaptureMask, rightCaptureMask;
+
+        boolean notOnLeftEdge = pawnPosition % 8 != 0;
+        boolean notOnRightEdge = (pawnPosition + 1) % 8 != 0;
+
+        switch (color){
+            case 0 -> {
+                leftCaptureMask = 1L << pawnPosition + 7;
+                if((leftCaptureMask & enemyPieces) != 0 && notOnLeftEdge){
+                    moves.add(pawnPosition + 7);
+                }
+                rightCaptureMask = 1L << pawnPosition + 9;
+                if((rightCaptureMask & enemyPieces) != 0 && notOnRightEdge){
+                    moves.add(pawnPosition + 9);
+                }
+            }
+            case 1 -> {
+                leftCaptureMask = 1L << pawnPosition - 7;
+                if((leftCaptureMask & enemyPieces) != 0 && notOnLeftEdge){
+                    moves.add(pawnPosition - 7);
+                }
+                rightCaptureMask = 1L << pawnPosition - 9;
+                if((rightCaptureMask & enemyPieces) != 0 && notOnRightEdge){
+                    moves.add(pawnPosition - 9);
+                }
+            }
+        }
+
 
         // En Passant
 
         // Promotion
 
-        return null;
+        return moves;
         //
 
     }
