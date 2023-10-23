@@ -2,81 +2,95 @@ package com.github.engine;
 
 import lombok.Getter;
 
-import java.util.BitSet;
+import java.math.BigInteger;
 
-public class Bitboard implements IBoard {
+public class Bitboard {
+    @Getter
+    private long[] boardWhite;
+    @Getter
+    private long[] boardBlack;
 
-    public Bitboard(){
-        createBitBoards();
+    // Takes field index, piece type and color index and enables the
+    // respective bit. Returns true on success or false on failure.
+    public boolean Set(int index, int piece, int color) {
+        long positionMask = 1L << index;
+        long[] colorBoards = color == 0 ? this.boardWhite : this.boardBlack;
+
+        long pieceBoard = colorBoards[piece];
+        if ((pieceBoard&positionMask) == 0) {
+            colorBoards[piece] = pieceBoard | positionMask;
+            return true;
+        } else {
+            return false;
+        }
     }
 
-    @Getter
-    private BitSet[] whitePieces;
-    @Getter
-    private BitSet[] blackPieces;
-
-    private static final int BOARD_SIZE = 64;
-
-    public void createBitBoards() {
-        whitePieces = new BitSet[6];
-        blackPieces = new BitSet[6];
-
-        for (int i = 0; i < 6; i++) {
-            whitePieces[i] = new BitSet(BOARD_SIZE);
-            blackPieces[i] = new BitSet(BOARD_SIZE);
+    // Get piece type (0-6: white, > black) by board index.
+    // Returns -1 on failure.
+    public int Get(int index) {
+        int pieceWhite = Get(index, 0);
+        if (pieceWhite >= 0) {
+            return pieceWhite;
         }
 
-        //PAWNS (ID=0)
-        for (int i = 8; i <= 15; i++) {
-            whitePieces[0].set(i);
-        }
-        for (int i = 48; i <= 55; i++) {
-            blackPieces[0].set(i);
+        int pieceBlack = Get(index, 0);
+        if (pieceBlack >= 0) {
+            return pieceBlack;
         }
 
-        //KNIGHTS (ID=1)
-        whitePieces[1].set(1);
-        whitePieces[1].set(6);
-        blackPieces[1].set(57);
-        blackPieces[1].set(62);
-
-        //BISHOPS (ID=2)
-        whitePieces[2].set(2);
-        whitePieces[2].set(5);
-        blackPieces[2].set(58);
-        blackPieces[2].set(61);
-        //ROOKS (ID=3)
-        whitePieces[3].set(0);
-        whitePieces[3].set(7);
-        blackPieces[3].set(56);
-        blackPieces[3].set(63);
-        //QUEENS (ID=4)
-        whitePieces[4].set(3);
-        blackPieces[4].set(59);
-        //KINGS (ID=5)
-        whitePieces[5].set(4);
-        blackPieces[5].set(60);
-        System.out.println(whitePieces[0].toString());
-
+        return -1;
     }
 
-    //Get the piece on the square (PAWN = 0, KNIGHT = 1...)
-    public int getPiece(int square) {
+    // Get piece type by index and color
+    public int Get(int index, int color) {
+        long positionMask = 1L << index;
+        long[] colorBoards = color == 0 ? this.boardWhite : this.boardBlack;
+
         for (int pieceType = 0; pieceType < 6; pieceType++) {
-            if (whitePieces[pieceType].get(square)) {
+            if ((colorBoards[pieceType] & positionMask) != 0) {
                 return pieceType;
-            } else if (blackPieces[pieceType].get(square)) {
-                return pieceType + 6;
             }
         }
         return -1;
     }
 
-    //Set the piece on the square (PAWN = 0, KNIGHT = 1...)
-    public void setPiece(int pieceType, int color, int squareIndex) {
-        BitSet[] pieces = color == 0 ? whitePieces : blackPieces;
+    // Get all stored bitboards merged into one (returns long)
+    public long GetMerged() {
+        long boardAll = 0L;
 
-        pieces[pieceType].set(squareIndex);
+        for (long board : this.boardWhite) {
+            boardAll = boardAll | board;
+        }
+        for (long board : this.boardBlack) {
+            boardAll = boardAll | board;
+        }
+
+        return boardAll;
+    }
+
+    public static boolean readBit(long number, int position) {
+        if(position < 0 || position >= Long.SIZE) {
+            throw new IllegalArgumentException("Position muss zwischen 0 und " + (Long.SIZE - 1) + " liegen");
+        }
+
+        long mask = 1L << position;
+        long result = number & mask;
+
+        return result != 0;
+    }
+
+    // Just for testing around
+    public void Print64() {
+        long boardAll = this.GetMerged();
+
+        String binStr = Long.toBinaryString(boardAll);
+
+        String bin = String.format("%064d%n", new BigInteger(binStr));
+
+        String[] split = bin.split("(?<=\\G.{" + 8 + "})");
+        for (String row : split) {
+            System.out.println(row);
+        }
     }
 
     public void printChessboard() {
@@ -93,7 +107,7 @@ public class Bitboard implements IBoard {
                 boolean pieceFound = false;
 
                 for (int i = 0; i < 6; i++) {
-                    if (whitePieces[i].get(position)) {
+                    if (readBit(this.boardWhite[i], position)) {
                         symbol = Character.toUpperCase(pieceSymbols[i]);
                         pieceFound = true;
                         break;
@@ -102,7 +116,7 @@ public class Bitboard implements IBoard {
 
                 if (!pieceFound) {
                     for (int i = 0; i < 6; i++) {
-                        if (blackPieces[i].get(position)) {
+                        if (readBit(this.boardBlack[i], position)) {
                             symbol = Character.toLowerCase(pieceSymbols[i]);
                             break;
                         }
@@ -119,16 +133,39 @@ public class Bitboard implements IBoard {
         System.out.println("    a   b   c   d   e   f   g   h");
     }
 
+    public Bitboard() {
+        this.boardWhite = new long[6];
+        this.boardBlack = new long[6];
 
-    public static long convert(BitSet bits) {
-        long value = 0L;
-        for (int i = 0; i < bits.length(); ++i) {
-            value += bits.get(i) ? (1L << i) : 0L;
-        }
-        return value;
-    }
+        // generate starting positions
+        // PAWNS 0
+        long pawnsW = 0b11111111 << 8;
+        this.boardWhite[0] = this.boardWhite[0] | pawnsW;
+        this.boardBlack[0] = this.boardBlack[0] | pawnsW << 40;
 
-    public void initWhitePieces(){
+        // KNIGHTS 1
+        long knightsW = 0b01000010;
+        this.boardWhite[1] = this.boardWhite[1] | knightsW;
+        this.boardBlack[1] = this.boardBlack[1] | knightsW << 56;
 
+        // BISHOPS 2
+        long bishopsW = 0b00100100;
+        this.boardWhite[2] = this.boardWhite[2] | bishopsW;
+        this.boardBlack[2] = this.boardBlack[2] | bishopsW << 56;
+
+        // ROOKS 3
+        long rooksW = 0b10000001;
+        this.boardWhite[3] = this.boardWhite[3] | rooksW;
+        this.boardBlack[3] = this.boardBlack[3] | rooksW << 56;
+
+        // QUEENS 4
+        long queensW = 0b00010000;
+        this.boardWhite[4] = this.boardWhite[4] | queensW;
+        this.boardBlack[4] = this.boardBlack[4] | (queensW << 56);
+
+        // KINGS 5
+        long kingsW = 0b0001000;
+        this.boardBlack[5] = this.boardBlack[5] | kingsW;
+        this.boardBlack[5] = this.boardBlack[5] | (kingsW << 56);
     }
 }

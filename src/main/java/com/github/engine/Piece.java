@@ -1,5 +1,6 @@
 package com.github.engine;
 
+
 public enum Piece {
     WPawn(1),
     WKnight(2),

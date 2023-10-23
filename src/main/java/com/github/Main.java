@@ -1,27 +1,35 @@
 package com.github;
 
 import com.github.engine.Bitboard;
+import com.github.engine.BitboardOld;
 import com.github.engine.IBoard;
+import com.github.engine.generator.Generator;
 
 import java.util.BitSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
 
 public class Main {
     static final Scanner scanner = new Scanner(System.in);
     public static void main(String[] args) {
-       Bitboard board = new Bitboard();
-        long pawns = 0x00FF000000000000L;
-        long knights = 0x0000000000000042L;
-        long fila = 0x0101010101010101L;
+       Bitboard bitboard = new Bitboard();
 
-        board.printChessboard();
+        bitboard.printChessboard();
         while (true){
             String move = getMove();
             Optional<IBoard.T2<IBoard.T3, IBoard.T3>> parsedMove = parseMove(move);
             if (parsedMove.isPresent()) {
                 IBoard.T2<IBoard.T3, IBoard.T3> t2 = parsedMove.get();
                 System.out.println(t2);
+                System.out.println(t2.left().index());
+                Generator generator = new Generator(bitboard);
+                List<Integer> moves = generator.generate(t2, 0);
+                if(moves.contains(t2.right().index())){
+                    System.out.println("Valid move");
+                } else {
+                    System.out.println("Invalid move");
+                }
             }
         }
 
