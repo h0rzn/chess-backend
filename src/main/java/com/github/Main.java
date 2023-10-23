@@ -19,7 +19,7 @@ public class Main {
     public static void main(String[] args) {
         bitboard = new Bitboard();
 
-        bitboard.printChessboard();
+        bitboard.printChessboard(bitboard.getColorToMove());
         while (true){
             String move = getMove();
             Optional<IBoard.T2<IBoard.T3, IBoard.T3>> parsedMove = parseMove(move);
@@ -27,11 +27,12 @@ public class Main {
                 IBoard.T2<IBoard.T3, IBoard.T3> t2 = parsedMove.get();
                 System.out.println(t2);
                 Generator generator = new Generator(bitboard);
-                List<Integer> moves = generator.generate(t2, 0);
+                List<Integer> moves = generator.generate(t2, bitboard.getColorToMove());
                 if(moves.contains(t2.right().index())){
                     System.out.println("Valid move");
-                    makeMove(t2, 0);
-                    bitboard.printChessboard();
+                    bitboard.makeMove(t2);
+                    bitboard.turn();
+                    bitboard.printChessboard(bitboard.getColorToMove());
                 } else {
                     System.out.println("Invalid move");
                 }
@@ -39,46 +40,7 @@ public class Main {
         }
     }
 
-    private static boolean makeMove(IBoard.T2<IBoard.T3, IBoard.T3> t2, int color){
-       int from = t2.left().index();
-       int to = t2.right().index();
 
-       int pieceType = getBitboard().Get(from, color);
-       long fromMask = 1L << from;
-       long toMask = 1L << to;
-
-       // Remove piece from old position
-       if (color == 0){
-           getBitboard().getBoardWhite()[pieceType] &= ~fromMask;
-       } else {
-           getBitboard().getBoardBlack()[pieceType] &= ~fromMask;
-       }
-
-       // Remove captured piece from new position if there is one
-       for (int i = 0; i < 6; i++){
-           if ((toMask & (color == 0 ? getBitboard().getBoardBlack()[i] : getBitboard().getBoardWhite()[i])) != 0){
-                if (color == 0){
-                     getBitboard().getBoardBlack()[i] &= ~toMask;
-                } else {
-                     getBitboard().getBoardWhite()[i] &= ~toMask;
-                }
-                break;
-           }
-       }
-
-       // Add piece to new position
-       if (color == 0){
-           getBitboard().getBoardWhite()[pieceType] |= toMask;
-       } else {
-           getBitboard().getBoardBlack()[pieceType] |= toMask;
-       }
-
-       // TODO: En passant
-        // TODO: Castling
-        // TODO: Promotion
-
-       return true;
-    }
 
     private static Optional<IBoard.T2<IBoard.T3, IBoard.T3>> parseMove(String move) {
         try {

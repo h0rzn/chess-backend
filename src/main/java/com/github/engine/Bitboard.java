@@ -9,6 +9,8 @@ public class Bitboard {
     private long[] boardWhite;
     @Getter
     private long[] boardBlack;
+    @Getter
+    private int colorToMove;
 
     // Takes field index, piece type and color index and enables the
     // respective bit. Returns true on success or false on failure.
@@ -93,14 +95,22 @@ public class Bitboard {
         }
     }
 
-    public void printChessboard() {
+    public void printChessboard(int color) {
         char[] pieceSymbols = {'P', 'N', 'B', 'R', 'Q', 'K'}; // Pawn, kNight, Bishop, Rook, Queen, King
+        boolean isWhite = color == 0;
 
-        for (int row = 7; row >= 0; row--) {
+        int rowStart = isWhite ? 7 : 0;
+        int rowEnd = isWhite ? -1 : 8;
+        int rowStep = isWhite ? -1 : 1;
+        int colStart = isWhite ? 0 : 7;
+        int colEnd = isWhite ? 8 : -1;
+        int colStep = isWhite ? 1 : -1;
+
+        for (int row = rowStart; isWhite ? row > rowEnd : row < rowEnd; row += rowStep) {
             System.out.println("  +---+---+---+---+---+---+---+---+");
             System.out.print((row + 1) + " |");
 
-            for (int col = 0; col < 8; col++) {
+            for (int col = colStart; isWhite ? col < colEnd : col > colEnd; col += colStep) {
                 int position = row * 8 + col;
 
                 char symbol = ' ';
@@ -130,12 +140,65 @@ public class Bitboard {
         }
 
         System.out.println("  +---+---+---+---+---+---+---+---+");
-        System.out.println("    a   b   c   d   e   f   g   h");
+        if (isWhite) {
+            System.out.println("    a   b   c   d   e   f   g   h");
+        } else {
+            System.out.println("    h   g   f   e   d   c   b   a");
+        }
+    }
+
+
+    public boolean makeMove(IBoard.T2<IBoard.T3, IBoard.T3> t2){
+        int from = t2.left().index();
+        int to = t2.right().index();
+
+        int color = colorToMove;
+        int pieceType = Get(from, color);
+
+        long fromMask = 1L << from;
+        long toMask = 1L << to;
+
+        // Remove piece from old position
+        if (color == 0){
+            getBoardWhite()[pieceType] &= ~fromMask;
+        } else {
+            getBoardBlack()[pieceType] &= ~fromMask;
+        }
+
+        // Remove captured piece from new position if there is one
+        for (int i = 0; i < 6; i++){
+            if ((toMask & (color == 0 ? getBoardBlack()[i] : getBoardWhite()[i])) != 0){
+                if (color == 0){
+                    getBoardBlack()[i] &= ~toMask;
+                } else {
+                    getBoardWhite()[i] &= ~toMask;
+                }
+                break;
+            }
+        }
+
+        // Add piece to new position
+        if (color == 0){
+            getBoardWhite()[pieceType] |= toMask;
+        } else {
+            getBoardBlack()[pieceType] |= toMask;
+        }
+
+        // TODO: En passant
+        // TODO: Castling
+        // TODO: Promotion
+
+        return true;
+    }
+
+    public void turn(){
+        colorToMove = colorToMove == 0 ? 1 : 0;
     }
 
     public Bitboard() {
         this.boardWhite = new long[6];
         this.boardBlack = new long[6];
+        this.colorToMove = 0;
 
         // generate starting positions
         // PAWNS 0

@@ -39,17 +39,33 @@ public class PawnMove implements IBoard {
         }
 
         // Single Pawn Move
-        long singleMask = 1L << t2.left().index() + 8;
-        if ((singleMask & emptySquares) != 0) {
-            moves.add(t2.left().index() + 8);
-            moveType = MoveType.Normal;
+        if(color == 0){
+            long singleMask = 1L << t2.left().index() + 8;
+            if ((singleMask & emptySquares) != 0) {
+                moves.add(t2.left().index() + 8);
+                moveType = MoveType.Normal;
+            }
+        } else {
+            long singleMask = 1L << t2.left().index() - 8;
+            if ((singleMask & emptySquares) != 0) {
+                moves.add(t2.left().index() - 8);
+                moveType = MoveType.Normal;
+            }
         }
 
         // Double Pawn Move
-        long doubleMask = 1L << t2.left().index() + 16;
-        if ((doubleMask & emptySquares) != 0 && t2.left().rank() == 1) {
-            moves.add(t2.left().index() + 16);
-            moveType = MoveType.Normal;
+        if (color == 0){
+            long doubleMask = 1L << t2.left().index() + 16;
+            if ((doubleMask & emptySquares) != 0 && t2.left().rank() == 1) {
+                moves.add(t2.left().index() + 16);
+                moveType = MoveType.Normal;
+            }
+        } else {
+            long doubleMask = 1L << t2.left().index() - 16;
+            if ((doubleMask & emptySquares) != 0 && t2.left().rank() == 6) {
+                moves.add(t2.left().index() - 16);
+                moveType = MoveType.Normal;
+            }
         }
 
         // Pawn Capture
