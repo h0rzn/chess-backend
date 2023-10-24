@@ -221,14 +221,14 @@ public class Bitboard {
         this.boardWhite[3] = this.boardWhite[3] | rooksW;
         this.boardBlack[3] = this.boardBlack[3] | rooksW << 56;
 
-        // QUEENS 4
-        long queensW = 0b00010000;
+        // QUEENS 4 0b0001000
+        long queensW = 0b0001000;
         this.boardWhite[4] = this.boardWhite[4] | queensW;
         this.boardBlack[4] = this.boardBlack[4] | (queensW << 56);
 
         // KINGS 5
-        long kingsW = 0b0001000;
-        this.boardBlack[5] = this.boardBlack[5] | kingsW;
+        long kingsW = 0b00010000;
+        this.boardWhite[5] = this.boardWhite[5] | kingsW;
         this.boardBlack[5] = this.boardBlack[5] | (kingsW << 56);
     }
 }
