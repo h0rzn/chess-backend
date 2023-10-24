@@ -95,6 +95,7 @@ public class Bitboard {
         }
     }
 
+    // Creates a copy of the current bitboard, used for check resolve validation
     public Bitboard copy(){
         Bitboard copy = new Bitboard();
         copy.boardWhite = this.boardWhite.clone();

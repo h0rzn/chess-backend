@@ -6,6 +6,7 @@ import com.github.engine.IBoard;
 public class AttackCheck implements IBoard {
 
 
+    // Creates a copy of the bitboard and executes the move, then checks if the move resolves the check
     public static boolean doesMoveResolveCheck(Bitboard bitboard, IBoard.T2<IBoard.T3, IBoard.T3> t2){
         Bitboard bitboardCopy = bitboard.copy();
         bitboardCopy.makeMove(t2);
@@ -18,6 +19,8 @@ public class AttackCheck implements IBoard {
         return !isInCheck;
 
     }
+
+    // Checks if the king is in check
     public static boolean isKingInCheck(long kingPosition, long[] enemyBoard, int color){
         //long kingBitBoard = 1L << kingPosition;
 
@@ -32,6 +35,8 @@ public class AttackCheck implements IBoard {
         return false;
 
     }
+
+    // Checks if the king is attacked by pawns
     public static boolean isAttackedByPawns(long kingBitBoard, long enemyBitBoard, int color){
         long attacks;
         if (color ==0) {
@@ -45,6 +50,7 @@ public class AttackCheck implements IBoard {
         return (kingBitBoard & attacks) != 0;
     }
 
+    // Checks if the king is attacked by knights
     public static boolean isAttackedByKnights(long kingBitBoard, long enemyBitBoard){
         long spots = ((long) enemyBitBoard >> 17) & NOT_H_FILE; // Springe 2 hoch, 1 rechts
         spots |= (enemyBitBoard >> 15) & NOT_A_FILE; // Springe 2 hoch, 1 links

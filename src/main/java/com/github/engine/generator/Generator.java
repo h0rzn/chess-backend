@@ -18,6 +18,7 @@ public class Generator implements IBoard {
     }
 
 
+    // Generates all possible moves for a given piece
     public List<Integer> generate(T2<T3, T3> t2, int color){
         int pieceID = Get(t2.left().index(), color);
         SinglePiece piece = SinglePiece.fromNumber(pieceID);

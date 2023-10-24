@@ -30,14 +30,21 @@ public class KingMoveGenerator implements IGenerator, IBoard {
             ownPieces |= (color == 0 ? boardWhite[i] : boardBlack[i]);
         }
 
+        // Gets the position of the king
         long kingPosition = 1L << t2.left().index();
+        // Creates a mask with an 1 at the forward and backward position of the king
         long spots = (kingPosition << 8) | (kingPosition >> 8);
+        // Creates a mask with an 1 at the left and right position of the king
         long leftRightSpots = (kingPosition & NOT_H_FILE << 1) | (kingPosition & NOT_A_FILE >> 1);
+        // Creates a mask with an 1 at the diagonal position of the king
         long diagonalSpots = (kingPosition & NOT_A_FILE << 7) | (kingPosition & NOT_H_FILE >> 7) |
                 (kingPosition & NOT_H_FILE << 9) | (kingPosition & NOT_A_FILE >> 9);
 
+        // Creates a mask with all possible moves
         spots |= leftRightSpots | diagonalSpots;
+        // Removes all own pieces from the mask
         spots &= ~ownPieces;
+        // Adds all possible moves to the list
         for (int j = 0; j < 64; j++) {
             if ((spots & (1L << j)) != 0) {
                 moves.add(j);
