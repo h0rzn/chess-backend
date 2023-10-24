@@ -39,6 +39,7 @@ public class Generator implements IBoard {
         return null;
     }
 
+
     public int Get(int index, int color) {
         long positionMask = 1L << index;
         long[] colorBoards = color == 0 ? this.boardWhite : this.boardBlack;

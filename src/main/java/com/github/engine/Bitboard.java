@@ -95,6 +95,14 @@ public class Bitboard {
         }
     }
 
+    public Bitboard copy(){
+        Bitboard copy = new Bitboard();
+        copy.boardWhite = this.boardWhite.clone();
+        copy.boardBlack = this.boardBlack.clone();
+        copy.colorToMove = this.colorToMove;
+        return copy;
+    }
+
     public void printChessboard(int color) {
         char[] pieceSymbols = {'P', 'N', 'B', 'R', 'Q', 'K'}; // Pawn, kNight, Bishop, Rook, Queen, King
         boolean isWhite = color == 0;
