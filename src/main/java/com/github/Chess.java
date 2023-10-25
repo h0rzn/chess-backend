@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
 
-public class Main {
+public class Chess {
     @Getter
     static Game game;
     static final Scanner scanner = new Scanner(System.in);
