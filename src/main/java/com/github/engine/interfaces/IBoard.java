@@ -1,4 +1,4 @@
-package com.github.engine;
+package com.github.engine.interfaces;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;

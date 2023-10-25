@@ -1,20 +1,21 @@
 package com.github.engine.generator;
 
 import com.github.engine.Bitboard;
-import com.github.engine.IBoard;
+import com.github.engine.Game;
+import com.github.engine.interfaces.IBoard;
 
 public class AttackCheck implements IBoard {
 
 
     // Creates a copy of the bitboard and executes the move, then checks if the move resolves the check
-    public static boolean doesMoveResolveCheck(Bitboard bitboard, IBoard.T2<IBoard.T3, IBoard.T3> t2){
-        Bitboard bitboardCopy = bitboard.copy();
-        bitboardCopy.makeMove(t2);
+    public static boolean doesMoveResolveCheck(Game game, IBoard.T2<IBoard.T3, IBoard.T3> t2){
+        Game gameCopy = game.copy();
+        gameCopy.makeMove(t2);
 
-        long kingPosition = bitboard.getColorToMove() == 0 ? bitboardCopy.getBoardWhite()[5] : bitboardCopy.getBoardBlack()[5];
+        long kingPosition = game.getColorToMove() == 0 ? gameCopy.getBoardWhite()[5] : gameCopy.getBoardBlack()[5];
 
-        long[] enemyBoard = bitboard.getColorToMove() == 0 ? bitboardCopy.getBoardBlack() : bitboardCopy.getBoardWhite();
-        boolean isInCheck = isKingInCheck(kingPosition, enemyBoard, bitboard.getColorToMove());
+        long[] enemyBoard = game.getColorToMove() == 0 ? gameCopy.getBoardBlack() : gameCopy.getBoardWhite();
+        boolean isInCheck = isKingInCheck(kingPosition, enemyBoard, game.getColorToMove());
 
         return !isInCheck;
 

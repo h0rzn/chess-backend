@@ -1,7 +1,7 @@
 package com.github;
 
-import com.github.engine.Bitboard;
-import com.github.engine.IBoard;
+import com.github.engine.Game;
+import com.github.engine.interfaces.IBoard;
 import com.github.engine.generator.Generator;
 import lombok.Getter;
 
@@ -12,12 +12,12 @@ import java.util.Scanner;
 
 public class Main {
     @Getter
-    static Bitboard bitboard;
+    static Game game;
     static final Scanner scanner = new Scanner(System.in);
     public static void main(String[] args) {
-        bitboard = new Bitboard();
+        game = new Game();
 
-        bitboard.printChessboard(bitboard.getColorToMove());
+        game.printChessboard(game.getColorToMove());
         while (true){
             // Gets the input from user
             String move = getMove();
@@ -29,17 +29,17 @@ public class Main {
                 IBoard.T2<IBoard.T3, IBoard.T3> t2 = parsedMove.get();
                 System.out.println(t2);
                 // Generates all possible moves for the current position and stores them in a list
-                Generator generator = new Generator(bitboard);
-                List<Integer> moves = generator.generate(t2, bitboard.getColorToMove());
+                Generator generator = new Generator(game);
+                List<Integer> moves = generator.generate(t2, game.getColorToMove());
                 // Checks wether the move from user is in validMove list -> is a valid move
                 if(moves.contains(t2.right().index())){
                     System.out.println("Valid move");
                     // Executes the move
-                    bitboard.makeMove(t2);
+                    game.makeMove(t2);
                     // Turns the board
-                    bitboard.turn();
+                    game.turn();
                     // Prints the board
-                    bitboard.printChessboard(bitboard.getColorToMove());
+                    game.printChessboard(game.getColorToMove());
                 } else {
                     System.out.println("Invalid move");
                 }
