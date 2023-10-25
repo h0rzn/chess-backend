@@ -1,4 +1,4 @@
-package com.github.chessgame;
+package com.github;
 
 public class Helpers {
     static public String outAs64String(int value) {

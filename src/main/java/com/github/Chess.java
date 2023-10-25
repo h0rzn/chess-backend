@@ -4,17 +4,24 @@ import com.github.engine.Bitboard;
 import com.github.engine.IBoard;
 import com.github.engine.generator.Generator;
 import lombok.Getter;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.util.BitSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
 
-public class Main {
+@SpringBootApplication
+public class Chess {
     @Getter
     static Bitboard bitboard;
     static final Scanner scanner = new Scanner(System.in);
     public static void main(String[] args) {
+        SpringApplication.run(Chess.class, args);
+    }
+
+    private static void init(){
         bitboard = new Bitboard();
 
         bitboard.printChessboard(bitboard.getColorToMove());
