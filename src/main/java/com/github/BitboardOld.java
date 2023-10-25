@@ -1,6 +1,6 @@
 package com.github;
 
-import com.github.engine.IBoard;
+import com.github.engine.interfaces.IBoard;
 import lombok.Getter;
 
 import java.util.BitSet;
