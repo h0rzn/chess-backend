@@ -25,6 +25,14 @@ public class QueenMoveGenerator implements IBoard, IGenerator {
     public List<Integer> generate(int color, T2<T3, T3> t2){
         List<Integer> moves = new ArrayList<>();
 
+        long[] ownBoard = (color == 0 ? boardWhite: boardBlack);
+        long ownPieces = (ownBoard[0] | ownBoard[1] | ownBoard[2] | ownBoard[3] | ownBoard[5]);
+
+        int queenIndex = t2.left().index();
+        long queenPosition = 1L << queenIndex;
+
+        // TODO Create possible moves
+
 
 
         return moves;
