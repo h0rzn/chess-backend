@@ -1,16 +1,17 @@
 package com.github.engine;
 
+import com.github.engine.interfaces.IBoard;
 import lombok.Getter;
 
 import java.math.BigInteger;
 
-public class Bitboard {
+public abstract class Bitboard {
     @Getter
-    private long[] boardWhite;
+    public long[] boardWhite;
     @Getter
-    private long[] boardBlack;
+    public long[] boardBlack;
     @Getter
-    private int colorToMove;
+    public int colorToMove;
 
     // Takes field index, piece type and color index and enables the
     // respective bit. Returns true on success or false on failure.
@@ -96,13 +97,7 @@ public class Bitboard {
     }
 
     // Creates a copy of the current bitboard, used for check resolve validation
-    public Bitboard copy(){
-        Bitboard copy = new Bitboard();
-        copy.boardWhite = this.boardWhite.clone();
-        copy.boardBlack = this.boardBlack.clone();
-        copy.colorToMove = this.colorToMove;
-        return copy;
-    }
+
 
     public void printChessboard(int color) {
         char[] pieceSymbols = {'P', 'N', 'B', 'R', 'Q', 'K'}; // Pawn, kNight, Bishop, Rook, Queen, King
@@ -156,49 +151,6 @@ public class Bitboard {
         }
     }
 
-
-    public boolean makeMove(IBoard.T2<IBoard.T3, IBoard.T3> t2){
-        int from = t2.left().index();
-        int to = t2.right().index();
-
-        int color = colorToMove;
-        int pieceType = Get(from, color);
-
-        long fromMask = 1L << from;
-        long toMask = 1L << to;
-
-        // Remove piece from old position
-        if (color == 0){
-            getBoardWhite()[pieceType] &= ~fromMask;
-        } else {
-            getBoardBlack()[pieceType] &= ~fromMask;
-        }
-
-        // Remove captured piece from new position if there is one
-        for (int i = 0; i < 6; i++){
-            if ((toMask & (color == 0 ? getBoardBlack()[i] : getBoardWhite()[i])) != 0){
-                if (color == 0){
-                    getBoardBlack()[i] &= ~toMask;
-                } else {
-                    getBoardWhite()[i] &= ~toMask;
-                }
-                break;
-            }
-        }
-
-        // Add piece to new position
-        if (color == 0){
-            getBoardWhite()[pieceType] |= toMask;
-        } else {
-            getBoardBlack()[pieceType] |= toMask;
-        }
-
-        // TODO: En passant
-        // TODO: Castling
-        // TODO: Promotion
-
-        return true;
-    }
 
     public void turn(){
         colorToMove = colorToMove == 0 ? 1 : 0;

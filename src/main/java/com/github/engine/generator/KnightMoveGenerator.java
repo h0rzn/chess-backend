@@ -1,7 +1,8 @@
 package com.github.engine.generator;
 
 import com.github.engine.Bitboard;
-import com.github.engine.IBoard;
+import com.github.engine.interfaces.IBoard;
+import com.github.engine.interfaces.IGenerator;
 
 import java.util.ArrayList;
 import java.util.List;

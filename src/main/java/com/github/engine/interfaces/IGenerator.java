@@ -1,6 +1,4 @@
-package com.github.engine.generator;
-
-import com.github.engine.IBoard;
+package com.github.engine.interfaces;
 
 import java.util.List;
 
