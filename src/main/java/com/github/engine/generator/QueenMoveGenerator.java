@@ -3,6 +3,7 @@ package com.github.engine.generator;
 import com.github.engine.Bitboard;
 import com.github.engine.interfaces.IBoard;
 import com.github.engine.interfaces.IGenerator;
+import com.github.engine.move.Move;
 import com.github.engine.move.MoveType;
 import lombok.Getter;
 
@@ -23,13 +24,13 @@ public class QueenMoveGenerator implements IBoard, IGenerator {
     }
 
     @Override
-    public List<Integer> generate(int color, T2<T3, T3> t2){
+    public List<Integer> generate(int color, Move move) {
         List<Integer> moves = new ArrayList<>();
 
         long[] ownBoard = (color == 0 ? boardWhite: boardBlack);
         long ownPieces = (ownBoard[0] | ownBoard[1] | ownBoard[2] | ownBoard[3] | ownBoard[5]);
 
-        int queenIndex = t2.left().index();
+        int queenIndex = move.getFrom().getIndex();
         long queenPosition = 1L << queenIndex;
 
         // TODO Create possible moves
