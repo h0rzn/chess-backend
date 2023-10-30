@@ -27,8 +27,9 @@ public class QueenMoveGenerator implements IBoard, IGenerator {
     public List<Integer> generate(int color, Move move) {
         List<Integer> moves = new ArrayList<>();
 
-        long[] ownBoard = (color == 0 ? boardWhite: boardBlack);
-        long ownPieces = (ownBoard[0] | ownBoard[1] | ownBoard[2] | ownBoard[3] | ownBoard[5]);
+        long boardWhitePieces = (boardWhite[0] | boardWhite[1] | boardWhite[2] | boardWhite[3] | boardWhite[4] | boardWhite[5]);
+        long boardBlackPieces = (boardBlack[0] | boardBlack[1] | boardBlack[2] | boardBlack[3] | boardBlack[4] | boardBlack[5]);
+        long occupiedSquares = boardWhitePieces | boardBlackPieces;
 
         int queenIndex = move.getFrom().getIndex();
         long cursor = 1L << queenIndex;
@@ -52,33 +53,63 @@ public class QueenMoveGenerator implements IBoard, IGenerator {
 
         for (int i = 0; i < 8; i++) {
             if (i < maxNorth) {
-                northCursor <<= 8;
+                if ((northCursor & occupiedSquares) != 0) {
+                    maxNorth = i - 1;
+                } else {
+                    northCursor <<= 8;
+                }
             }
             if (i < maxSouth) {
-                southCursor >>= 8;
+                if ((southCursor & occupiedSquares) != 0) {
+                    maxSouth = i - 1;
+                } else {
+                    northCursor <<= 8;
+                }
             }
             if (i < maxEast) {
-                eastCursor >>= 8;
+                if ((eastCursor & occupiedSquares) != 0) {
+                    maxEast = i - 1;
+                } else {
+                    eastCursor >>= 8;
+                }
             }
             if (i < maxWest) {
-                westCursor >>= 8;
+                if ((westCursor & occupiedSquares) != 0) {
+                    maxWest = i - 1;
+                } else {
+                    westCursor >>= 8;
+                }
             }
 
             if (i < maxNorthEast) {
-                northEastCursor <<= 9;
+                if ((northEastCursor & occupiedSquares) != 0) {
+                    maxNorthEast = i - 1;
+                } else {
+                    northEastCursor >>= 8;
+                }
             }
             if (i < maxNorthWest) {
-                northWestCursor <<= 7;
+                if ((northWestCursor & occupiedSquares) != 0) {
+                    maxNorthWest = i - 1;
+                } else {
+                    northWestCursor <<= 7;
+                }
             }
             if (i < maxSouthEast) {
-                southEastCursor >>= 7;
+                if ((southEastCursor & occupiedSquares) != 0) {
+                    maxSouthEast = i - 1;
+                } else {
+                    southEastCursor >>= 7;
+                }
             }
             if (i < maxSouthWest) {
-                southWestCursor >>= 9;
+                if ((southWestCursor & occupiedSquares) != 0) {
+                    southWestCursor = i - 1;
+                } else {
+                    southWestCursor >>= 9;
+                }
             }
         }
-
-
 
         return moves;
     }
