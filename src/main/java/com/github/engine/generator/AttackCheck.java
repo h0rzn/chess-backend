@@ -3,14 +3,15 @@ package com.github.engine.generator;
 import com.github.engine.Bitboard;
 import com.github.engine.Game;
 import com.github.engine.interfaces.IBoard;
+import com.github.engine.move.Move;
 
 public class AttackCheck implements IBoard {
 
 
     // Creates a copy of the bitboard and executes the move, then checks if the move resolves the check
-    public static boolean doesMoveResolveCheck(Game game, IBoard.T2<IBoard.T3, IBoard.T3> t2){
+    public static boolean doesMoveResolveCheck(Game game, Move move){
         Game gameCopy = game.copy();
-        gameCopy.makeMove(t2);
+        gameCopy.makeMove(move);
 
         long kingPosition = game.getColorToMove() == 0 ? gameCopy.getBoardWhite()[5] : gameCopy.getBoardBlack()[5];
 

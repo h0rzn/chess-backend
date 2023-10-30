@@ -3,6 +3,7 @@ package com.github.engine.generator;
 import com.github.engine.Bitboard;
 import com.github.engine.interfaces.IBoard;
 import com.github.engine.SinglePiece;
+import com.github.engine.move.Move;
 
 import java.util.List;
 
@@ -19,21 +20,21 @@ public class Generator implements IBoard {
 
 
     // Generates all possible moves for a given piece
-    public List<Integer> generate(T2<T3, T3> t2, int color){
-        int pieceID = Get(t2.left().index(), color);
+    public List<Integer> generate(Move move, int color){
+        int pieceID = Get(move.getFrom().getIndex(), color);
         SinglePiece piece = SinglePiece.fromNumber(pieceID);
         switch (piece){
             case Pawn -> {
                 PawnMoveGenerator pawnMove = new PawnMoveGenerator(bitboard);
-                return pawnMove.generate(color, t2);
+                return pawnMove.generate(color, move);
             }
             case Knight -> {
                 KnightMoveGenerator knightMove = new KnightMoveGenerator(bitboard);
-                return knightMove.generate(color, t2);
+                return knightMove.generate(color, move);
             }
             case King -> {
                 KingMoveGenerator kingMove = new KingMoveGenerator(bitboard);
-                return kingMove.generate(color, t2);
+                return kingMove.generate(color, move);
             }
 
         }

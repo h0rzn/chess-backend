@@ -2,6 +2,7 @@ package com.github.engine;
 
 import com.github.engine.interfaces.IBoard;
 import com.github.engine.interfaces.IGame;
+import com.github.engine.move.Move;
 
 import java.util.List;
 
@@ -35,9 +36,9 @@ public class Game extends Bitboard implements IGame {
     }
 
     @Override
-    public boolean makeMove(IBoard.T2<IBoard.T3, IBoard.T3> t2){
-        int from = t2.left().index();
-        int to = t2.right().index();
+    public boolean makeMove(Move move){
+        int from = move.getFrom().getIndex();
+        int to = move.getTo().getIndex();
 
         int color = this.getColorToMove();
         int pieceType = Get(from, color);

@@ -3,6 +3,7 @@ package com.github.engine.generator;
 import com.github.engine.Bitboard;
 import com.github.engine.interfaces.IBoard;
 import com.github.engine.interfaces.IGenerator;
+import com.github.engine.move.Move;
 import com.github.engine.move.MoveType;
 import lombok.Getter;
 
@@ -23,7 +24,7 @@ public class PawnMoveGenerator implements IBoard, IGenerator {
 
     // Color and T2 is passed (T2 contains move-from and move-to)
     @Override
-    public List<Integer> generate(int color, T2<T3, T3> t2){
+    public List<Integer> generate(int color, Move move){
         List<Integer> moves = new ArrayList<>();
 
         // Get all pawns of color-in-turn
@@ -42,18 +43,18 @@ public class PawnMoveGenerator implements IBoard, IGenerator {
         // Single Pawn Move
         if(color == 0){
             // Creates a mask with an 1 at the target-position of the pawn
-            long singleMask = 1L << t2.left().index() + 8;
+            long singleMask = 1L << move.getFrom().getIndex() + 8;
             // Checks if the target-position is empty, if yes -> valid move
             if ((singleMask & emptySquares) != 0) {
                 // Adds the target-position to the list of valid moves
-                moves.add(t2.left().index() + 8);
+                moves.add(move.getFrom().getIndex() + 8);
                 moveType = MoveType.Normal;
             }
         } else {
             // Same for other color, but with -8 instead of +8
-            long singleMask = 1L << t2.left().index() - 8;
+            long singleMask = 1L << move.getFrom().getIndex() - 8;
             if ((singleMask & emptySquares) != 0) {
-                moves.add(t2.left().index() - 8);
+                moves.add(move.getFrom().getIndex() - 8);
                 moveType = MoveType.Normal;
             }
         }
@@ -61,21 +62,21 @@ public class PawnMoveGenerator implements IBoard, IGenerator {
         // Double Pawn Move
         if (color == 0){
             // Same as above, but with double row move
-            long doubleMask = 1L << t2.left().index() + 16;
-            if ((doubleMask & emptySquares) != 0 && t2.left().rank() == 1) {
-                moves.add(t2.left().index() + 16);
+            long doubleMask = 1L << move.getFrom().getIndex() + 16;
+            if ((doubleMask & emptySquares) != 0 && move.getFrom().getRow() == 1) {
+                moves.add(move.getFrom().getIndex() + 16);
                 moveType = MoveType.Normal;
             }
         } else {
-            long doubleMask = 1L << t2.left().index() - 16;
-            if ((doubleMask & emptySquares) != 0 && t2.left().rank() == 6) {
-                moves.add(t2.left().index() - 16);
+            long doubleMask = 1L << move.getFrom().getIndex() - 16;
+            if ((doubleMask & emptySquares) != 0 && move.getFrom().getRow() == 6) {
+                moves.add(move.getFrom().getIndex() - 16);
                 moveType = MoveType.Normal;
             }
         }
 
         // Pawn Capture
-        int pawnPosition = t2.left().index();
+        int pawnPosition = move.getFrom().getIndex();
         long leftCaptureMask, rightCaptureMask;
 
         boolean notOnLeftEdge = pawnPosition % 8 != 0;

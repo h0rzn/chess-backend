@@ -3,6 +3,7 @@ package com.github;
 import com.github.engine.Game;
 import com.github.engine.interfaces.IBoard;
 import com.github.engine.generator.Generator;
+import com.github.engine.move.Move;
 import lombok.Getter;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -29,20 +30,20 @@ public class Chess {
             // Gets the input from user
             String move = getMove();
             // Parses the input in T2 format
-            Optional<IBoard.T2<IBoard.T3, IBoard.T3>> parsedMove = parseMove(move);
+            Optional<Move> parsedMove = Optional.of(new Move(move));
             // Checks wether the input was a valid input
             if (parsedMove.isPresent()) {
                 // Contains the rank, file and index of the current position and the position to move to
-                IBoard.T2<IBoard.T3, IBoard.T3> t2 = parsedMove.get();
-                System.out.println(t2);
+                Move move1 = parsedMove.get();
+                System.out.println(move1);
                 // Generates all possible moves for the current position and stores them in a list
                 Generator generator = new Generator(game);
-                List<Integer> moves = generator.generate(t2, game.getColorToMove());
+                List<Integer> moves = generator.generate(move1, game.getColorToMove());
                 // Checks wether the move from user is in validMove list -> is a valid move
-                if(moves.contains(t2.right().index())){
+                if(moves.contains(move1.getTo().getIndex())){
                     System.out.println("Valid move");
                     // Executes the move
-                    game.makeMove(t2);
+                    game.makeMove(move1);
                     // Turns the board
                     game.turn();
                     // Prints the board

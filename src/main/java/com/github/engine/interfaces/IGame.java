@@ -1,9 +1,11 @@
 package com.github.engine.interfaces;
 
+import com.github.engine.move.Move;
+
 import java.util.List;
 
 public interface IGame {
-    boolean makeMove(IBoard.T2<IBoard.T3, IBoard.T3> t2);
+    boolean makeMove(Move move);
 
     int getColorToMove();
 
