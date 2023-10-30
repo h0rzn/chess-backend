@@ -1,7 +1,10 @@
 package com.github.rest.user;
 
-import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserRepository extends JpaRepository<UserModel, Integer> {
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface UserRepository extends CrudRepository<UserModel, String> {
     UserModel findByUsername(String username);
 }

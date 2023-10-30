@@ -1,4 +1,4 @@
-package com.github.rest;
+package com.github;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,4 +16,6 @@ class RedisConfig {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration("localhost", 6379);
         return new JedisConnectionFactory(config);
     }
+
+
 }

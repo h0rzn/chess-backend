@@ -1,23 +1,28 @@
 package com.github.rest.user;
 
-import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.redis.core.RedisHash;
 
-@Entity
-@Table(name = "users")
+@RedisHash("User")
 public class UserModel {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     @Getter
-    private int id;
+    @Setter
+    private String id;
 
     @Getter
-    @Column(name = "username")
+    @Setter
     private String username;
 
     @Getter
-    @Column(name = "password")
+    @Setter
     private String password;
+
+    @Getter
+    @Setter
+    private String gameID;
 
     public UserModel(String username, String password) {
         this.username = username;

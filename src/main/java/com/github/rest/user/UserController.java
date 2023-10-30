@@ -10,11 +10,15 @@ import java.util.Optional;
 @RestController
 public class UserController {
 
-    @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    public UserController(UserRepository userRepository){
+        this.userRepository = userRepository;
+    }
+
     @GetMapping("/user/{id}")
-    public ResponseEntity<UserModel> getUserByID(@PathVariable("id")int id){
+    public ResponseEntity<UserModel> getUserByID(@PathVariable("id")String id){
         Optional<UserModel> user = userRepository.findById(id);
 
         return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
