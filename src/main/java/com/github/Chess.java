@@ -1,10 +1,11 @@
 package com.github;
 
 import com.github.engine.Game;
-import com.github.engine.interfaces.IBoard;
 import com.github.engine.generator.Generator;
 import com.github.engine.move.Move;
+import com.github.services.GameService;
 import lombok.Getter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -18,8 +19,11 @@ public class Chess {
     @Getter
     static Game game;
     static final Scanner scanner = new Scanner(System.in);
+
+
     public static void main(String[] args) {
         SpringApplication.run(Chess.class, args);
+
     }
 
     private static void init(){
@@ -52,23 +56,6 @@ public class Chess {
                     System.out.println("Invalid move");
                 }
             }
-        }
-    }
-
-
-
-    private static Optional<IBoard.T2<IBoard.T3, IBoard.T3>> parseMove(String move) {
-        try {
-            String[] split = move.split("-");
-            String[] from = split[0].split("");
-            String[] to = split[1].split("");
-
-            IBoard.T3 moveFrom = IBoard.t2ToT3.apply(new IBoard.T2<>(from[0].toUpperCase(), Integer.parseInt(from[1])-1));
-            IBoard.T3 moveTo = IBoard.t2ToT3.apply(new IBoard.T2<>(to[0].toUpperCase(), Integer.parseInt(to[1])-1));
-
-            return Optional.of(IBoard.T2.of(moveFrom, moveTo));
-        } catch (Exception e){
-            return Optional.empty();
         }
     }
 
