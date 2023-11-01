@@ -24,14 +24,14 @@ public class BishopMoveGenerator implements IBoard, IGenerator {
         long boardBlackPieces = (boardBlack[0] | boardBlack[1] | boardBlack[2] | boardBlack[3] | boardBlack[4] | boardBlack[5]);
         long ownPieces = (color == 0) ? boardWhitePieces : boardBlackPieces;
         long enemyPieces = (color == 0) ? boardBlackPieces : boardWhitePieces;
-
+        // Cursor checkings current position
         int index = move.getFrom().getIndex();
         long cursor = 1L << index;
         long northEastCursor = cursor << 9;
         long northWestCursor = cursor << 7;
         long southEastCursor = cursor >> 7;
         long southWestCursor = cursor >> 9;
-
+        // Max amount of positions to check for each direction
         int maxSouth = index / 8;
         int maxNorth = 8 - maxSouth - 1;
         int maxWest = index % 8;
@@ -57,7 +57,7 @@ public class BishopMoveGenerator implements IBoard, IGenerator {
             }
             // NORTH WEST
             if (i < maxNorthWest) {
-                int idx = queenIndex + (i+1)*7;
+                int idx = index + (i+1)*7;
                 if ((northWestCursor & enemyPieces) != 0) {
                     moves.add(idx);
                     maxNorthWest = i - 1;

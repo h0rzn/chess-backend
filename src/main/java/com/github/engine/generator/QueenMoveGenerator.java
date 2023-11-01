@@ -32,9 +32,8 @@ public class QueenMoveGenerator implements IBoard, IGenerator {
         long ownPieces = (color == 0) ? boardWhitePieces : boardBlackPieces;
         long enemyPieces = (color == 0) ? boardBlackPieces : boardWhitePieces;
 
-//        long occupiedSquares = boardWhitePieces | boardBlackPieces;
-
         int queenIndex = move.getFrom().getIndex();
+        // Cursor checkings current position
         long cursor = 1L << queenIndex;
         long northCursor = cursor << 8;
         long southCursor = cursor >> 8;
@@ -44,7 +43,7 @@ public class QueenMoveGenerator implements IBoard, IGenerator {
         long northWestCursor = cursor << 7;
         long southEastCursor = cursor >> 7;
         long southWestCursor = cursor >> 9;
-
+        // Max amount of positions to check for each direction
         int maxSouth = queenIndex / 8;
         int maxNorth = 8 - maxSouth - 1;
         int maxWest = queenIndex % 8;
@@ -55,6 +54,7 @@ public class QueenMoveGenerator implements IBoard, IGenerator {
         int maxSouthWest = Math.min(maxSouth, maxWest);
 
         for (int i = 0; i < 8; i++) {
+            // NORTH
             if (i < maxNorth) {
                 int idx = queenIndex+ (i+1)*8;
                 if ((northCursor & enemyPieces) != 0) {
@@ -67,6 +67,8 @@ public class QueenMoveGenerator implements IBoard, IGenerator {
                     northCursor <<= 8;
                 }
             }
+
+            // SOUTH
             if (i < maxSouth) {
                 int idx = queenIndex- (i+1)*8;
                 if ((southCursor & enemyPieces) != 0) {
@@ -79,6 +81,8 @@ public class QueenMoveGenerator implements IBoard, IGenerator {
                     southCursor >>= 8;
                 }
             }
+
+            // EAST
             if (i < maxEast) {
                 int idx = queenIndex+ (i+1);
                 if ((eastCursor & enemyPieces) != 0) {
@@ -91,6 +95,8 @@ public class QueenMoveGenerator implements IBoard, IGenerator {
                     eastCursor <<= 1;
                 }
             }
+
+            // WEST
             if (i < maxWest) {
                 int idx = queenIndex- (i+1);
                 if ((westCursor & enemyPieces) != 0) {
@@ -104,6 +110,7 @@ public class QueenMoveGenerator implements IBoard, IGenerator {
                 }
             }
 
+            // NORTH EAST
             if (i < maxNorthEast) {
                 int idx = queenIndex + (i+1)*9;
                 if ((northEastCursor & enemyPieces) != 0) {
@@ -116,6 +123,8 @@ public class QueenMoveGenerator implements IBoard, IGenerator {
                     northEastCursor <<= 9;
                 }
             }
+
+            // NORTH WEST
             if (i < maxNorthWest) {
                 int idx = queenIndex + (i+1)*7;
                 if ((northWestCursor & enemyPieces) != 0) {
@@ -128,6 +137,8 @@ public class QueenMoveGenerator implements IBoard, IGenerator {
                     maxNorthWest <<= 7;
                 }
             }
+
+            // SOUTH EAST
             if (i < maxSouthEast) {
                 int idx = queenIndex - (i+1)*7;
                 if ((southEastCursor & enemyPieces) != 0) {
@@ -140,8 +151,9 @@ public class QueenMoveGenerator implements IBoard, IGenerator {
                     maxSouthEast >>= 7;
                 }
             }
-            if (i < maxSouthWest) {
 
+            // SOUTH WEST
+            if (i < maxSouthWest) {
                 int idx = queenIndex - (i+1)*7;
                 if ((southWestCursor & enemyPieces) != 0) {
                     moves.add(idx);

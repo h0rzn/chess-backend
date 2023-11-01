@@ -24,12 +24,12 @@ public class RookMoveGenerator implements IBoard, IGenerator {
         long boardBlackPieces = (boardBlack[0] | boardBlack[1] | boardBlack[2] | boardBlack[3] | boardBlack[4] | boardBlack[5]);
         long ownPieces = (color == 0) ? boardWhitePieces : boardBlackPieces;
         long enemyPieces = (color == 0) ? boardBlackPieces : boardWhitePieces;
-
+        // Cursor checkings current position
         int index = move.getFrom().getIndex();
         long cursor = 1L << index;
         long northCursor = cursor << 8;
         long southCursor = cursor >> 8;
-
+        // Max amount of positions to check for each direction
         int maxSouth = index / 8;
         int maxNorth = 8 - maxSouth - 1;
 
