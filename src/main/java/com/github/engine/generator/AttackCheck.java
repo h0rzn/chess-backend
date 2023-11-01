@@ -7,7 +7,6 @@ import com.github.engine.move.Move;
 
 public class AttackCheck implements IBoard {
 
-
     // Creates a copy of the bitboard and executes the move, then checks if the move resolves the check
     public static boolean doesMoveResolveCheck(Game game, Move move){
         Game gameCopy = game.copy();
@@ -39,29 +38,29 @@ public class AttackCheck implements IBoard {
     }
 
     // Checks if the king is attacked by pawns
-    public static boolean isAttackedByPawns(long kingBitBoard, long enemyBitBoard, int color){
+    public static boolean isAttackedByPawns(long kingBitBoard, long enemyPawns, int color){
         long attacks;
         if (color ==0) {
-            attacks = (enemyBitBoard << 7) & NOT_H_FILE;
-            attacks |= (enemyBitBoard << 9) & NOT_A_FILE;
+            attacks = (enemyPawns << 7) & NOT_H_FILE;
+            attacks |= (enemyPawns << 9) & NOT_A_FILE;
         } else {
-            attacks = (enemyBitBoard >> 7) & NOT_A_FILE;
-            attacks |= (enemyBitBoard >> 9) & NOT_H_FILE;
+            attacks = (enemyPawns >> 7) & NOT_A_FILE;
+            attacks |= (enemyPawns >> 9) & NOT_H_FILE;
         }
 
         return (kingBitBoard & attacks) != 0;
     }
 
     // Checks if the king is attacked by knights
-    public static boolean isAttackedByKnights(long kingBitBoard, long enemyBitBoard){
-        long spots = ((long) enemyBitBoard >> 17) & NOT_H_FILE; // Springe 2 hoch, 1 rechts
-        spots |= (enemyBitBoard >> 15) & NOT_A_FILE; // Springe 2 hoch, 1 links
-        spots |= (enemyBitBoard >> 10) & NOT_GH_FILE; // Springe 1 hoch, 2 rechts
-        spots |= (enemyBitBoard >> 6) & NOT_AB_FILE; // Springe 1 hoch, 2 links
-        spots |= (enemyBitBoard << 17) & NOT_A_FILE; // Springe 2 runter, 1 rechts
-        spots |= (enemyBitBoard << 15) & NOT_H_FILE; // Springe 2 runter, 1 links
-        spots |= (enemyBitBoard << 10) & NOT_AB_FILE; // Springe 1 runter, 2 rechts
-        spots |= (enemyBitBoard << 6) & NOT_GH_FILE;
+    public static boolean isAttackedByKnights(long kingBitBoard, long enemyKnights){
+        long spots = (enemyKnights >> 17) & NOT_H_FILE; // Springe 2 hoch, 1 rechts
+        spots |= (enemyKnights >> 15) & NOT_A_FILE; // Springe 2 hoch, 1 links
+        spots |= (enemyKnights >> 10) & NOT_GH_FILE; // Springe 1 hoch, 2 rechts
+        spots |= (enemyKnights >> 6) & NOT_AB_FILE; // Springe 1 hoch, 2 links
+        spots |= (enemyKnights << 17) & NOT_A_FILE; // Springe 2 runter, 1 rechts
+        spots |= (enemyKnights << 15) & NOT_H_FILE; // Springe 2 runter, 1 links
+        spots |= (enemyKnights << 10) & NOT_AB_FILE; // Springe 1 runter, 2 rechts
+        spots |= (enemyKnights << 6) & NOT_GH_FILE;
 
         return (kingBitBoard & spots) != 0;
     }
