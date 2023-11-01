@@ -63,9 +63,6 @@ public class RookMoveGenerator implements IBoard, IGenerator {
             }
         }
 
-
-
-
         return moves;
     }
 }
