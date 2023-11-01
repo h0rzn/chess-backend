@@ -29,7 +29,10 @@ public class QueenMoveGenerator implements IBoard, IGenerator {
 
         long boardWhitePieces = (boardWhite[0] | boardWhite[1] | boardWhite[2] | boardWhite[3] | boardWhite[4] | boardWhite[5]);
         long boardBlackPieces = (boardBlack[0] | boardBlack[1] | boardBlack[2] | boardBlack[3] | boardBlack[4] | boardBlack[5]);
-        long occupiedSquares = boardWhitePieces | boardBlackPieces;
+        long ownPieces = (color == 0) ? boardWhitePieces : boardBlackPieces;
+        long enemyPieces = (color == 0) ? boardBlackPieces : boardWhitePieces;
+
+//        long occupiedSquares = boardWhitePieces | boardBlackPieces;
 
         int queenIndex = move.getFrom().getIndex();
         long cursor = 1L << queenIndex;
@@ -53,68 +56,101 @@ public class QueenMoveGenerator implements IBoard, IGenerator {
 
         for (int i = 0; i < 8; i++) {
             if (i < maxNorth) {
-                if ((northCursor & occupiedSquares) != 0) {
+                int idx = queenIndex+ (i+1)*8;
+                if ((northCursor & enemyPieces) != 0) {
+                    moves.add(idx);
+                    maxNorth = i - 1;
+                } else if ((northCursor & ownPieces) != 0) {
                     maxNorth = i - 1;
                 } else {
-                    moves.add(queenIndex+ (i+1)*8);
+                    moves.add(idx);
                     northCursor <<= 8;
                 }
             }
             if (i < maxSouth) {
-                if ((southCursor & occupiedSquares) != 0) {
+                int idx = queenIndex- (i+1)*8;
+                if ((southCursor & enemyPieces) != 0) {
+                    moves.add(idx);
+                    maxSouth = i - 1;
+                } else if ((southCursor & ownPieces) != 0) {
                     maxSouth = i - 1;
                 } else {
-                    moves.add(queenIndex - (i+1)*8);
-                    northCursor <<= 8;
+                    moves.add(idx);
+                    southCursor >>= 8;
                 }
             }
             if (i < maxEast) {
-                if ((eastCursor & occupiedSquares) != 0) {
+                int idx = queenIndex+ (i+1);
+                if ((eastCursor & enemyPieces) != 0) {
+                    moves.add(idx);
+                    maxEast = i - 1;
+                } else if ((southCursor & ownPieces) != 0) {
                     maxEast = i - 1;
                 } else {
-                    moves.add(queenIndex+ (i + 1));
-                    eastCursor >>= 8;
+                    moves.add(idx);
+                    eastCursor <<= 1;
                 }
             }
             if (i < maxWest) {
-                if ((westCursor & occupiedSquares) != 0) {
+                int idx = queenIndex- (i+1);
+                if ((westCursor & enemyPieces) != 0) {
+                    moves.add(idx);
+                    maxWest = i - 1;
+                } else if ((southCursor & ownPieces) != 0) {
                     maxWest = i - 1;
                 } else {
-                    moves.add(queenIndex - (i + 1));
-                    westCursor >>= 8;
+                    moves.add(idx);
+                    westCursor >>= 1;
                 }
             }
 
             if (i < maxNorthEast) {
-                if ((northEastCursor & occupiedSquares) != 0) {
+                int idx = queenIndex + (i+1)*9;
+                if ((northEastCursor & enemyPieces) != 0) {
+                    moves.add(idx);
+                    maxNorthEast = i - 1;
+                } else if ((northEastCursor & ownPieces) != 0) {
                     maxNorthEast = i - 1;
                 } else {
-                    moves.add(queenIndex + (i+1)*9);
-                    northEastCursor >>= 8;
+                    moves.add(idx);
+                    northEastCursor <<= 9;
                 }
             }
             if (i < maxNorthWest) {
-                if ((northWestCursor & occupiedSquares) != 0) {
+                int idx = queenIndex + (i+1)*7;
+                if ((northWestCursor & enemyPieces) != 0) {
+                    moves.add(idx);
+                    maxNorthWest = i - 1;
+                } else if ((northWestCursor & ownPieces) != 0) {
                     maxNorthWest = i - 1;
                 } else {
-                    moves.add(queenIndex + (i+1)*7));
-                    northWestCursor <<= 7;
+                    moves.add(idx);
+                    maxNorthWest <<= 7;
                 }
             }
             if (i < maxSouthEast) {
-                if ((southEastCursor & occupiedSquares) != 0) {
+                int idx = queenIndex - (i+1)*7;
+                if ((southEastCursor & enemyPieces) != 0) {
+                    moves.add(idx);
+                    maxSouthEast = i - 1;
+                } else if ((southEastCursor & ownPieces) != 0) {
                     maxSouthEast = i - 1;
                 } else {
-                    moves.add(queenIndex - (i+1)*7);
-                    southEastCursor >>= 7;
+                    moves.add(idx);
+                    maxSouthEast >>= 7;
                 }
             }
             if (i < maxSouthWest) {
-                if ((southWestCursor & occupiedSquares) != 0) {
-                    southWestCursor = i - 1;
+
+                int idx = queenIndex - (i+1)*7;
+                if ((southWestCursor & enemyPieces) != 0) {
+                    moves.add(idx);
+                    maxSouthWest = i - 1;
+                } else if ((southWestCursor & ownPieces) != 0) {
+                    maxSouthWest = i - 1;
                 } else {
-                    moves.add(queenIndex - (i+1)*9);
-                    southWestCursor >>= 9;
+                    moves.add(idx);
+                    maxSouthWest >>= 9;
                 }
             }
         }
