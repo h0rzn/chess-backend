@@ -56,6 +56,7 @@ public class QueenMoveGenerator implements IBoard, IGenerator {
                 if ((northCursor & occupiedSquares) != 0) {
                     maxNorth = i - 1;
                 } else {
+                    moves.add(queenIndex+ (i+1)*8);
                     northCursor <<= 8;
                 }
             }
@@ -63,6 +64,7 @@ public class QueenMoveGenerator implements IBoard, IGenerator {
                 if ((southCursor & occupiedSquares) != 0) {
                     maxSouth = i - 1;
                 } else {
+                    moves.add(queenIndex - (i+1)*8);
                     northCursor <<= 8;
                 }
             }
@@ -70,6 +72,7 @@ public class QueenMoveGenerator implements IBoard, IGenerator {
                 if ((eastCursor & occupiedSquares) != 0) {
                     maxEast = i - 1;
                 } else {
+                    moves.add(queenIndex+ (i + 1));
                     eastCursor >>= 8;
                 }
             }
@@ -77,6 +80,7 @@ public class QueenMoveGenerator implements IBoard, IGenerator {
                 if ((westCursor & occupiedSquares) != 0) {
                     maxWest = i - 1;
                 } else {
+                    moves.add(queenIndex - (i + 1));
                     westCursor >>= 8;
                 }
             }
@@ -85,6 +89,7 @@ public class QueenMoveGenerator implements IBoard, IGenerator {
                 if ((northEastCursor & occupiedSquares) != 0) {
                     maxNorthEast = i - 1;
                 } else {
+                    moves.add(queenIndex + (i+1)*9);
                     northEastCursor >>= 8;
                 }
             }
@@ -92,6 +97,7 @@ public class QueenMoveGenerator implements IBoard, IGenerator {
                 if ((northWestCursor & occupiedSquares) != 0) {
                     maxNorthWest = i - 1;
                 } else {
+                    moves.add(queenIndex + (i+1)*7));
                     northWestCursor <<= 7;
                 }
             }
@@ -99,6 +105,7 @@ public class QueenMoveGenerator implements IBoard, IGenerator {
                 if ((southEastCursor & occupiedSquares) != 0) {
                     maxSouthEast = i - 1;
                 } else {
+                    moves.add(queenIndex - (i+1)*7);
                     southEastCursor >>= 7;
                 }
             }
@@ -106,6 +113,7 @@ public class QueenMoveGenerator implements IBoard, IGenerator {
                 if ((southWestCursor & occupiedSquares) != 0) {
                     southWestCursor = i - 1;
                 } else {
+                    moves.add(queenIndex - (i+1)*9);
                     southWestCursor >>= 9;
                 }
             }
