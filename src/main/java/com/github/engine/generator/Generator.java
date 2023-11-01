@@ -36,7 +36,18 @@ public class Generator implements IBoard {
                 KingMoveGenerator kingMove = new KingMoveGenerator(bitboard);
                 return kingMove.generate(color, move);
             }
-
+            case Queen -> {
+                QueenMoveGenerator queenMove = new QueenMoveGenerator(bitboard);
+                return queenMove.generate(color, move);
+            }
+            case Bishop -> {
+                BishopMoveGenerator bishopMove = new BishopMoveGenerator(bitboard);
+                return bishopMove.generate(color, move);
+            }
+            case Rook -> {
+                RookMoveGenerator rookMove = new RookMoveGenerator(bitboard);
+                return rookMove.generate(color, move);
+            }
         }
         return null;
     }
