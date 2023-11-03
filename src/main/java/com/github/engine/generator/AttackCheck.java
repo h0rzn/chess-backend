@@ -4,8 +4,33 @@ import com.github.engine.Bitboard;
 import com.github.engine.Game;
 import com.github.engine.interfaces.IBoard;
 import com.github.engine.move.Move;
+import jdk.jshell.spi.ExecutionControl;
+
+import java.util.List;
 
 public class AttackCheck implements IBoard {
+
+    public static boolean isCheck(Bitboard bitboard, long kingPosition, int kingColor) {
+        long[] kingsBoard = kingColor == 0 ? bitboard.getBoardWhite() : bitboard.getBoardBlack();
+        long[] enemiesBoard = kingColor == 0 ? bitboard.getBoardBlack() : bitboard.getBoardWhite();
+        long kingBoard = kingsBoard[5];
+
+        // is king in check?
+        if (!AttackCheck.isKingInCheck(kingPosition, enemiesBoard, kingColor)) {
+            return false;
+        }
+        // generate legal moves for king
+        int fakeFrom = 5;
+        int fakeTo = 5;
+        Move generatorMove = new Move(fakeFrom, fakeTo);
+        KingMoveGenerator kingMoveGen = new KingMoveGenerator(bitboard);
+        List<Integer> kingMoves = kingMoveGen.generate(kingColor, generatorMove);
+
+        // check if any legal move resolves check
+        // check if same-color pieces can resolve by: blocking or attacking attacker piece
+
+        return true;
+    }
 
     // Creates a copy of the bitboard and executes the move, then checks if the move resolves the check
     public static boolean doesMoveResolveCheck(Game game, Move move){
