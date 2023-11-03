@@ -16,6 +16,28 @@ public class RookMoveGenerator implements IBoard, IGenerator {
         this.boardBlack = board.getBoardBlack();
     }
 
+    public long[] precalculate() {
+        long[] moves = new long[64];
+
+        for (int i = 0; i < 64; i++) {
+            long currentBoard = 1L << i;
+            int column = i % 8;
+
+            long southNorth = 0x101010101010101L;
+            southNorth <<= column;
+            currentBoard |= southNorth;
+
+            long eastWest = 0xffL << (i - column);
+            currentBoard |= eastWest;
+
+            // remove current square from potential moves
+            currentBoard ^= 1L << i;
+            moves[i] = currentBoard;
+        }
+
+        return moves;
+    }
+
     @Override
     public List<Integer> generate(int color, Move move) {
         List<Integer> moves = new ArrayList<>();
