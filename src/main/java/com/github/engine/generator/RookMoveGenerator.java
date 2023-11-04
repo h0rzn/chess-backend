@@ -4,6 +4,7 @@ import com.github.engine.Bitboard;
 import com.github.engine.interfaces.IBoard;
 import com.github.engine.interfaces.IGenerator;
 import com.github.engine.move.Move;
+import com.github.engine.move.Position;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +40,7 @@ public class RookMoveGenerator implements IBoard, IGenerator {
     }
 
     @Override
-    public List<Integer> generate(int color, Move move) {
+    public List<Integer> generate(int color, Position position) {
         List<Integer> moves = new ArrayList<>();
 
         long boardWhitePieces = (boardWhite[0] | boardWhite[1] | boardWhite[2] | boardWhite[3] | boardWhite[4] | boardWhite[5]);
@@ -47,7 +48,7 @@ public class RookMoveGenerator implements IBoard, IGenerator {
         long ownPieces = (color == 0) ? boardWhitePieces : boardBlackPieces;
         long enemyPieces = (color == 0) ? boardBlackPieces : boardWhitePieces;
         // Cursor checkings current position
-        int index = move.getFrom().getIndex();
+        int index = position.getIndex();
         long cursor = 1L << index;
         long northCursor = cursor << 8;
         long southCursor = cursor >> 8;

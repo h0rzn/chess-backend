@@ -4,6 +4,7 @@ import com.github.engine.Bitboard;
 import com.github.engine.interfaces.IBoard;
 import com.github.engine.interfaces.IGenerator;
 import com.github.engine.move.Move;
+import com.github.engine.move.Position;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +19,7 @@ public class KnightMoveGenerator implements IGenerator, IBoard {
     }
 
     @Override
-    public List<Integer> generate(int color, Move move) {
+    public List<Integer> generate(int color, Position position) {
         List<Integer> moves = new ArrayList<>();
 
         // Gets the knight bitboard
@@ -30,7 +31,7 @@ public class KnightMoveGenerator implements IGenerator, IBoard {
         }
 
         // Gets the knight position
-        int knightPosition = move.getFrom().getIndex();
+        int knightPosition = position.getIndex();
 
         //Creates a bitboard with the knight on the knightPosition
         long knightMask = 1L << knightPosition;

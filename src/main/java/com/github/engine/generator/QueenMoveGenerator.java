@@ -5,6 +5,7 @@ import com.github.engine.interfaces.IBoard;
 import com.github.engine.interfaces.IGenerator;
 import com.github.engine.move.Move;
 import com.github.engine.move.MoveType;
+import com.github.engine.move.Position;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ public class QueenMoveGenerator implements IBoard, IGenerator {
     }
 
     @Override
-    public List<Integer> generate(int color, Move move) {
+    public List<Integer> generate(int color, Position position) {
         List<Integer> moves = new ArrayList<>();
 
         long boardWhitePieces = (boardWhite[0] | boardWhite[1] | boardWhite[2] | boardWhite[3] | boardWhite[4] | boardWhite[5]);
@@ -32,7 +33,7 @@ public class QueenMoveGenerator implements IBoard, IGenerator {
         long ownPieces = (color == 0) ? boardWhitePieces : boardBlackPieces;
         long enemyPieces = (color == 0) ? boardBlackPieces : boardWhitePieces;
 
-        int queenIndex = move.getFrom().getIndex();
+        int queenIndex = position.getIndex();
         // Cursor checkings current position
         long cursor = 1L << queenIndex;
         long northCursor = cursor << 8;

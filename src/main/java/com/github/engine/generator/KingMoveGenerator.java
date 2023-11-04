@@ -4,6 +4,7 @@ import com.github.engine.Bitboard;
 import com.github.engine.interfaces.IBoard;
 import com.github.engine.interfaces.IGenerator;
 import com.github.engine.move.Move;
+import com.github.engine.move.Position;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +20,7 @@ public class KingMoveGenerator implements IGenerator, IBoard {
     }
 
     @Override
-    public List<Integer> generate(int color, Move move) {
+    public List<Integer> generate(int color, Position position) {
         List<Integer> moves = new ArrayList<>();
         long king = color == 0 ? boardWhite[5] : boardBlack[5];
         // Creates an Array emptySquares where all Squares are 1 and enemyPieces where all Squares are 0
@@ -33,7 +34,7 @@ public class KingMoveGenerator implements IGenerator, IBoard {
         }
 
         // Gets the position of the king
-        long kingPosition = 1L << move.getFrom().getIndex();
+        long kingPosition = 1L << position.getIndex();
         // Creates a mask with an 1 at the forward and backward position of the king
         long spots = (kingPosition << 8) | (kingPosition >> 8);
         // Creates a mask with an 1 at the left and right position of the king
