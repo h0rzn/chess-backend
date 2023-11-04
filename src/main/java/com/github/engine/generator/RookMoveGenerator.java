@@ -86,6 +86,37 @@ public class RookMoveGenerator implements IBoard, IGenerator {
             }
         }
 
+        // CASTLING
+        // Initial King position
+        long kingDefaultPosition = (color == 0) ? 0b00010000L : 0b00010000L << 56;
+        long kingPosition = (color == 0) ? this.boardWhite[5] : this.boardBlack[5];
+
+        // Initial positions for rooks
+        long rookOnePosition = (color == 0) ? 0b1L : 0b1L << 56;
+        long rookTwoPosition = (color == 0) ? 0b10000000 : 0b10000000L << 56;
+
+        // 1. king and rook have not been moved
+        if ((kingDefaultPosition&kingPosition) != 0) {
+
+            // TODO 2. king not in check
+
+            long castlingRangeOne = 0b1110L;
+            long castlingRangeTwo = 0b1100000L;
+            if ((cursor&rookOnePosition) != 0) {
+                long checkRange = (color == 0) ? castlingRangeOne : castlingRangeOne << 56;
+                if ((enemyPieces&checkRange) == 0) {
+                    moves.add(0);
+                }
+
+
+            } else if ((cursor&rookTwoPosition) != 0) {
+                long checkRange = (color == 0) ? castlingRangeTwo : castlingRangeTwo << 56;
+                if ((enemyPieces%checkRange) == 0) {
+                    moves.add(7);
+                }
+            }
+        }
+
         return moves;
     }
 }
