@@ -1,4 +1,4 @@
-package com.github.rest.user;
+package com.github.entity;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -6,27 +6,21 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 
 @RedisHash("User")
-public class UserModel {
+public class UserEntity {
     @Id
     @Getter
     @Setter
-    private String id;
+    private long id;
 
     @Getter
     @Setter
     private String username;
 
-    @Getter
-    @Setter
-    private String password;
-
-    @Getter
-    @Setter
-    private String gameID;
-
-    public UserModel(String username, String password) {
+    public UserEntity(String username) {
         this.username = username;
-        this.password = password;
 
+    }
+
+    public UserEntity() {
     }
 }

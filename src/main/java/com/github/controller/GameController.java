@@ -1,4 +1,4 @@
-package com.github.rest.game;
+package com.github.controller;
 
 import com.github.redis.model.GameWrapper;
 import com.github.services.GameService;
