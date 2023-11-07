@@ -31,7 +31,7 @@ public class Chess {
                 System.out.println(move1);
                 // Generates all possible moves for the current position and stores them in a list
                 Generator generator = new Generator(game);
-                List<Integer> moves = generator.generate(move1, game.getColorToMove());
+                List<Integer> moves = generator.generate(move1.getFrom(), game.getColorToMove());
                 // Checks wether the move from user is in validMove list -> is a valid move
                 if(moves.contains(move1.getTo().getIndex())){
                     System.out.println("Valid move");
@@ -45,23 +45,6 @@ public class Chess {
                     System.out.println("Invalid move");
                 }
             }
-        }
-    }
-
-
-
-    private static Optional<IBoard.T2<IBoard.T3, IBoard.T3>> parseMove(String move) {
-        try {
-            String[] split = move.split("-");
-            String[] from = split[0].split("");
-            String[] to = split[1].split("");
-
-            IBoard.T3 moveFrom = IBoard.t2ToT3.apply(new IBoard.T2<>(from[0].toUpperCase(), Integer.parseInt(from[1])-1));
-            IBoard.T3 moveTo = IBoard.t2ToT3.apply(new IBoard.T2<>(to[0].toUpperCase(), Integer.parseInt(to[1])-1));
-
-            return Optional.of(IBoard.T2.of(moveFrom, moveTo));
-        } catch (Exception e){
-            return Optional.empty();
         }
     }
 

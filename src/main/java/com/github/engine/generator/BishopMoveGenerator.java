@@ -63,6 +63,10 @@ public class BishopMoveGenerator implements IBoard, IGenerator {
     public List<Integer> generate(int color, Position position) {
         List<Integer> moves = new ArrayList<>();
 
+
+        /*
+         @deprecated use Bitboard.getBoardWhite() or Bitboard.getBoardBlack() instead
+         */
         long boardWhitePieces = (boardWhite[0] | boardWhite[1] | boardWhite[2] | boardWhite[3] | boardWhite[4] | boardWhite[5]);
         long boardBlackPieces = (boardBlack[0] | boardBlack[1] | boardBlack[2] | boardBlack[3] | boardBlack[4] | boardBlack[5]);
         long ownPieces = (color == 0) ? boardWhitePieces : boardBlackPieces;
