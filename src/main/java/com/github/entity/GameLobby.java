@@ -1,4 +1,4 @@
-package com.github.redis.model;
+package com.github.entity;
 
 import com.github.engine.Game;
 import lombok.Getter;
@@ -7,7 +7,7 @@ import org.springframework.data.redis.core.RedisHash;
 
 
 @RedisHash("Game")
-public class GameWrapper {
+public class GameLobby {
     @Getter
     private final Game game;
 
@@ -15,11 +15,11 @@ public class GameWrapper {
     @Id
     private String id;
 
-    public GameWrapper(Game game) {
+    public GameLobby(Game game) {
         this.game = game;
     }
 
-    public GameWrapper(String id, Game game) {
+    public GameLobby(String id, Game game) {
         this.game = game;
         this.id = id;
     }

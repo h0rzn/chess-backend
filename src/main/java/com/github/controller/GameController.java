@@ -1,6 +1,6 @@
 package com.github.controller;
 
-import com.github.redis.model.GameWrapper;
+import com.github.entity.GameLobby;
 import com.github.services.GameService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,8 +19,8 @@ public class GameController {
 
     @GetMapping("/game")
     public String game() {
-        GameWrapper gameWrapper = gameService.createGame();
-        return "Create game: " + gameWrapper.getId();
+        GameLobby gameLobby = gameService.createGame();
+        return "Create game: " + gameLobby.getId();
     }
 
     @PostMapping("/game")

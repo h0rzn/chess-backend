@@ -1,19 +1,32 @@
 package com.github.controller;
 
-import org.springframework.web.bind.annotation.RestController;
+import com.github.entity.LobbyEntity;
+import com.github.entity.UserEntity;
+import com.github.services.LobbyService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 public class LobbyController {
 
-    /*@PostMapping("/lobby/create")
-    public ResponseEntity<LobbyModel> createLobby(){
-        return "Hello, World!";
+    @Autowired
+    private LobbyService lobbyService;
+
+    @PostMapping("/lobby")
+    public ResponseEntity<LobbyEntity> createLobby(@RequestBody LobbyEntity lobby) {
+        LobbyEntity lobbyEntity = lobbyService.saveLobby(lobby);
+        return new ResponseEntity<>(lobbyEntity, HttpStatus.CREATED);
     }
 
     @GetMapping("/user/{id}")
-    public ResponseEntity<UserModel> getUserByID(@PathVariable("id")String id){
-        Optional<UserModel> user = userRepository.findById(id);
+    public ResponseEntity<LobbyEntity> getUserByID(@PathVariable("id") Integer id){
+        Optional<LobbyEntity> lobby = lobbyService.getLobbyByID(id);
 
-        return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-    }*/
+        return lobby.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
 }
