@@ -19,6 +19,31 @@ public class KingMoveGenerator implements IGenerator, IBoard {
         this.boardBlack = bitboard.getBoardBlack();
     }
 
+    public long[] precalculate() {
+        long[] moves = new long[64];
+
+        for (int i = 0; i < 64; i++) {
+            long position = 1L << i;
+            long currentBoard = 1L << i;
+
+            long northAxis = (position << 8) | (position >> 8);
+            currentBoard |= northAxis;
+
+            long east = (position << 1) & NOT_A_FILE;
+            long west = (position >> 1) & NOT_H_FILE;
+            currentBoard |= east | west;
+
+            long eastDias = (position << 9) | (position >> 7);
+            long westDias = (position << 7) | (position >> 9);
+            currentBoard |= eastDias | westDias;
+
+            currentBoard ^= 1L << i;
+            moves[i] = currentBoard;
+        }
+
+        return moves;
+    }
+
     @Override
     public List<Integer> generate(int color, Position position) {
         List<Integer> moves = new ArrayList<>();
