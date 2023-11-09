@@ -18,6 +18,30 @@ public class KnightMoveGenerator implements IGenerator, IBoard {
         this.boardBlack = board.getBoardBlack();
     }
 
+    public long[] precalculate() {
+        long[] moves = new long[64];
+
+        for (int i = 0; i < 64; i++) {
+            long position = 1L << i;
+            long currentBoard = 1L << i;
+
+            long north = (position << 17) | (position >> 15);
+            long south = (position << 15) | (position >> 17);
+            currentBoard |= (north & NOT_A_FILE);
+            currentBoard |= (south & NOT_H_FILE);
+
+            long west = (position << 6) | (position >> 10);
+            long east = (position << 10) | (position >> 6);
+            currentBoard |= (west & NOT_GH_FILE);
+            currentBoard |= (east & NOT_AB_FILE);
+
+            currentBoard ^= 1L << i;
+            moves[i] = currentBoard;
+        }
+
+        return moves;
+    }
+
     @Override
     public List<Integer> generate(int color, Position position) {
         List<Integer> moves = new ArrayList<>();
