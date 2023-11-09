@@ -24,6 +24,31 @@ public class PawnMoveGenerator implements IBoard, IGenerator {
         this.boardBlack = board.getBoardBlack();
     }
 
+    public long[] precalculate() {
+        long[] moves = new long[64];
+
+        for (int i = 0; i < 64; i++) {
+            long position = 1L << i;
+            long currentBoard = 1L << i;
+
+            long north = position << 8;
+            currentBoard |= north;
+            if (i >= 8 && i <= 15) {
+                currentBoard |= (position << 16);
+            }
+
+            long northEast = (position << 8) & NOT_A_FILE;
+            long northWest = (position << 7) & NOT_H_FILE;
+
+            currentBoard |= north | northEast | northWest;
+
+            currentBoard ^= 1L << i;
+            moves[i] = currentBoard;
+        }
+
+        return moves;
+    }
+
     // Color and T2 is passed (T2 contains move-from and move-to)
     @Override
     public List<Integer> generate(int color, Position position){
