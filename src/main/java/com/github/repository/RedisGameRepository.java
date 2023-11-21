@@ -1,4 +1,4 @@
-package com.github.redis.repository;
+package com.github.repository;
 
 import com.github.entity.GameLobby;
 import org.springframework.data.repository.CrudRepository;

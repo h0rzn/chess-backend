@@ -23,6 +23,16 @@ public class LobbyService {
         return lobby;
     }
 
+    public LobbyEntity deleteLobby(LobbyEntity lobby) {
+        lobbyRepository.delete(lobby);
+        return lobby;
+    }
+
+    public LobbyEntity deleteLobby(Integer id) {
+        lobbyRepository.deleteById(id);
+        return null;
+    }
+
     public Optional<LobbyEntity> getLobbyByID(Integer id) {
         return lobbyRepository.findById(id);
 

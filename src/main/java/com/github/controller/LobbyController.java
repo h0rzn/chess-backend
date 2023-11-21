@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 import java.util.UUID;
 
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:8080"})
 @RestController
 public class LobbyController {
 
@@ -21,6 +22,16 @@ public class LobbyController {
     public ResponseEntity<LobbyEntity> createLobby(@RequestBody LobbyEntity lobby) {
         LobbyEntity lobbyEntity = lobbyService.saveLobby(lobby);
         return new ResponseEntity<>(lobbyEntity, HttpStatus.CREATED);
+    }
+
+    @DeleteMapping("/lobby/{id}")
+    public ResponseEntity<LobbyEntity> deleteLobby(@PathVariable("id") Integer id){
+        Optional<LobbyEntity> lobby = lobbyService.getLobbyByID(id);
+        if(lobby.isPresent()){
+            lobbyService.deleteLobby(lobby.get());
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @GetMapping("/lobby/{id}")

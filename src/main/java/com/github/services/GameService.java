@@ -3,7 +3,7 @@ package com.github.services;
 import com.github.engine.Game;
 import com.github.exceptions.GameNotFoundException;
 import com.github.entity.GameLobby;
-import com.github.redis.repository.RedisGameRepository;
+import com.github.repository.RedisGameRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
