@@ -20,11 +20,11 @@ public class AttackCheck implements IBoard {
             return false;
         }
         // generate legal moves for king
-        int fakeFrom = 5;
+        /*int fakeFrom = 5;
         int fakeTo = 5;
         Move generatorMove = new Move(fakeFrom, fakeTo);
         KingMoveGenerator kingMoveGen = new KingMoveGenerator(bitboard);
-        List<Integer> kingMoves = kingMoveGen.generate(kingColor, generatorMove);
+        List<Integer> kingMoves = kingMoveGen.generate(kingColor, generatorMove);*/
 
         // check if any legal move resolves check
         // check if same-color pieces can resolve by: blocking or attacking attacker piece
