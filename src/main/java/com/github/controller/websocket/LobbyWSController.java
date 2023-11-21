@@ -6,12 +6,12 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Controller;
 
 @Controller
-public class LobbyController {
+public class LobbyWSController {
 
-    @MessageMapping("/lobby/{id}")
-    public String test(@DestinationVariable int id, LobbyMessage message) {
-        System.out.println("LobbyController: " + id);
-        return "Test" + id;
+    @MessageMapping("/test")
+    public String test(LobbyMessage message) {
+        System.out.println("LobbyController: " + message.id);
+        return "Test" + message.id;
     }
 
 }

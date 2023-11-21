@@ -23,8 +23,8 @@ public class LobbyController {
         return new ResponseEntity<>(lobbyEntity, HttpStatus.CREATED);
     }
 
-    @GetMapping("/user/{id}")
-    public ResponseEntity<LobbyEntity> getUserByID(@PathVariable("id") Integer id){
+    @GetMapping("/lobby/{id}")
+    public ResponseEntity<LobbyEntity> getLobbyByID(@PathVariable("id") Integer id){
         Optional<LobbyEntity> lobby = lobbyService.getLobbyByID(id);
 
         return lobby.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
