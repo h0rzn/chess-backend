@@ -83,4 +83,29 @@ public class KingMoveGenerator implements IGenerator, IBoard {
 
         return moves;
     }
+
+    // King: Move Generation
+    // fixed index offsets
+    // wrapping cut of with NO_* masks
+    public long NEW_generate(int color, Position position) {
+        long boardWhitePieces = (boardWhite[0] | boardWhite[1] | boardWhite[2] | boardWhite[3] | boardWhite[4] | boardWhite[5]);
+        long boardBlackPieces = (boardBlack[0] | boardBlack[1] | boardBlack[2] | boardBlack[3] | boardBlack[4] | boardBlack[5]);
+        long ownPieces = (color == 0) ? boardWhitePieces : boardBlackPieces;
+        long enemyPieces = (color == 0) ? boardBlackPieces : boardWhitePieces;
+        long currentMoves = 0;
+
+        long pos = 1L << position.getIndex();
+        // north axis
+        currentMoves |= (pos << 8) | (pos >> 8);
+        // east
+        currentMoves |= (pos << 1) & NOT_A_FILE;
+        // west
+        currentMoves |= (pos >> 1) & NOT_H_FILE;
+        // east dia
+        currentMoves |= ((pos << 9) | (pos >> 7)) & NOT_A_FILE;
+        // west dia
+        currentMoves |= ((pos << 7) | (pos >> 9) & NOT_H_FILE);
+
+        return currentMoves &~ ownPieces;
+    }
 }
