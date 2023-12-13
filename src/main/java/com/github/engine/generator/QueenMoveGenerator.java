@@ -32,17 +32,15 @@ public class QueenMoveGenerator implements IBoard, IGenerator {
     }
 
     // Queen: Move Generation
-    // Walks all lanes of queens star pattern
+    // Walks all lanes of queens star pattern + straight lanes
     // includes reachable empty squares and reachable enemy occupied squares in legal moves bitboard
     // cursor boards mark the current inspected square of that lane
     // max values indicate squares that can possibly be iterated until board border and will be degraded to
     // the first own piece occurrence iteration index
     public long NEW_generate(int color, Position position) {
-        long boardWhitePieces = (boardWhite[0] | boardWhite[1] | boardWhite[2] | boardWhite[3] | boardWhite[4] | boardWhite[5]);
-        long boardBlackPieces = (boardBlack[0] | boardBlack[1] | boardBlack[2] | boardBlack[3] | boardBlack[4] | boardBlack[5]);
-        long ownPieces = (color == 0) ? boardWhitePieces : boardBlackPieces;
-        long enemyPieces = (color == 0) ? boardBlackPieces : boardWhitePieces;
-
+        long[] mergedPieces = mergePlayerBoards(color, boardWhite, boardWhite);
+        long ownPieces = mergedPieces[0];
+        long enemyPieces = mergedPieces[1];
         long currentMoves = 0;
 
         int queenIndex = position.getIndex();

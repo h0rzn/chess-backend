@@ -62,15 +62,13 @@ public class BishopMoveGenerator implements IBoard, IGenerator {
     @Override
     public List<Integer> generate(int color, Position position) {
         List<Integer> moves = new ArrayList<>();
-
-
         /*
          @deprecated use Bitboard.getBoardWhite() or Bitboard.getBoardBlack() instead
          */
-        long boardWhitePieces = (boardWhite[0] | boardWhite[1] | boardWhite[2] | boardWhite[3] | boardWhite[4] | boardWhite[5]);
-        long boardBlackPieces = (boardBlack[0] | boardBlack[1] | boardBlack[2] | boardBlack[3] | boardBlack[4] | boardBlack[5]);
-        long ownPieces = (color == 0) ? boardWhitePieces : boardBlackPieces;
-        long enemyPieces = (color == 0) ? boardBlackPieces : boardWhitePieces;
+        long[] mergedPieces = mergePlayerBoards(color, boardWhite, boardWhite);
+        long ownPieces = mergedPieces[0];
+        long enemyPieces = mergedPieces[1];
+
         // Cursor checkings current position
         int index = position.getIndex();
         long cursor = 1L << index;
@@ -144,5 +142,87 @@ public class BishopMoveGenerator implements IBoard, IGenerator {
         }
 
         return moves;
+    }
+
+    // Bishop: Move Generation
+    // Walks all lanes of queens star pattern
+    // base logic for 'Queen Move Generation'
+    public long NEW_generate(int color, Position position) {
+        long[] mergedPieces = mergePlayerBoards(color, boardWhite, boardWhite);
+        long ownPieces = mergedPieces[0];
+        long enemyPieces = mergedPieces[1];
+
+        long currentMoves = 0;
+
+        // Cursor checkings current position
+        int index = position.getIndex();
+        long cursor = 1L << index;
+        long northEastCursor = cursor << 9;
+        long northWestCursor = cursor << 7;
+        long southEastCursor = cursor >> 7;
+        long southWestCursor = cursor >> 9;
+        // Max amount of positions to check for each direction
+        int maxSouth = index / 8;
+        int maxNorth = 8 - maxSouth - 1;
+        int maxWest = index % 8;
+        int maxEast = 8 - maxWest - 1;
+        int maxNorthEast = Math.min(maxNorth, maxEast);
+        int maxNorthWest = Math.min(maxNorth, maxWest);
+        int maxSouthEast = Math.min(maxSouth, maxEast);
+        int maxSouthWest = Math.min(maxSouth, maxWest);
+
+        for (int i = 0; i < 8; i++) {
+            // NORTH EAST
+            if (i < maxNorthEast) {
+                if ((northEastCursor & enemyPieces) != 0) {
+                    currentMoves |= northEastCursor;
+                    maxNorthEast = i;
+                } else if ((northEastCursor & ownPieces) != 0) {
+                    maxNorthEast = i;
+                } else {
+                    currentMoves |= northEastCursor;
+                    northEastCursor <<= 9;
+                }
+            }
+            // NORTH WEST
+            if (i < maxNorthWest) {
+                if ((northWestCursor & enemyPieces) != 0) {
+                    currentMoves |= northWestCursor;
+                    maxNorthWest = i;
+                } else if ((northWestCursor & ownPieces) != 0) {
+                    maxNorthWest = i;
+                } else {
+                    currentMoves |= northWestCursor;
+                    maxNorthWest <<= 7;
+                }
+            }
+            // SOUTH EAST
+            if (i < maxSouthEast) {
+                if ((southEastCursor & enemyPieces) != 0) {
+                    currentMoves |= southEastCursor;
+                    maxSouthEast = i;
+                } else if ((southEastCursor & ownPieces) != 0) {
+                    maxSouthEast = i;
+                } else {
+                    currentMoves |= southEastCursor;
+                    maxSouthEast >>= 7;
+                }
+            }
+            // SOUTH WEST
+            if (i < maxSouthWest) {
+                int idx = index - (i+1)*7;
+                if ((southWestCursor & enemyPieces) != 0) {
+                    currentMoves |= southEastCursor;
+                    maxSouthWest = i;
+                } else if ((southWestCursor & ownPieces) != 0) {
+                    maxSouthWest = i;
+                } else {
+                    currentMoves |= southEastCursor;
+                    maxSouthWest >>= 9;
+                }
+            }
+        }
+
+        return currentMoves;
     }
 }
