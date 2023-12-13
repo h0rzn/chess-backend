@@ -80,4 +80,23 @@ public class KnightMoveGenerator implements IGenerator, IBoard {
         System.out.println(moves);
         return moves;
     }
+
+    public long NEW_generate(int color, Position position) {
+        long boardWhitePieces = (boardWhite[0] | boardWhite[1] | boardWhite[2] | boardWhite[3] | boardWhite[4] | boardWhite[5]);
+        long boardBlackPieces = (boardBlack[0] | boardBlack[1] | boardBlack[2] | boardBlack[3] | boardBlack[4] | boardBlack[5]);
+        long ownPieces = (color == 0) ? boardWhitePieces : boardBlackPieces;
+
+        long pos = 1L << position.getIndex();
+        long spots = (pos >> 17) & NOT_H_FILE; // Springe 2 hoch, 1 rechts
+        spots |= (pos >> 15) & NOT_A_FILE; // Springe 2 hoch, 1 links
+        spots |= (pos >> 10) & NOT_GH_FILE; // Springe 1 hoch, 2 rechts
+        spots |= (pos >> 6) & NOT_AB_FILE; // Springe 1 hoch, 2 links
+        spots |= (pos << 17) & NOT_A_FILE; // Springe 2 runter, 1 rechts
+        spots |= (pos << 15) & NOT_H_FILE; // Springe 2 runter, 1 links
+        spots |= (pos << 10) & NOT_AB_FILE; // Springe 1 runter, 2 rechts
+        spots |= (pos << 6) & NOT_GH_FILE;
+        spots &= ~ownPieces;
+
+        return spots
+    }
 }
