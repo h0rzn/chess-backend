@@ -84,9 +84,9 @@ public class KnightMoveGenerator implements IGenerator, IBoard {
     // Knight: Move Generation
     // potential squares are hardcoded and filtered by file masks
     public long NEW_generate(int color, Position position) {
-        long boardWhitePieces = (boardWhite[0] | boardWhite[1] | boardWhite[2] | boardWhite[3] | boardWhite[4] | boardWhite[5]);
-        long boardBlackPieces = (boardBlack[0] | boardBlack[1] | boardBlack[2] | boardBlack[3] | boardBlack[4] | boardBlack[5]);
-        long ownPieces = (color == 0) ? boardWhitePieces : boardBlackPieces;
+        long[] mergedBoards = mergePlayerBoards(color, boardWhite, boardBlack);
+        long ownPieces = mergedBoards[0];
+        long enemyPieces = mergedBoards[1];
 
         long pos = 1L << position.getIndex();
         long spots = (pos >> 17) & NOT_H_FILE; // Springe 2 hoch, 1 rechts

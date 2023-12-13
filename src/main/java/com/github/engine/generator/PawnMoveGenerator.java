@@ -54,6 +54,18 @@ public class PawnMoveGenerator implements IBoard, IGenerator {
     public List<Integer> generate(int color, Position position){
         List<Integer> moves = new ArrayList<>();
 
+        //long[] merged = mergePlayerBoards(color, boardWhite, boardBlack);
+
+        long moveBoard = NEW_generate(color, position);
+
+        for (int i = 0; i < 64; i++) {
+            if ((moveBoard&(1L << i))!= 0) {
+                moves.add(i);
+            }
+        }
+
+        return moves;
+        /*
         // Get all pawns of color-in-turn
         long pawns = color == 0 ? boardWhite[0] : boardBlack[0];
         // Creates an Array emptySquares where all Squares are 1 and enemyPieces where all Squares are 0
@@ -143,7 +155,7 @@ public class PawnMoveGenerator implements IBoard, IGenerator {
 
         return moves;
         //
-
+        */
     }
 
     // Pawn: Move Generation
@@ -152,10 +164,9 @@ public class PawnMoveGenerator implements IBoard, IGenerator {
     // double square move on default position (only once -> should be handled by move method)
     // not implement: en passant; promotion handled by move method
     public long NEW_generate(int color, Position position) {
-        long boardWhitePieces = (boardWhite[0] | boardWhite[1] | boardWhite[2] | boardWhite[3] | boardWhite[4] | boardWhite[5]);
-        long boardBlackPieces = (boardBlack[0] | boardBlack[1] | boardBlack[2] | boardBlack[3] | boardBlack[4] | boardBlack[5]);
-        long ownPieces = (color == 0) ? boardWhitePieces : boardBlackPieces;
-        long enemyPieces = (color == 0) ? boardBlackPieces : boardWhitePieces;
+        long[] mergedBoards = mergePlayerBoards(color, boardWhite, boardBlack);
+        long ownPieces = mergedBoards[0];
+        long enemyPieces = mergedBoards[1];
 
         long pos = 1L << position.getIndex();
         long attacks;
