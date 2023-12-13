@@ -3,6 +3,7 @@ package com.github.engine;
 import com.github.engine.interfaces.IBoard;
 import com.github.engine.interfaces.IGame;
 import com.github.engine.move.Move;
+import com.github.engine.move.Position;
 
 import java.util.List;
 
@@ -77,5 +78,65 @@ public class Game extends Bitboard implements IGame {
         // TODO: Promotion
 
         return true;
+    }
+
+    // Base logic for now
+    // TODO handle specific move types (Castling, Promotion, ...)
+    private void syncMove(Move move, int piece) {
+        int activeColor = getColorToMove();
+        Position from = move.getFrom();
+        Position to = move.getTo();
+
+        long[] playerBoards;
+        long[] enemyBoards;
+        if (activeColor == 0) {
+            playerBoards = boardWhite;
+            enemyBoards = boardBlack;
+        } else {
+            playerBoards = boardBlack;
+            enemyBoards = boardWhite;
+        }
+
+        //
+        // Placeholders
+        // should come from ...somewhere?
+        //
+        int moveType = 0; // as Param
+        int fromPiece = 0; // maybe Position.getPiece()
+        int toPiece = 0;
+
+        // Remove Player Piece
+        playerBoards[piece] &= ~(1L << from.getIndex());
+
+        // Maybe Position should also include PieceType
+
+        switch (moveType) {
+            case 0: // NORMAL
+                // Add Player Piece to Destination
+                playerBoards[piece] |= (1L << to.getIndex());
+                // Remove Enemy Piece on Destination (noop if not needed)
+                enemyBoards[toPiece] &= ~(1L << to.getIndex());
+                break;
+            case 1: // CASTLING
+                // Remove Player Piece on Castling Destination
+                playerBoards[piece] &= ~(1L << to.getIndex());
+                // place as castled
+                playerBoards[fromPiece] |= (1L << to.getIndex());
+                playerBoards[toPiece] |= (1L << from.getIndex());
+                break;
+            default:
+
+        }
+
+        // Skip activeColor change when Promotion
+        if (moveType == 3) {
+            return;
+        }
+
+        // TODO Update bit on moved-indication bitboard
+
+        // reassign of bitboards needed?
+        colorToMove = colorToMove == 0 ? 1 : 0;
+
     }
 }
