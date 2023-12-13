@@ -81,6 +81,8 @@ public class KnightMoveGenerator implements IGenerator, IBoard {
         return moves;
     }
 
+    // Knight: Move Generation
+    // potential squares are hardcoded and filtered by file masks
     public long NEW_generate(int color, Position position) {
         long boardWhitePieces = (boardWhite[0] | boardWhite[1] | boardWhite[2] | boardWhite[3] | boardWhite[4] | boardWhite[5]);
         long boardBlackPieces = (boardBlack[0] | boardBlack[1] | boardBlack[2] | boardBlack[3] | boardBlack[4] | boardBlack[5]);

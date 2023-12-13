@@ -145,4 +145,48 @@ public class PawnMoveGenerator implements IBoard, IGenerator {
         //
 
     }
+
+    // Pawn: Move Generation
+    // natural move direction (north/south) depends on piece color
+    // special behaviour: attack only on forward-left-dia and forward-right-dia,
+    // double square move on default position (only once -> should be handled by move method)
+    // not implement: en passant; promotion handled by move method
+    public long NEW_generate(int color, Position position) {
+        long boardWhitePieces = (boardWhite[0] | boardWhite[1] | boardWhite[2] | boardWhite[3] | boardWhite[4] | boardWhite[5]);
+        long boardBlackPieces = (boardBlack[0] | boardBlack[1] | boardBlack[2] | boardBlack[3] | boardBlack[4] | boardBlack[5]);
+        long ownPieces = (color == 0) ? boardWhitePieces : boardBlackPieces;
+        long enemyPieces = (color == 0) ? boardBlackPieces : boardWhitePieces;
+
+        long pos = 1L << position.getIndex();
+        long attacks;
+        long forward;
+        long currentMoves = 0;
+        if (color == 0) {
+            forward = (pos << 8);
+            if ((forward & enemyPieces) == 0) {
+                currentMoves |= forward;
+            }
+
+            if (position.getIndex() >= 8 && position.getIndex() <= 15) {
+                currentMoves |= (pos << 16);
+            }
+            attacks = (pos << 9) & NOT_A_FILE;
+            attacks |= (pos << 7) & NOT_H_FILE;
+        } else {
+            forward = (pos >> 8);
+            if ((forward & enemyPieces) == 0) {
+                currentMoves |= forward;
+            }
+
+            if (position.getIndex() >= 48 && position.getIndex() <= 55) {
+                currentMoves |= (pos >> 16);
+            }
+            attacks = (pos >> 9) & NOT_H_FILE;
+            attacks |= (pos >> 7) & NOT_A_FILE;
+        }
+
+        currentMoves |= attacks & enemyPieces;
+        currentMoves &= ~ownPieces;
+        return currentMoves;
+    }
 }
