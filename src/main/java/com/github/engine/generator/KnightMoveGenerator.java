@@ -97,6 +97,6 @@ public class KnightMoveGenerator implements IGenerator, IBoard {
         spots |= (pos << 6) & NOT_GH_FILE;
         spots &= ~ownPieces;
 
-        return spots
+        return spots;
     }
 }
