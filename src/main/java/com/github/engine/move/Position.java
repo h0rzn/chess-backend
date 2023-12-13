@@ -1,22 +1,29 @@
 package com.github.engine.move;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class Position {
     @Getter
-    private int row; //row
+    private int row;
     @Getter
-    private int column; //column
+    private int column;
     @Getter
     private int index;
+    // pieceType is not passed to the constructor
+    // but rather set during move processing
+    @Getter
+    @Setter
+    private int pieceType;
 
     public Position(int row, int column, int index) {
         this.row = row;
         this.column = column;
         this.index = index;
+        this.pieceType = -1;
     }
 
 
@@ -33,6 +40,7 @@ public class Position {
         this.column = file;
         this.row = rank;
         this.index = index;
+        this.pieceType = -1;
     }
 
     public Position(int index) {
@@ -42,12 +50,14 @@ public class Position {
         this.index = index;
         this.row = rowFunction.apply(index);
         this.column = columnFunction.apply(index);
+        this.pieceType = -1;
     }
 
     public Position(Position position) {
         this.row = position.row;
         this.column = position.column;
         this.index = position.index;
+        this.pieceType = position.pieceType;
     }
 
     static Function<Integer, Integer> rowFunction = index -> index / 8;

@@ -8,11 +8,6 @@ public class Move {
     private Position from;
     @Getter
     private Position to;
-    // pieceType is not passed to the constructor
-    // but rather set during move processing
-    @Getter
-    @Setter
-    private int pieceType;
     // moveType is - just as pieceType - set during
     // move processing
     @Getter
@@ -22,7 +17,6 @@ public class Move {
     public Move(int from, int to) {
         this.from = new Position(from);
         this.to = new Position(to);
-        this.pieceType = -1;
         this.moveType = -1;
     }
 
