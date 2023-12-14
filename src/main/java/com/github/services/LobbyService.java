@@ -19,8 +19,9 @@ public class LobbyService {
     }
 
     public LobbyEntity saveLobby(LobbyEntity lobby) {
-        lobbyRepository.save(lobby);
-        return lobby;
+        LobbyEntity lobbyEntity = new LobbyEntity(lobby.getPlayerUUID());
+        lobbyRepository.save(lobbyEntity);
+        return lobbyEntity;
     }
 
     public LobbyEntity deleteLobby(LobbyEntity lobby) {

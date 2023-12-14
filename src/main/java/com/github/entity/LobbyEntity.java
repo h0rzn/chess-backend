@@ -13,9 +13,15 @@ public class LobbyEntity {
     @Id
     private int id;
 
+    @Getter
     private UUID playerUUID;
 
     public LobbyEntity(){
+        this.id = generateRandomId();
+    }
+
+    public LobbyEntity(UUID playerUUID){
+        this.playerUUID = playerUUID;
         this.id = generateRandomId();
     }
 
