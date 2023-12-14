@@ -12,6 +12,8 @@ import javax.sql.ConnectionPoolDataSource;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.github.engine.Bitboard.mergePlayerBoards;
+
 public class PawnMoveGenerator implements IBoard, IGenerator {
     private final long[] boardWhite;
     private final long[] boardBlack;
@@ -128,7 +130,7 @@ public class PawnMoveGenerator implements IBoard, IGenerator {
     // not implement: en passant; promotion handled by move method
     @Override
     public long generate(int color, Position position) {
-        long[] mergedBoards = mergePlayerBoards(color, boardWhite, boardBlack);
+        long[] mergedBoards = Bitboard.mergePlayerBoards(color, boardWhite, boardBlack);
         long ownPieces = mergedBoards[0];
         long enemyPieces = mergedBoards[1];
 

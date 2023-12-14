@@ -3,6 +3,8 @@ package com.github.engine;
 import com.github.engine.interfaces.IBoard;
 import lombok.Getter;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.math.BigInteger;
 
 public abstract class Bitboard {
@@ -151,6 +153,50 @@ public abstract class Bitboard {
         }
     }
 
+    // Pass in a bitboard and get index of the first set bit found
+    public static int bitscanSingle(long board) {
+        for (int i = 0; i < 64; i++) {
+            if ((board&(1L<<i)) != 0) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    // Pass in a bitboard and get indexes of all set bits
+    public static List<Integer> bitscanMulti(long board) {
+        List<Integer> squares = new ArrayList<>();
+        for (int i = 0; i < 64; i++) {
+            if ((board&(1L<<i)) != 0) {
+                squares.add(i);
+            }
+        }
+        return squares;
+    }
+
+    // Merges whitePieces and blackPieces respectively
+    // decision on what is player and enemy is based on playerColor
+    // returns [playerPiecesMerged, enemyPiecesMerged]
+    public static long[] mergePlayerBoards(int playerColor, long[] whitePieces, long[] blackPieces) {
+        long[] mergedBoards = new long[2];
+        long boardWhitePieces = (whitePieces[0] | whitePieces[1] | whitePieces[2] | whitePieces[3] | whitePieces[4] | whitePieces[5]);
+        long boardBlackPieces = (blackPieces[0] | blackPieces[1] | blackPieces[2] | blackPieces[3] | blackPieces[4] | blackPieces[5]);
+        mergedBoards[0] = (playerColor == 0) ? boardWhitePieces : boardBlackPieces;
+        mergedBoards[1] = (playerColor == 0) ? boardBlackPieces : boardWhitePieces;
+
+        return mergedBoards;
+    }
+
+    /*
+    public long[] mergeStoredBoards() {
+        if(getColorToMove() == 0) {
+            return Bitboard.mergePlayerBoards(0, getBoardWhite(), getBoardBlack());
+        }
+
+        return new long[]{};
+    }
+
+     */
 
     public void turn(){
         colorToMove = colorToMove == 0 ? 1 : 0;

@@ -9,6 +9,8 @@ import com.github.engine.move.Position;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.github.engine.Bitboard.mergePlayerBoards;
+
 public class BishopMoveGenerator implements IBoard, IGenerator {
     private final long[] boardWhite;
     private final long[] boardBlack;
@@ -107,7 +109,7 @@ public class BishopMoveGenerator implements IBoard, IGenerator {
     // base logic for 'Queen Move Generation'
     @Override
     public long generate(int color, Position position) {
-        long[] mergedPieces = mergePlayerBoards(color, boardWhite, boardWhite);
+        long[] mergedPieces = Bitboard.mergePlayerBoards(color, boardWhite, boardWhite);
         long ownPieces = mergedPieces[0];
         long enemyPieces = mergedPieces[1];
 

@@ -100,7 +100,7 @@ public class RookMoveGenerator implements IBoard, IGenerator {
 
     @Override
     public long generate(int color, Position position) {
-        long[] mergedPieces = mergePlayerBoards(color, boardWhite, boardWhite);
+        long[] mergedPieces = Bitboard.mergePlayerBoards(color, boardWhite, boardWhite);
         long ownPieces = mergedPieces[0];
         long enemyPieces = mergedPieces[1];
         long currentMoves = 0;

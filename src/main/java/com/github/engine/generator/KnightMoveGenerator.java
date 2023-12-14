@@ -9,6 +9,8 @@ import com.github.engine.move.Position;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.github.engine.Bitboard.mergePlayerBoards;
+
 public class KnightMoveGenerator implements IGenerator, IBoard {
     private final long[] boardWhite;
     private final long[] boardBlack;
@@ -61,7 +63,7 @@ public class KnightMoveGenerator implements IGenerator, IBoard {
     // potential squares are hardcoded and filtered by file masks
     @Override
     public long generate(int color, Position position) {
-        long[] mergedBoards = mergePlayerBoards(color, boardWhite, boardBlack);
+        long[] mergedBoards = Bitboard.mergePlayerBoards(color, boardWhite, boardBlack);
         long ownPieces = mergedBoards[0];
         long enemyPieces = mergedBoards[1];
 

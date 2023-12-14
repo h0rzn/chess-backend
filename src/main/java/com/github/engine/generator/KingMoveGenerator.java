@@ -9,6 +9,8 @@ import com.github.engine.move.Position;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.github.engine.Bitboard.mergePlayerBoards;
+
 public class KingMoveGenerator implements IGenerator, IBoard {
 
     private final long[] boardWhite;
@@ -64,7 +66,7 @@ public class KingMoveGenerator implements IGenerator, IBoard {
     // wrapping cut of with NO_* masks
     @Override
     public long generate(int color, Position position) {
-        long[] mergedBoards = mergePlayerBoards(color, boardWhite, boardBlack);
+        long[] mergedBoards = Bitboard.mergePlayerBoards(color, boardWhite, boardBlack);
         long ownPieces = mergedBoards[0];
         long enemyPieces = mergedBoards[1];
         long currentMoves = 0;
