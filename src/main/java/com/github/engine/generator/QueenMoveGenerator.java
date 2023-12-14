@@ -26,8 +26,8 @@ public class QueenMoveGenerator implements IBoard, IGenerator {
 
     // DELETE me when interface has been adjusted to move generation
     // returning bitboard instead of ArrayList
-    @Override
-    public List<Integer> generate(int color, Position position) {
+    @Deprecated
+    public List<Integer> OLD_generate(int color, Position position) {
         return new ArrayList<>();
     }
 
@@ -37,7 +37,8 @@ public class QueenMoveGenerator implements IBoard, IGenerator {
     // cursor boards mark the current inspected square of that lane
     // max values indicate squares that can possibly be iterated until board border and will be degraded to
     // the first own piece occurrence iteration index
-    public long NEW_generate(int color, Position position) {
+    @Override
+    public long generate(int color, Position position) {
         long[] mergedPieces = mergePlayerBoards(color, boardWhite, boardWhite);
         long ownPieces = mergedPieces[0];
         long enemyPieces = mergedPieces[1];

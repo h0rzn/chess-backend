@@ -17,30 +17,8 @@ public class RookMoveGenerator implements IBoard, IGenerator {
         this.boardBlack = board.getBoardBlack();
     }
 
-    public long[] precalculate() {
-        long[] moves = new long[64];
-
-        for (int i = 0; i < 64; i++) {
-            long currentBoard = 1L << i;
-            int column = i % 8;
-
-            long southNorth = 0x101010101010101L;
-            southNorth <<= column;
-            currentBoard |= southNorth;
-
-            long eastWest = 0xffL << (i - column);
-            currentBoard |= eastWest;
-
-            // remove current square from potential moves
-            currentBoard ^= 1L << i;
-            moves[i] = currentBoard;
-        }
-
-        return moves;
-    }
-
-    @Override
-    public List<Integer> generate(int color, Position position) {
+    @Deprecated
+    public List<Integer> OLD_generate(int color, Position position) {
         List<Integer> moves = new ArrayList<>();
 
         long boardWhitePieces = (boardWhite[0] | boardWhite[1] | boardWhite[2] | boardWhite[3] | boardWhite[4] | boardWhite[5]);
@@ -118,5 +96,104 @@ public class RookMoveGenerator implements IBoard, IGenerator {
         }
 
         return moves;
+    }
+
+    @Override
+    public long generate(int color, Position position) {
+        long[] mergedPieces = mergePlayerBoards(color, boardWhite, boardWhite);
+        long ownPieces = mergedPieces[0];
+        long enemyPieces = mergedPieces[1];
+        long currentMoves = 0;
+    
+        int rookIndex = position.getIndex();
+        // Cursor checkings current position
+        long cursor = 1L << rookIndex;
+        long northCursor = cursor << 8;
+        long southCursor = cursor >> 8;
+        long eastCursor = cursor << 1;
+        long westCursor = cursor >> 1;
+        // Max amount of positions to check for each direction
+        int maxSouth = rookIndex / 8;
+        int maxNorth = 8 - maxSouth - 1;
+        int maxWest = rookIndex % 8;
+        int maxEast = 8 - maxWest - 1;
+        
+        for (int i = 0; i < 8; i++) {
+            // NORTH
+            if (i < maxNorth) {
+                if ((northCursor & enemyPieces) != 0) {
+                    currentMoves |= northCursor;
+                    maxNorth = i;
+                } else if ((northCursor & ownPieces) != 0) {
+                    maxNorth = i;
+                } else {
+                    currentMoves |= northCursor;
+                    northCursor <<= 8;
+                }
+            }
+    
+            // SOUTH
+            if (i < maxSouth) {
+                if ((southCursor & enemyPieces) != 0) {
+                    currentMoves |= southCursor;
+                    maxSouth = i;
+                } else if ((southCursor & ownPieces) != 0) {
+                    maxSouth = i;
+                } else {
+                    currentMoves |= southCursor;
+                    southCursor >>= 8;
+                }
+            }
+    
+            // EAST
+            if (i < maxEast) {
+                if ((eastCursor & enemyPieces) != 0) {
+                    currentMoves |= eastCursor;
+                    maxEast = i;
+                } else if ((southCursor & ownPieces) != 0) {
+                    maxEast = i;
+                } else {
+                    currentMoves |= eastCursor;
+                    eastCursor <<= 1;
+                }
+            }
+    
+            // WEST
+            if (i < maxWest) {
+                if ((westCursor & enemyPieces) != 0) {
+                    currentMoves |= westCursor;
+                    maxWest = i;
+                } else if ((southCursor & ownPieces) != 0) {
+                    maxWest = i;
+                } else {
+                    currentMoves |= westCursor;
+                    westCursor >>= 1;
+                }
+            }
+        }
+
+        // bitboard with current moves is 0
+        // if 0: all pieces have been moved -> ignore castling
+        if (currentMoves == 0) {
+            return currentMoves;
+        }
+
+        // we don't care which side of the board the king is on
+        long kingPosPotentials = (1 << 4) | (1L << 60);
+        // no match of potential king position and own pieces
+        if ((kingPosPotentials&ownPieces) == 0) {
+            return currentMoves;
+        }
+        // this should only catch our king
+        if ((currentMoves&kingPosPotentials) == 0) {
+            return currentMoves;
+        }
+        // just check if the rook has been moved and we are done
+        long rookBoard = (1L << rookIndex);
+        if ((rookBoard&currentMoves) != 0) {
+            currentMoves |= 0x10;
+        }
+        
+        return currentMoves;
     }
 }

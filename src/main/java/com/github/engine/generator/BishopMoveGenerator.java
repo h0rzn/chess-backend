@@ -17,50 +17,8 @@ public class BishopMoveGenerator implements IBoard, IGenerator {
         this.boardBlack = board.getBoardBlack();
     }
 
-    public long[] precalculate() {
-        long hFile = 0x8080808080808080L;
-        long aFile = 0x101010101010101L;
-        long diaTTR = 0x8040201008040201L;
-        long diaTTL = 0x102040810204080L;
-
-        long[] moves = new long[64];
-
-        for (int i = 0; i < 64; i++) {
-            long currentBoard = 1L << i;
-            int column = i % 8;
-
-
-            // B Left -> T Right
-            long ttrKeep = 0L;
-            for (int n = 0; n < (7-column); n++) {
-                ttrKeep |= (hFile >> n);
-            }
-            currentBoard |= (diaTTR&ttrKeep);
-
-            // T Right -> B Left
-            long diaTBR = diaTTL >> (63-i);
-            currentBoard |= (diaTBR&ttrKeep);
-
-            // B Right -> T Left
-            long ttlKeep = 0L;
-            for (int n = 0; n < column; n++) {
-                ttlKeep |= (aFile << n);
-            }
-            currentBoard |= ((diaTTL << i) &ttlKeep);
-
-            // T Right -> B Left
-            long diaTBL = diaTTL >> (63-i);
-            currentBoard |= (diaTBL&ttlKeep);
-
-            currentBoard ^= 1L << i;
-            moves[i] = currentBoard;
-        }
-
-        return moves;
-    }
-
-    @Override
-    public List<Integer> generate(int color, Position position) {
+    @Deprecated
+    public List<Integer> OLD_generate(int color, Position position) {
         List<Integer> moves = new ArrayList<>();
         /*
          @deprecated use Bitboard.getBoardWhite() or Bitboard.getBoardBlack() instead
@@ -147,7 +105,8 @@ public class BishopMoveGenerator implements IBoard, IGenerator {
     // Bishop: Move Generation
     // Walks all lanes of queens star pattern
     // base logic for 'Queen Move Generation'
-    public long NEW_generate(int color, Position position) {
+    @Override
+    public long generate(int color, Position position) {
         long[] mergedPieces = mergePlayerBoards(color, boardWhite, boardWhite);
         long ownPieces = mergedPieces[0];
         long enemyPieces = mergedPieces[1];

@@ -24,47 +24,10 @@ public class PawnMoveGenerator implements IBoard, IGenerator {
         this.boardBlack = board.getBoardBlack();
     }
 
-    public long[] precalculate() {
-        long[] moves = new long[64];
-
-        for (int i = 0; i < 64; i++) {
-            long position = 1L << i;
-            long currentBoard = 1L << i;
-
-            long north = position << 8;
-            currentBoard |= north;
-            if (i >= 8 && i <= 15) {
-                currentBoard |= (position << 16);
-            }
-
-            long northEast = (position << 8) & NOT_A_FILE;
-            long northWest = (position << 7) & NOT_H_FILE;
-
-            currentBoard |= north | northEast | northWest;
-
-            currentBoard ^= 1L << i;
-            moves[i] = currentBoard;
-        }
-
-        return moves;
-    }
-
     // Color and T2 is passed (T2 contains move-from and move-to)
-    @Override
-    public List<Integer> generate(int color, Position position){
+    @Deprecated
+    public List<Integer> OLD_generate(int color, Position position){
         List<Integer> moves = new ArrayList<>();
-
-        //long[] merged = mergePlayerBoards(color, boardWhite, boardBlack);
-
-        long moveBoard = NEW_generate(color, position);
-
-        for (int i = 0; i < 64; i++) {
-            if ((moveBoard&(1L << i))!= 0) {
-                moves.add(i);
-            }
-        }
-
-        return moves;
         /*
         // Get all pawns of color-in-turn
         long pawns = color == 0 ? boardWhite[0] : boardBlack[0];
@@ -152,10 +115,10 @@ public class PawnMoveGenerator implements IBoard, IGenerator {
         // En Passant
 
         // Promotion
-
+        */
         return moves;
         //
-        */
+
     }
 
     // Pawn: Move Generation
@@ -163,7 +126,8 @@ public class PawnMoveGenerator implements IBoard, IGenerator {
     // special behaviour: attack only on forward-left-dia and forward-right-dia,
     // double square move on default position (only once -> should be handled by move method)
     // not implement: en passant; promotion handled by move method
-    public long NEW_generate(int color, Position position) {
+    @Override
+    public long generate(int color, Position position) {
         long[] mergedBoards = mergePlayerBoards(color, boardWhite, boardBlack);
         long ownPieces = mergedBoards[0];
         long enemyPieces = mergedBoards[1];

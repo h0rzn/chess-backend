@@ -19,33 +19,8 @@ public class KingMoveGenerator implements IGenerator, IBoard {
         this.boardBlack = bitboard.getBoardBlack();
     }
 
-    public long[] precalculate() {
-        long[] moves = new long[64];
-
-        for (int i = 0; i < 64; i++) {
-            long position = 1L << i;
-            long currentBoard = 1L << i;
-
-            long northAxis = (position << 8) | (position >> 8);
-            currentBoard |= northAxis;
-
-            long east = (position << 1) & NOT_A_FILE;
-            long west = (position >> 1) & NOT_H_FILE;
-            currentBoard |= east | west;
-
-            long eastDias = (position << 9) | (position >> 7);
-            long westDias = (position << 7) | (position >> 9);
-            currentBoard |= eastDias | westDias;
-
-            currentBoard ^= 1L << i;
-            moves[i] = currentBoard;
-        }
-
-        return moves;
-    }
-
-    @Override
-    public List<Integer> generate(int color, Position position) {
+    @Deprecated
+    public List<Integer> OLD_generate(int color, Position position) {
         List<Integer> moves = new ArrayList<>();
         long king = color == 0 ? boardWhite[5] : boardBlack[5];
         // Creates an Array emptySquares where all Squares are 1 and enemyPieces where all Squares are 0
@@ -87,7 +62,8 @@ public class KingMoveGenerator implements IGenerator, IBoard {
     // King: Move Generation
     // fixed index offsets
     // wrapping cut of with NO_* masks
-    public long NEW_generate(int color, Position position) {
+    @Override
+    public long generate(int color, Position position) {
         long[] mergedBoards = mergePlayerBoards(color, boardWhite, boardBlack);
         long ownPieces = mergedBoards[0];
         long enemyPieces = mergedBoards[1];

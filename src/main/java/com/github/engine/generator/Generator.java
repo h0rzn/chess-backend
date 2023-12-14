@@ -19,11 +19,9 @@ public class Generator implements IBoard {
         this.boardBlack = bitboard.getBoardBlack();
     }
 
-
     // Generates all possible moves for a given piece
-    public List<Integer> generate(Position position, int color){
-        int pieceID = Get(position.getIndex(), color);
-        SinglePiece piece = SinglePiece.fromNumber(pieceID);
+    public long generate(Position position, int color){
+        SinglePiece piece = SinglePiece.fromNumber(position.getPieceType());
         switch (piece){
             case Pawn -> {
                 PawnMoveGenerator pawnMove = new PawnMoveGenerator(bitboard);
@@ -50,19 +48,6 @@ public class Generator implements IBoard {
                 return rookMove.generate(color, position);
             }
         }
-        return null;
-    }
-
-
-    public int Get(int index, int color) {
-        long positionMask = 1L << index;
-        long[] colorBoards = color == 0 ? this.boardWhite : this.boardBlack;
-
-        for (int pieceType = 0; pieceType < 6; pieceType++) {
-            if ((colorBoards[pieceType] & positionMask) != 0) {
-                return pieceType;
-            }
-        }
-        return -1;
+        return 0;
     }
 }
