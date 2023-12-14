@@ -1,8 +1,10 @@
 package com.github.engine;
 
+import com.github.engine.generator.Generator;
 import com.github.engine.interfaces.IBoard;
 import com.github.engine.interfaces.IGame;
 import com.github.engine.move.Move;
+import com.github.engine.move.MoveInfo;
 import com.github.engine.move.Position;
 
 import java.util.List;
@@ -38,52 +40,107 @@ public class Game extends Bitboard implements IGame {
         return false;
     }
 
+    // makeMove is the main interaction method of this engine
+    // and expects a move where at least the indexes of from and to
+    // are set. when the game is in promotion state this method is a noop
+    // and continues to work if the promotion state is resolved by
+    // successfully calling the promotion method.
+    // TODO integrate moveInfo to provide detailed information about the move
     @Override
-    public boolean makeMove(Move move){
-        int from = move.getFrom().getIndex();
-        int to = move.getTo().getIndex();
+    public boolean makeMove(Move move) {
+        // ---
+        // needed info
+        int playerColor = 0;
 
-        int color = this.getColorToMove();
-        int pieceType = Get(from, color);
+        // ---
 
-        long fromMask = 1L << from;
-        long toMask = 1L << to;
+        MoveInfo info = new MoveInfo();
 
-        // Remove piece from old position
-        if (color == 0){
-            getBoardWhite()[pieceType] &= ~fromMask;
-        } else {
-            getBoardBlack()[pieceType] &= ~fromMask;
+        // Abort if Promotion as awaited
+
+
+        if (playerColor != getColorToMove()) {
+            info.setFailMessage("wrong actor color");
+            return false;
         }
 
-        // Remove captured piece from new position if there is one
-        for (int i = 0; i < 6; i++){
-            if ((toMask & (color == 0 ? getBoardBlack()[i] : getBoardWhite()[i])) != 0){
-                if (color == 0){
-                    getBoardBlack()[i] &= ~toMask;
-                } else {
-                    getBoardWhite()[i] &= ~toMask;
-                }
-                break;
+        Position from = move.getFrom();
+        Position to = move.getTo();
+        long[] playerPieces;
+        long[] enemyPieces;
+        int attackerColor;
+
+        if (getColorToMove() == 0) {
+            playerPieces = getBoardWhite();
+            enemyPieces = getBoardBlack();
+            attackerColor = 1;
+        } else {
+            playerPieces = getBoardBlack();
+            enemyPieces = getBoardWhite();
+            attackerColor = 0;
+        }
+
+        long mergedPlayerPieces = 0;
+        long mergedEnemyPieces = 0;
+
+        for (int i = 0; i < 6; i++) {
+            long toBoard = 1L << to.getIndex();
+            long fromBoard = 1L << from.getIndex();
+
+            if ((playerPieces[i] & fromBoard) != 0) {
+                from.setPieceType(i);
+                // castling (go code)
+                // if i == 3 && playerPieces[5]&uint64(1<<to) != 0 {
+                //    toSquare.Piece = 5
+                //}
             }
+
+            if ((playerPieces[i] & toBoard) != 0) {
+                to.setPieceType(i);
+            }
+
+            mergedPlayerPieces |= playerPieces[i];
+            mergedEnemyPieces |= enemyPieces[i];
         }
 
-        // Add piece to new position
-        if (color == 0){
-            getBoardWhite()[pieceType] |= toMask;
-        } else {
-            getBoardBlack()[pieceType] |= toMask;
+        System.out.println("from: T" + from.getPieceType() + " @" + from.getIndex());
+        System.out.println("to: T" + to.getPieceType() + " @" + to.getIndex());
+
+        // the selected piece could not be found -> illegal move
+        if (from.noPiece()) {
+            info.setFailMessage("failed to find selection piece on square " + from.getIndex());
+            return false;
+        }
+        // cannot kick out enemy king
+        if (((1L << from.getIndex()) & enemyPieces[5]) != 0) {
+            info.setFailMessage("cannot kick out enemy king: this could be an engine error");
+            return false;
         }
 
-        // TODO: En passant
-        // TODO: Castling
-        // TODO: Promotion
+        // get legal moves for selected piece
+        Generator generator = new Generator(this);
+        List<Integer> legalSquares = generator.generate(from, getColorToMove());
+        // at the moment the move generator still works with square indexes
+        // the new move generation returns a bitboard with legal moves marked
+        // TODO adapt move generation logic to bitboard instead of indexes
+
+        // TODO check if to is generated legal moves
+
+        // TODO Checkmate Player
+
+        // TODO handle piece Specials
+
+        // TODO sync move
+
+        // TODO Checkmate Enemy -> game over?
 
         return true;
     }
 
-    // Base logic for now
-    // TODO handle specific move types (Castling, Promotion, ...)
+    // syncMove takes a move and syncs it with the game instance
+    // even though distinguish between different move types,
+    // this method does not implement game logic and expects
+    // the given move to be legal
     private void syncMove(Move move) {
         int activeColor = getColorToMove();
         Position from = move.getFrom();
