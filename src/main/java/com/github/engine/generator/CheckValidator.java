@@ -1,6 +1,8 @@
 package com.github.engine.generator;
 
 import com.github.engine.Bitboard;
+import com.github.engine.models.CheckInfo;
+import com.github.engine.models.CheckResolveInfo;
 import com.github.engine.move.Position;
 import lombok.Setter;
 
@@ -9,10 +11,10 @@ import java.util.List;
 public class CheckValidator {
     @Setter
     private Bitboard bitboard;
-    public boolean inCheck() {
+    public CheckInfo inCheck(int playerColor) {
         long[] playerPieces;
         long[] enemyPieces;
-        if (bitboard.getColorToMove() == 0) {
+        if (playerColor == 0) {
             playerPieces = bitboard.getBoardWhite();
             enemyPieces = bitboard.getBoardBlack();
         } else {
@@ -25,13 +27,8 @@ public class CheckValidator {
 
         if (kingSquare == -1) {
             // TODO case where king cannot be found
-            return false;
+            return null;
         }
-
-        long[] mergedBoards = Bitboard.mergePlayerBoards(bitboard.getColorToMove(), playerPieces, enemyPieces);
-        long mergedPlayerPieces = mergedBoards[0];
-        long mergedEnemyPieces = mergedBoards[1];
-
 
         // list of bitboards with move generation for each enemy piece that attack the players king
         long[] attackBoards = new long[6];
@@ -46,9 +43,10 @@ public class CheckValidator {
             // get all occupied squares of that pieceType
             List<Integer> enemyPieceSquares = Bitboard.bitscanMulti(enemyPieces[enemyPiece]);
 
+            // iterate over each square (=each Piece) and run move gen
             for (Integer occupiedSquare : enemyPieceSquares) {
                 Position enemyPosition = new Position(occupiedSquare);
-                long enemyPieceMoves = enemyGenerator.generate(enemyPosition, bitboard.getColorToMove());
+                long enemyPieceMoves = enemyGenerator.generate(enemyPosition, playerColor);
 
                 if ((enemyPieceMoves & kingSquare) != 0) {
                     attackRoutes |= enemyPieceMoves;
@@ -67,18 +65,66 @@ public class CheckValidator {
         // a **potential** check situation
         Position playerKingPosition = new Position(kingSquare);
         playerKingPosition.setPieceType(5);
-        long kingMoves = enemyGenerator.generate(playerKingPosition, bitboard.getColorToMove());
+        long kingMoves = enemyGenerator.generate(playerKingPosition, playerColor);
+        kingMoves &= ~enemyPieces[5];
+
         long kingEscapes = (kingMoves & ~enemyCovers);
 
+        return new CheckInfo(kingInCheck, kingEscapes,attackBoards, enemyCovers);
+    }
+
+    public CheckResolveInfo isCheckResolvable(int playerColor, long[] attackBoards) {
+        long[] playerPieces;
+        long[] enemyPieces;
+        if (playerColor == 0) {
+            playerPieces = bitboard.getBoardWhite();
+            enemyPieces = bitboard.getBoardBlack();
+        } else {
+            playerPieces = bitboard.getBoardBlack();
+            enemyPieces = bitboard.getBoardWhite();
+        }
+
+        long[] attack2Defend = new long[6];
+        long[] block2Defend = new long[6];
+        boolean a2dResolvable = false;
+        boolean b2dResolvable = false;
+
+        Generator generator = new Generator(bitboard);
+        //
+        // ATTACK TO DEFEND
+        // resolve chess by attacking threatening piece
+        //
+        for (int enemyPiece = 0; enemyPiece < 6; enemyPiece++) {
+            // there are no attacks for this enemy piece
+            // or the enemy piece is the king
+            // TODO check if this actually works
+            //if (attackBoards[enemyPiece] == 0 || enemyPiece == 5) {
+            //    continue;
+            //}
+
+            // TODO we should bitscan this board and do the following steps for each piece occurrences.
+            long enemyPieceBoard = enemyPieces[enemyPiece];
+            for (int playerPiece = 0; playerPiece < 6; playerPiece++) {
+                List<Integer> playerPieceSquares = Bitboard.bitscanMulti(playerPieces[playerPiece]);
+
+                for (int singlePlayerPieceSquare : playerPieceSquares) {
+                    long playerAttackMoves = generator.generate(new Position(singlePlayerPieceSquare), playerColor);
+
+                    if ((playerAttackMoves&enemyPieceBoard) != 0) {
+                        attack2Defend[playerPiece] |= enemyPieceBoard;
+                    }
+                }
+
+
+            }
+
+        }
 
 
 
-        // TODO:
-        // also return later:
-        // - king escapes
-        // - attackBoards[6]
-        // - enemyCovers
-        return kingInCheck;
+
+
+        return null;
     }
 
     public CheckValidator(Bitboard bitboard) {

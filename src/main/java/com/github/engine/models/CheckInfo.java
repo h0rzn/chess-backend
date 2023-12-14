@@ -1,6 +1,6 @@
-package com.github.engine.generator;
+package com.github.engine.models;
 
-public record CheckRecord(
+public record CheckInfo(
         boolean isCheck,
         long kingEscapes,
         long[] attackBoards,
