@@ -12,12 +12,12 @@ public class Move {
     // move processing
     @Getter
     @Setter
-    private int moveType;
+    private MoveType moveType;
 
     public Move(int from, int to) {
         this.from = new Position(from);
         this.to = new Position(to);
-        this.moveType = -1;
+        this.moveType = MoveType.Unkown;
     }
 
     public Move(String move) {

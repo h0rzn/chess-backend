@@ -7,6 +7,8 @@ import com.github.engine.move.Position;
 
 import java.util.List;
 
+import static com.github.engine.move.MoveType.Promotion;
+
 public class Game extends Bitboard implements IGame {
 
     public Game(){
@@ -82,7 +84,7 @@ public class Game extends Bitboard implements IGame {
 
     // Base logic for now
     // TODO handle specific move types (Castling, Promotion, ...)
-    private void syncMove(Move move, int piece) {
+    private void syncMove(Move move) {
         int activeColor = getColorToMove();
         Position from = move.getFrom();
         Position to = move.getTo();
@@ -97,45 +99,40 @@ public class Game extends Bitboard implements IGame {
             enemyBoards = boardWhite;
         }
 
-        //
-        // Placeholders
-        // should come from ...somewhere?
-        //
-        int moveType = 0; // as Param
-        int fromPiece = 0; // maybe Position.getPiece()
-        int toPiece = 0;
-
         // Remove Player Piece
-        playerBoards[piece] &= ~(1L << from.getIndex());
+        playerBoards[from.getPieceType()] &= ~(1L << from.getIndex());
 
         // Maybe Position should also include PieceType
 
-        switch (moveType) {
-            case 0: // NORMAL
+        switch (move.getMoveType()) {
+            case Normal:
                 // Add Player Piece to Destination
-                playerBoards[piece] |= (1L << to.getIndex());
+                playerBoards[from.getPieceType()] |= (1L << to.getIndex());
                 // Remove Enemy Piece on Destination (noop if not needed)
-                enemyBoards[toPiece] &= ~(1L << to.getIndex());
+                enemyBoards[to.getIndex()] &= ~(1L << to.getIndex());
                 break;
-            case 1: // CASTLING
+            case Castle:
                 // Remove Player Piece on Castling Destination
-                playerBoards[piece] &= ~(1L << to.getIndex());
+                playerBoards[to.getPieceType()] &= ~(1L << to.getIndex());
                 // place as castled
-                playerBoards[fromPiece] |= (1L << to.getIndex());
-                playerBoards[toPiece] |= (1L << from.getIndex());
+                playerBoards[from.getPieceType()] |= (1L << to.getIndex());
+                playerBoards[to.getPieceType()] |= (1L << from.getIndex());
                 break;
             default:
-
+                // explicitly catch 'Unkown' case?
+                // should probably return early here -> maybe return false?
         }
 
         // Skip activeColor change when Promotion
-        if (moveType == 3) {
+        // because we wait for Promotion call before switchting sides
+        if (move.getMoveType() == Promotion) {
             return;
         }
 
         // TODO Update bit on moved-indication bitboard
 
         // reassign of bitboards needed?
+        // Update color
         colorToMove = colorToMove == 0 ? 1 : 0;
 
     }
