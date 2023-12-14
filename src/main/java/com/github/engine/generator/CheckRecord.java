@@ -5,4 +5,4 @@ public record CheckRecord(
         long kingEscapes,
         long[] attackBoards,
         long enemyMoveCovered
-)
+) {}
