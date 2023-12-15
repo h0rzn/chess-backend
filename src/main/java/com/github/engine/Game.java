@@ -1,17 +1,19 @@
 package com.github.engine;
 
+import com.github.GameState;
 import com.github.engine.interfaces.IGame;
 import com.github.engine.interfaces.IUserAction;
 import com.github.engine.models.MoveInfo;
 import com.github.engine.move.Move;
 import com.github.engine.move.Position;
-
-import java.util.List;
+import lombok.Getter;
 
 import static com.github.engine.move.MoveType.Normal;
 import static com.github.engine.move.MoveType.Promotion;
 
 public class Game extends Bitboard implements IGame {
+    @Getter
+    private GameState gameState;
 
     public Game(){
         super();
