@@ -1,14 +1,13 @@
 package com.github.engine;
 
-import com.github.engine.generator.Generator;
-import com.github.engine.interfaces.IBoard;
 import com.github.engine.interfaces.IGame;
+import com.github.engine.models.MoveInfo;
 import com.github.engine.move.Move;
-import com.github.engine.move.MoveInfo;
 import com.github.engine.move.Position;
 
 import java.util.List;
 
+import static com.github.engine.move.MoveType.Normal;
 import static com.github.engine.move.MoveType.Promotion;
 
 public class Game extends Bitboard implements IGame {
@@ -45,24 +44,15 @@ public class Game extends Bitboard implements IGame {
     // are set. when the game is in promotion state this method is a noop
     // and continues to work if the promotion state is resolved by
     // successfully calling the promotion method.
-    // TODO integrate moveInfo to provide detailed information about the move
     @Override
-    public boolean makeMove(Move move) {
-        // ---
-        // needed info
-        int playerColor = 0;
+    public MoveInfo makeMove(Move move) {
+        int playerColor = getColorToMove();
 
         // ---
 
         MoveInfo info = new MoveInfo();
 
         // Abort if Promotion as awaited
-
-
-        if (playerColor != getColorToMove()) {
-            info.setFailMessage("wrong actor color");
-            return false;
-        }
 
         Position from = move.getFrom();
         Position to = move.getTo();
@@ -109,17 +99,19 @@ public class Game extends Bitboard implements IGame {
         // the selected piece could not be found -> illegal move
         if (from.noPiece()) {
             info.setFailMessage("failed to find selection piece on square " + from.getIndex());
-            return false;
+            info.setLegal(false);
+            return info;
         }
         // cannot kick out enemy king
         if (((1L << from.getIndex()) & enemyPieces[5]) != 0) {
             info.setFailMessage("cannot kick out enemy king: this could be an engine error");
-            return false;
+            info.setLegal(false);
+            return info;
         }
 
         // get legal moves for selected piece
-        Generator generator = new Generator(this);
-        List<Integer> legalSquares = generator.generate(from, getColorToMove());
+        // Generator generator = new Generator(this);
+        /// List<Integer> legalSquares = generator.generate(from, getColorToMove());
         // at the moment the move generator still works with square indexes
         // the new move generation returns a bitboard with legal moves marked
         // TODO adapt move generation logic to bitboard instead of indexes
@@ -131,10 +123,13 @@ public class Game extends Bitboard implements IGame {
         // TODO handle piece Specials
 
         // TODO sync move
+        // just force NORMAL Type for now
+        move.setMoveType(Normal);
+        syncMove(move);
 
         // TODO Checkmate Enemy -> game over?
 
-        return true;
+        return info;
     }
 
     // syncMove takes a move and syncs it with the game instance

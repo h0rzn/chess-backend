@@ -97,30 +97,46 @@ public class CheckValidator {
         for (int enemyPiece = 0; enemyPiece < 6; enemyPiece++) {
             // there are no attacks for this enemy piece
             // or the enemy piece is the king
-            // TODO check if this actually works
+            // TODO check if this actually works/is needed
             //if (attackBoards[enemyPiece] == 0 || enemyPiece == 5) {
             //    continue;
             //}
 
-            // TODO we should bitscan this board and do the following steps for each piece occurrences.
-            long enemyPieceBoard = enemyPieces[enemyPiece];
+            // check if any of players pieces can directly attack enemy pieces that threaten
+            // the players king
+            List<Integer> enemyPieceSquares = Bitboard.bitscanMulti(enemyPieces[enemyPiece]);
             for (int playerPiece = 0; playerPiece < 6; playerPiece++) {
                 List<Integer> playerPieceSquares = Bitboard.bitscanMulti(playerPieces[playerPiece]);
 
                 for (int singlePlayerPieceSquare : playerPieceSquares) {
                     long playerAttackMoves = generator.generate(new Position(singlePlayerPieceSquare), playerColor);
-
-                    if ((playerAttackMoves&enemyPieceBoard) != 0) {
-                        attack2Defend[playerPiece] |= enemyPieceBoard;
+                    // for each occurrence of a attacker piece:
+                    // check if player can attack
+                    for (int enemyPieceSquare : enemyPieceSquares) {
+                        if ((playerAttackMoves&(1L << enemyPieceSquare)) != 0) {
+                            attack2Defend[playerPiece] |= (1L << enemyPieceSquare);
+                        }
                     }
                 }
-
-
             }
 
         }
 
+        // TODO filter out illegal a2d of king (that would put him in check)
 
+        // ...
+
+        // get all moves for enemy pieces
+        for (int i = 0; i < 6; i++) {
+
+        }
+
+        //
+        // BLOCK TO DEFEND
+        // resolve chess by blocking attack path
+        //
+        int playerKingSquare = Bitboard.bitscanSingle(playerPieces[5]);
+        int playerKingColumn = playerKingSquare % 8;
 
 
 
