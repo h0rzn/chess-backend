@@ -4,10 +4,9 @@ import com.github.engine.move.Move;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public final class MoveInfo {
+public class MoveInfo {
     @Setter
     @Getter
     private boolean legal;

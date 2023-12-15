@@ -34,6 +34,7 @@ public class AttackCheck implements IBoard {
 
     // Creates a copy of the bitboard and executes the move, then checks if the move resolves the check
     public static boolean doesMoveResolveCheck(Game game, Move move){
+        /*
         Game gameCopy = game.copy();
         gameCopy.makeMove(move);
 
@@ -42,7 +43,9 @@ public class AttackCheck implements IBoard {
         long[] enemyBoard = game.getColorToMove() == 0 ? gameCopy.getBoardBlack() : gameCopy.getBoardWhite();
         boolean isInCheck = isKingInCheck(kingPosition, enemyBoard, game.getColorToMove());
 
-        return !isInCheck;
+
+         */
+        return false;
 
     }
 

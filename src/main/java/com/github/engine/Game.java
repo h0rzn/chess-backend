@@ -1,6 +1,7 @@
 package com.github.engine;
 
 import com.github.engine.interfaces.IGame;
+import com.github.engine.interfaces.IUserAction;
 import com.github.engine.models.MoveInfo;
 import com.github.engine.move.Move;
 import com.github.engine.move.Position;
@@ -24,19 +25,19 @@ public class Game extends Bitboard implements IGame {
         return copy;
     }
 
-    @Override
-    public List<Integer> getMoves() {
+    // execute a user action by calling
+    // the corresponding move method depending
+    // on the move type
+    public MoveInfo execute(IUserAction action) {
+        switch (action.getType()) {
+            case Normal:
+                System.out.println("NORMAL MOVE");
+                return moveNormal(action.getMove());
+            case Promotion:
+                System.out.println("PROMOTION MOVE");
+                return movePromotion(action.getMove());
+        }
         return null;
-    }
-
-    @Override
-    public boolean isCheck(int color) {
-        return false;
-    }
-
-    @Override
-    public boolean isCheckMate(int color) {
-        return false;
     }
 
     // makeMove is the main interaction method of this engine
@@ -44,8 +45,7 @@ public class Game extends Bitboard implements IGame {
     // are set. when the game is in promotion state this method is a noop
     // and continues to work if the promotion state is resolved by
     // successfully calling the promotion method.
-    @Override
-    public MoveInfo makeMove(Move move) {
+    public MoveInfo moveNormal(Move move) {
         int playerColor = getColorToMove();
 
         // ---
@@ -129,6 +129,14 @@ public class Game extends Bitboard implements IGame {
 
         // TODO Checkmate Enemy -> game over?
 
+        return info;
+    }
+
+    // promote a piece if game is in promotion mode
+    public MoveInfo movePromotion(Move move) {
+        System.out.println("inside move promotion");
+        MoveInfo info = new MoveInfo();
+        info.setMove(move);
         return info;
     }
 

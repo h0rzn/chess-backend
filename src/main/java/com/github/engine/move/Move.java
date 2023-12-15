@@ -17,7 +17,7 @@ public class Move {
     public Move(int from, int to) {
         this.from = new Position(from);
         this.to = new Position(to);
-        this.moveType = MoveType.Unkown;
+        this.moveType = MoveType.Normal;
     }
 
     public Move(String move) {
@@ -26,7 +26,13 @@ public class Move {
         }
         this.from = new Position(move.split("-")[0]);
         this.to = new Position(move.split("-")[1]);
+        this.moveType = MoveType.Normal;
     }
+
+    public Move(MoveType moveType) {
+        this.moveType = moveType;
+    }
+
     /*
     public Move(Position from, Position to) {
         this.from = from;
