@@ -47,14 +47,18 @@ public class Game extends GameBoard implements IGame {
     // are set. when the game is in promotion state this method is a noop
     // and continues to work if the promotion state is resolved by
     // successfully calling the promotion method.
+    // TODO add proper insertion of moveType (especially for KickOut-Type)
     public MoveInfo moveNormal(Move move) {
-        int playerColor = getActiveColor();
-
-        // ---
-
         MoveInfo info = new MoveInfo();
 
+        int playerColor = getActiveColor();
+        info.setPlayerColor(playerColor);
+
         // Abort if Promotion as awaited
+        if (gameState == GameState.PROMOTION_BLACK || gameState == GameState.PROMOTION_WHITE) {
+            info.setFailMessage("cannot make normal move: currently in promotion mode");
+            return info;
+        }
 
         Position from = move.getFrom();
         Position to = move.getTo();
@@ -71,6 +75,8 @@ public class Game extends GameBoard implements IGame {
             enemyPieces = getSetWhite();
             attackerColor = 0;
         }
+        info.pushLog(String.format("colors :: player: %d | enemy %d", playerColor, attackerColor));
+
 
         long mergedPlayerPieces = 0;
         long mergedEnemyPieces = 0;
@@ -95,8 +101,15 @@ public class Game extends GameBoard implements IGame {
             mergedEnemyPieces |= enemyPieces[i];
         }
 
-        System.out.println("from: T" + from.getPieceType() + " @" + from.getIndex());
-        System.out.println("to: T" + to.getPieceType() + " @" + to.getIndex());
+        // to square is empty -> set piece type to type of
+        // piece making the move so sync works with the same board
+        // and not -1
+        if (to.getPieceType() == -1) {
+            to.setPieceType(from.getPieceType());
+        }
+
+        info.pushLog("POSITION from: T" + from.getPieceType() + " @" + from.getIndex());
+        info.pushLog("POSITION to: T" + to.getPieceType() + " @" + to.getIndex());
 
         // the selected piece could not be found -> illegal move
         if (from.noPiece()) {
@@ -104,6 +117,7 @@ public class Game extends GameBoard implements IGame {
             info.setLegal(false);
             return info;
         }
+
         // cannot kick out enemy king
         if (((1L << from.getIndex()) & enemyPieces[5]) != 0) {
             info.setFailMessage("cannot kick out enemy king: this could be an engine error");
@@ -131,6 +145,8 @@ public class Game extends GameBoard implements IGame {
 
         // TODO Checkmate Enemy -> game over?
 
+
+        info.pushLog("++ move is legal and synced ++");
         return info;
     }
 
@@ -171,7 +187,7 @@ public class Game extends GameBoard implements IGame {
                 // Add Player Piece to Destination
                 playerBoards[from.getPieceType()] |= (1L << to.getIndex());
                 // Remove Enemy Piece on Destination (noop if not needed)
-                enemyBoards[to.getIndex()] &= ~(1L << to.getIndex());
+                enemyBoards[to.getPieceType()] &= ~(1L << to.getIndex());
                 break;
             case Castle:
                 // Remove Player Piece on Castling Destination

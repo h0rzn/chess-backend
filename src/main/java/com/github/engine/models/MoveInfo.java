@@ -5,6 +5,7 @@ import com.github.engine.move.Move;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MoveInfo {
@@ -32,5 +33,6 @@ public class MoveInfo {
 
     public MoveInfo() {
         this.gameState = GameState.UNKOWN;
+        this.log = new ArrayList<String>();
     }
 }
