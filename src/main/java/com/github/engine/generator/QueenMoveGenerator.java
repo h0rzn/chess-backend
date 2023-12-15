@@ -1,6 +1,7 @@
 package com.github.engine.generator;
 
 import com.github.engine.Bitboard;
+import com.github.engine.GameBoard;
 import com.github.engine.interfaces.IBoard;
 import com.github.engine.interfaces.IGenerator;
 import com.github.engine.move.Move;
@@ -21,16 +22,9 @@ public class QueenMoveGenerator implements IBoard, IGenerator {
     @Getter
     private MoveType moveType;
 
-    public QueenMoveGenerator(Bitboard board) {
-        this.boardWhite = board.getBoardWhite();
-        this.boardBlack = board.getBoardBlack();
-    }
-
-    // DELETE me when interface has been adjusted to move generation
-    // returning bitboard instead of ArrayList
-    @Deprecated
-    public List<Integer> OLD_generate(int color, Position position) {
-        return new ArrayList<>();
+    public QueenMoveGenerator(GameBoard gameBoard) {
+        this.boardWhite = gameBoard.getSetWhite();
+        this.boardBlack = gameBoard.getSetBlack();
     }
 
     // Queen: Move Generation
@@ -41,13 +35,13 @@ public class QueenMoveGenerator implements IBoard, IGenerator {
     // the first own piece occurrence iteration index
     @Override
     public long generate(int color, Position position) {
-        long[] mergedPieces = Bitboard.mergePlayerBoards(color, boardWhite, boardWhite);
+        long[] mergedPieces = GameBoard.mergePlayerBoards(color, boardWhite, boardWhite);
         long ownPieces = mergedPieces[0];
         long enemyPieces = mergedPieces[1];
         long currentMoves = 0;
 
         int queenIndex = position.getIndex();
-        // Cursor checkings current position
+        // Cursor checking current position
         long cursor = 1L << queenIndex;
         long northCursor = cursor << 8;
         long southCursor = cursor >> 8;

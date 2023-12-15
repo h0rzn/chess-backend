@@ -1,6 +1,5 @@
 package com.github.engine;
 
-import com.github.engine.interfaces.IBoard;
 import lombok.Getter;
 
 import java.util.ArrayList;

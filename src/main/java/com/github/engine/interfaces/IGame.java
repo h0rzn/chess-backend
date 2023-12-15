@@ -7,8 +7,5 @@ import java.util.List;
 
 public interface IGame {
     MoveInfo execute(IUserAction action);
-
-    int getColorToMove();
-
-
+    int getActiveColor();
 }

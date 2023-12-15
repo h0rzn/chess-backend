@@ -11,20 +11,20 @@ import lombok.Getter;
 import static com.github.engine.move.MoveType.Normal;
 import static com.github.engine.move.MoveType.Promotion;
 
-public class Game extends Bitboard implements IGame {
+public class Game extends GameBoard implements IGame {
     @Getter
     private GameState gameState;
+    @Getter
+    private int activeColor;
 
     public Game(){
         super();
     }
 
     public Game copy(){
-        Game copy = new Game();
-        copy.boardWhite = this.boardWhite.clone();
-        copy.boardBlack = this.boardBlack.clone();
-        copy.colorToMove = this.colorToMove;
-        return copy;
+        // Game copy = new Game();
+        // TOOD check if we have to copy gameboard
+        return null;
     }
 
     // execute a user action by calling
@@ -48,7 +48,7 @@ public class Game extends Bitboard implements IGame {
     // and continues to work if the promotion state is resolved by
     // successfully calling the promotion method.
     public MoveInfo moveNormal(Move move) {
-        int playerColor = getColorToMove();
+        int playerColor = getActiveColor();
 
         // ---
 
@@ -62,13 +62,13 @@ public class Game extends Bitboard implements IGame {
         long[] enemyPieces;
         int attackerColor;
 
-        if (getColorToMove() == 0) {
-            playerPieces = getBoardWhite();
-            enemyPieces = getBoardBlack();
+        if (getActiveColor() == 0) {
+            playerPieces = getSetWhite();
+            enemyPieces = getSetBlack();
             attackerColor = 1;
         } else {
-            playerPieces = getBoardBlack();
-            enemyPieces = getBoardWhite();
+            playerPieces = getSetBlack();
+            enemyPieces = getSetWhite();
             attackerColor = 0;
         }
 
@@ -147,18 +147,18 @@ public class Game extends Bitboard implements IGame {
     // this method does not implement game logic and expects
     // the given move to be legal
     private void syncMove(Move move) {
-        int activeColor = getColorToMove();
+        int activeColor = getActiveColor();
         Position from = move.getFrom();
         Position to = move.getTo();
 
         long[] playerBoards;
         long[] enemyBoards;
         if (activeColor == 0) {
-            playerBoards = boardWhite;
-            enemyBoards = boardBlack;
+            playerBoards = getSetWhite();
+            enemyBoards = getSetBlack();
         } else {
-            playerBoards = boardBlack;
-            enemyBoards = boardWhite;
+            playerBoards = getSetBlack();
+            enemyBoards = getSetWhite();
         }
 
         // Remove Player Piece
@@ -195,7 +195,7 @@ public class Game extends Bitboard implements IGame {
 
         // reassign of bitboards needed?
         // Update color
-        colorToMove = colorToMove == 0 ? 1 : 0;
+        activeColor = activeColor == 0 ? 1 : 0;
 
     }
 }

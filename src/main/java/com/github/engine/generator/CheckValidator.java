@@ -1,6 +1,8 @@
 package com.github.engine.generator;
 
 import com.github.engine.Bitboard;
+import com.github.engine.Game;
+import com.github.engine.GameBoard;
 import com.github.engine.models.CheckInfo;
 import com.github.engine.models.CheckResolveInfo;
 import com.github.engine.move.Position;
@@ -10,16 +12,16 @@ import java.util.List;
 
 public class CheckValidator {
     @Setter
-    private Bitboard bitboard;
+    private GameBoard gameBoard;
     public CheckInfo inCheck(int playerColor) {
         long[] playerPieces;
         long[] enemyPieces;
         if (playerColor == 0) {
-            playerPieces = bitboard.getBoardWhite();
-            enemyPieces = bitboard.getBoardBlack();
+            playerPieces = gameBoard.getSetWhite();
+            enemyPieces = gameBoard.getSetBlack();
         } else {
-            playerPieces = bitboard.getBoardBlack();
-            enemyPieces = bitboard.getBoardWhite();
+            playerPieces = gameBoard.getSetBlack();
+            enemyPieces = gameBoard.getSetWhite();
         }
 
         long kingBoard = playerPieces[5];
@@ -77,11 +79,11 @@ public class CheckValidator {
         long[] playerPieces;
         long[] enemyPieces;
         if (playerColor == 0) {
-            playerPieces = bitboard.getBoardWhite();
-            enemyPieces = bitboard.getBoardBlack();
+            playerPieces = gameBoard.getSetWhite();
+            enemyPieces = gameBoard.getSetBlack();
         } else {
-            playerPieces = bitboard.getBoardBlack();
-            enemyPieces = bitboard.getBoardWhite();
+            playerPieces = gameBoard.getSetBlack();
+            enemyPieces = gameBoard.getSetWhite();
         }
 
         long[] attack2Defend = new long[6];
@@ -89,7 +91,7 @@ public class CheckValidator {
         boolean a2dResolvable = false;
         boolean b2dResolvable = false;
 
-        Generator generator = new Generator(bitboard);
+        Generator generator = new Generator(gameBoard);
         //
         // ATTACK TO DEFEND
         // resolve chess by attacking threatening piece
@@ -143,7 +145,7 @@ public class CheckValidator {
         return null;
     }
 
-    public CheckValidator(Bitboard bitboard) {
-        this.bitboard = bitboard;
+    public CheckValidator(GameBoard gameBoard) {
+        this.gameBoard = gameBoard;
     }
 }
