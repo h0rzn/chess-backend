@@ -8,6 +8,9 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 
+// MoveInfo stores data about a single move
+// move processing writes logs about the respective
+// steps of the process to 'log'
 public class MoveInfo {
     @Setter
     @Getter

@@ -5,7 +5,6 @@ import com.github.engine.interfaces.IGenerator;
 import com.github.engine.move.Position;
 
 public class QueenMoveGenerator implements IGenerator {
-
     private final long[] boardWhite;
     private final long[] boardBlack;
 

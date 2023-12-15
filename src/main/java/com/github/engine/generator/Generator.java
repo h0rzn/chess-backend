@@ -4,6 +4,10 @@ import com.github.engine.GameBoard;
 import com.github.engine.SinglePiece;
 import com.github.engine.move.Position;
 
+// Generator class is the top level class
+// of the move generation and acts as a
+// distributor for the corresponding move generation
+// class of the piece
 public class Generator {
     private long[] boardWhite;
     private long[] boardBlack;
@@ -15,7 +19,9 @@ public class Generator {
         this.boardBlack = gameBoard.getSetBlack();
     }
 
-    // Generates all possible moves for a given piece
+    // Distributes the Position information and color
+    // to the respective Piece Move Generation which
+    // is sourced by the pieceType given in Position
     public long generate(Position position, int color){
         SinglePiece piece = SinglePiece.fromNumber(position.getPieceType());
         switch (piece){

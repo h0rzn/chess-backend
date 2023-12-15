@@ -1,5 +1,7 @@
 package com.github.engine;
 
+// Represents a single piece Type
+// with the corresponding bitboard-set index
 public enum SinglePiece {
     Pawn(0),
     Knight(1),

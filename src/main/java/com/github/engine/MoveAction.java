@@ -5,6 +5,9 @@ import com.github.engine.move.Move;
 import com.github.engine.move.MoveType;
 import lombok.Getter;
 
+// MoveAction implements the user action
+// and sets moveType specific data in the constructor
+// which is not required as input
 public class MoveAction implements IUserAction {
     @Getter
     private Move move;

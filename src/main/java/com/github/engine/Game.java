@@ -11,6 +11,12 @@ import lombok.Getter;
 import static com.github.engine.move.MoveType.Normal;
 import static com.github.engine.move.MoveType.Promotion;
 
+// Game is the high level class to be interacted with.
+// Use 'execute' to send moves wrapped into a 'IUserAction'
+// to trigger the move.
+// For now the different move methods are still exposed,
+// but this can change when the CheckValidator class is fully
+// implemented.
 public class Game extends GameBoard implements IGame {
     @Getter
     private GameState gameState;

@@ -10,9 +10,14 @@ import lombok.Setter;
 
 import java.util.List;
 
+// CheckValidator contains methods to inspect a potential
+// check situation and check if the check is resolvable
 public class CheckValidator {
     @Setter
     private GameBoard gameBoard;
+
+    // validate if the given player is in a check situation
+    // CheckInfo returns additional information
     public CheckInfo inCheck(int playerColor) {
         long[] playerPieces;
         long[] enemyPieces;
