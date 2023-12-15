@@ -1,16 +1,10 @@
 package com.github.engine.generator;
 
-import com.github.engine.Bitboard;
 import com.github.engine.GameBoard;
-import com.github.engine.interfaces.IBoard;
 import com.github.engine.interfaces.IGenerator;
-import com.github.engine.move.Move;
 import com.github.engine.move.Position;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class RookMoveGenerator implements IBoard, IGenerator {
+public class RookMoveGenerator implements IGenerator {
     private final long[] boardWhite;
     private final long[] boardBlack;
     public RookMoveGenerator(GameBoard gameBoard) {

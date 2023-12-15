@@ -8,6 +8,9 @@ public abstract class GameBoard {
     @Getter
     private long[] setBlack;
 
+    // Merges whitePieces and blackPieces respectively
+    // decision on what is player and enemy is based on playerColor
+    // returns [playerPiecesMerged, enemyPiecesMerged]
     public static long[] mergePlayerBoards(int playerColor, long[] whitePieces, long[] blackPieces) {
         long[] mergedBoards = new long[2];
         long setWhitePieces = (whitePieces[0] | whitePieces[1] | whitePieces[2] | whitePieces[3] | whitePieces[4] | whitePieces[5]);
@@ -18,7 +21,57 @@ public abstract class GameBoard {
         return mergedBoards;
     }
 
+    public void print(int color) {
+        char[] pieceSymbols = {'P', 'N', 'B', 'R', 'Q', 'K'}; // Pawn, kNight, Bishop, Rook, Queen, King
+        boolean isWhite = color == 0;
 
+        int rowStart = isWhite ? 7 : 0;
+        int rowEnd = isWhite ? -1 : 8;
+        int rowStep = isWhite ? -1 : 1;
+        int colStart = isWhite ? 0 : 7;
+        int colEnd = isWhite ? 8 : -1;
+        int colStep = isWhite ? 1 : -1;
+
+        for (int row = rowStart; isWhite ? row > rowEnd : row < rowEnd; row += rowStep) {
+            System.out.println("  +---+---+---+---+---+---+---+---+");
+            System.out.print((row + 1) + " |");
+
+            for (int col = colStart; isWhite ? col < colEnd : col > colEnd; col += colStep) {
+                int position = row * 8 + col;
+
+                char symbol = ' ';
+                boolean pieceFound = false;
+
+                for (int i = 0; i < 6; i++) {
+                    if (((1L << position) & this.getSetWhite()[i]) != 0) {
+                        symbol = Character.toUpperCase(pieceSymbols[i]);
+                        pieceFound = true;
+                        break;
+                    }
+                }
+
+                if (!pieceFound) {
+                    for (int i = 0; i < 6; i++) {
+                        if (((1L << position) & this.getSetBlack()[i]) != 0) {
+                            symbol = Character.toLowerCase(pieceSymbols[i]);
+                            break;
+                        }
+                    }
+                }
+
+                System.out.print(" " + symbol + " |");
+            }
+
+            System.out.println();
+        }
+
+        System.out.println("  +---+---+---+---+---+---+---+---+");
+        if (isWhite) {
+            System.out.println("    a   b   c   d   e   f   g   h");
+        } else {
+            System.out.println("    h   g   f   e   d   c   b   a");
+        }
+    }
 
     public GameBoard() {
         this.setWhite = new long[6];

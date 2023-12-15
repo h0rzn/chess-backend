@@ -40,7 +40,7 @@ public class CheckValidator {
         long enemyCovers = 0;
 
         // generate enemy moves
-        Generator enemyGenerator = new Generator(bitboard);
+        Generator enemyGenerator = new Generator(gameBoard);
         for (int enemyPiece = 0; enemyPiece < 6; enemyPiece++) {
             // get all occupied squares of that pieceType
             List<Integer> enemyPieceSquares = Bitboard.bitscanMulti(enemyPieces[enemyPiece]);

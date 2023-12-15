@@ -1,26 +1,13 @@
 package com.github.engine.generator;
 
-import com.github.engine.Bitboard;
 import com.github.engine.GameBoard;
-import com.github.engine.interfaces.IBoard;
 import com.github.engine.interfaces.IGenerator;
-import com.github.engine.move.Move;
-import com.github.engine.move.MoveType;
 import com.github.engine.move.Position;
-import lombok.Getter;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.github.engine.Bitboard.mergePlayerBoards;
-
-public class QueenMoveGenerator implements IBoard, IGenerator {
+public class QueenMoveGenerator implements IGenerator {
 
     private final long[] boardWhite;
     private final long[] boardBlack;
-
-    @Getter
-    private MoveType moveType;
 
     public QueenMoveGenerator(GameBoard gameBoard) {
         this.boardWhite = gameBoard.getSetWhite();

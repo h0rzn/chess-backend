@@ -1,18 +1,11 @@
 package com.github.engine.generator;
 
-import com.github.engine.Bitboard;
 import com.github.engine.GameBoard;
-import com.github.engine.interfaces.IBoard;
 import com.github.engine.interfaces.IGenerator;
-import com.github.engine.move.Move;
 import com.github.engine.move.Position;
 
-import java.util.ArrayList;
-import java.util.List;
 
-import static com.github.engine.Bitboard.mergePlayerBoards;
-
-public class BishopMoveGenerator implements IBoard, IGenerator {
+public class BishopMoveGenerator implements IGenerator {
     private final long[] boardWhite;
     private final long[] boardBlack;
     public BishopMoveGenerator(GameBoard gameBoard) {

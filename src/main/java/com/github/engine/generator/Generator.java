@@ -1,13 +1,8 @@
 package com.github.engine.generator;
 
-import com.github.engine.Bitboard;
 import com.github.engine.GameBoard;
-import com.github.engine.interfaces.IBoard;
 import com.github.engine.SinglePiece;
-import com.github.engine.move.Move;
 import com.github.engine.move.Position;
-
-import java.util.List;
 
 public class Generator {
     private long[] boardWhite;
