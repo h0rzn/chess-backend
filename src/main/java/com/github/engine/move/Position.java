@@ -44,6 +44,11 @@ public class Position {
         this.pieceType = -1;
     }
 
+    public Position(int index, int pieceType) {
+        this.index = index;
+        this.pieceType = pieceType;
+    }
+
     public Position(Position position) {
         this.index = position.index;
         this.pieceType = position.pieceType;
