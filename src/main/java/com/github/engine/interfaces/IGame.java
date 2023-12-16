@@ -1,17 +1,12 @@
 package com.github.engine.interfaces;
 
+import com.github.engine.models.MoveInfo;
 import com.github.engine.move.Move;
 
 import java.util.List;
 
+// IGame specifies the interface of a game instance
 public interface IGame {
-    boolean makeMove(Move move);
-
-    int getColorToMove();
-
-    List<Integer> getMoves();
-
-    boolean isCheck(int color);
-
-    boolean isCheckMate(int color);
+    MoveInfo execute(IUserAction action);
+    int getActiveColor();
 }

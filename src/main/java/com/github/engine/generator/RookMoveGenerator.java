@@ -1,68 +1,115 @@
 package com.github.engine.generator;
 
-import com.github.engine.Bitboard;
-import com.github.engine.interfaces.IBoard;
+import com.github.engine.GameBoard;
 import com.github.engine.interfaces.IGenerator;
-import com.github.engine.move.Move;
+import com.github.engine.move.Position;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class RookMoveGenerator implements IBoard, IGenerator {
+public class RookMoveGenerator implements IGenerator {
     private final long[] boardWhite;
     private final long[] boardBlack;
-    public RookMoveGenerator(Bitboard board) {
-        this.boardWhite = board.getBoardWhite();
-        this.boardBlack = board.getBoardBlack();
+    public RookMoveGenerator(GameBoard gameBoard) {
+        this.boardWhite = gameBoard.getSetWhite();
+        this.boardBlack = gameBoard.getSetBlack();
     }
 
+    // Rook: Move Generation
+    // works similar to queen, but extended with castling check
     @Override
-    public List<Integer> generate(int color, Move move) {
-        List<Integer> moves = new ArrayList<>();
-
-        long boardWhitePieces = (boardWhite[0] | boardWhite[1] | boardWhite[2] | boardWhite[3] | boardWhite[4] | boardWhite[5]);
-        long boardBlackPieces = (boardBlack[0] | boardBlack[1] | boardBlack[2] | boardBlack[3] | boardBlack[4] | boardBlack[5]);
-        long ownPieces = (color == 0) ? boardWhitePieces : boardBlackPieces;
-        long enemyPieces = (color == 0) ? boardBlackPieces : boardWhitePieces;
+    public long generate(int color, Position position) {
+        long[] mergedPieces = GameBoard.mergePlayerBoards(color, boardWhite, boardWhite);
+        long ownPieces = mergedPieces[0];
+        long enemyPieces = mergedPieces[1];
+        long currentMoves = 0;
+    
+        int rookIndex = position.getIndex();
         // Cursor checkings current position
-        int index = move.getFrom().getIndex();
-        long cursor = 1L << index;
+        long cursor = 1L << rookIndex;
         long northCursor = cursor << 8;
         long southCursor = cursor >> 8;
+        long eastCursor = cursor << 1;
+        long westCursor = cursor >> 1;
         // Max amount of positions to check for each direction
-        int maxSouth = index / 8;
+        int maxSouth = rookIndex / 8;
         int maxNorth = 8 - maxSouth - 1;
-
+        int maxWest = rookIndex % 8;
+        int maxEast = 8 - maxWest - 1;
+        
         for (int i = 0; i < 8; i++) {
             // NORTH
             if (i < maxNorth) {
-                int idx = index+(i+1)*8;
                 if ((northCursor & enemyPieces) != 0) {
-                    moves.add(idx);
+                    currentMoves |= northCursor;
                     maxNorth = i;
                 } else if ((northCursor & ownPieces) != 0) {
                     maxNorth = i;
                 } else {
-                    moves.add(idx);
+                    currentMoves |= northCursor;
                     northCursor <<= 8;
                 }
             }
-
+    
             // SOUTH
             if (i < maxSouth) {
-                int idx = index+(i+1)*8;
                 if ((southCursor & enemyPieces) != 0) {
-                    moves.add(idx);
+                    currentMoves |= southCursor;
                     maxSouth = i;
                 } else if ((southCursor & ownPieces) != 0) {
                     maxSouth = i;
                 } else {
-                    moves.add(idx);
+                    currentMoves |= southCursor;
                     southCursor >>= 8;
+                }
+            }
+    
+            // EAST
+            if (i < maxEast) {
+                if ((eastCursor & enemyPieces) != 0) {
+                    currentMoves |= eastCursor;
+                    maxEast = i;
+                } else if ((southCursor & ownPieces) != 0) {
+                    maxEast = i;
+                } else {
+                    currentMoves |= eastCursor;
+                    eastCursor <<= 1;
+                }
+            }
+    
+            // WEST
+            if (i < maxWest) {
+                if ((westCursor & enemyPieces) != 0) {
+                    currentMoves |= westCursor;
+                    maxWest = i;
+                } else if ((southCursor & ownPieces) != 0) {
+                    maxWest = i;
+                } else {
+                    currentMoves |= westCursor;
+                    westCursor >>= 1;
                 }
             }
         }
 
-        return moves;
+        // bitboard with current moves is 0
+        // if 0: all pieces have been moved -> ignore castling
+        if (currentMoves == 0) {
+            return currentMoves;
+        }
+
+        // we don't care which side of the board the king is on
+        long kingPosPotentials = (1 << 4) | (1L << 60);
+        // no match of potential king position and own pieces
+        if ((kingPosPotentials&ownPieces) == 0) {
+            return currentMoves;
+        }
+        // this should only catch our king
+        if ((currentMoves&kingPosPotentials) == 0) {
+            return currentMoves;
+        }
+        // just check if the rook has been moved and we are done
+        long rookBoard = (1L << rookIndex);
+        if ((rookBoard&currentMoves) != 0) {
+            currentMoves |= 0x10;
+        }
+        
+        return currentMoves;
     }
 }

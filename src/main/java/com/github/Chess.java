@@ -42,7 +42,7 @@ public class Chess {
                 System.out.println(move1);
                 // Generates all possible moves for the current position and stores them in a list
                 Generator generator = new Generator(game);
-                List<Integer> moves = generator.generate(move1, game.getColorToMove());
+                List<Integer> moves = generator.generate(move1.getFrom(), game.getColorToMove());
                 // Checks wether the move from user is in validMove list -> is a valid move
                 if(moves.contains(move1.getTo().getIndex())){
                     System.out.println("Valid move");

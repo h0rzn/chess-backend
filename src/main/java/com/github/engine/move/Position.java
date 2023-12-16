@@ -1,22 +1,24 @@
 package com.github.engine.move;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class Position {
     @Getter
-    private int row; //row
-    @Getter
-    private int column; //column
-    @Getter
     private int index;
+    // pieceType is not passed to the constructor
+    // but rather set during move processing
+    @Getter
+    @Setter
+    private int pieceType;
 
-    public Position(int row, int column, int index) {
-        this.row = row;
-        this.column = column;
-        this.index = index;
+    // noPiece returns true if no piece has been set
+    // so pieceType is -1
+    public boolean noPiece() {
+        return pieceType == -1;
     }
 
 
@@ -30,9 +32,8 @@ public class Position {
         if (index < 0 || index > 63) {
             throw new IllegalArgumentException("Index must be between 0 and 63");
         }
-        this.column = file;
-        this.row = rank;
         this.index = index;
+        this.pieceType = -1;
     }
 
     public Position(int index) {
@@ -40,19 +41,27 @@ public class Position {
             throw new IllegalArgumentException("Index must be between 0 and 63");
         }
         this.index = index;
-        this.row = rowFunction.apply(index);
-        this.column = columnFunction.apply(index);
+        this.pieceType = -1;
+    }
+
+    public Position(int index, int pieceType) {
+        this.index = index;
+        this.pieceType = pieceType;
     }
 
     public Position(Position position) {
-        this.row = position.row;
-        this.column = position.column;
         this.index = position.index;
+        this.pieceType = position.pieceType;
     }
 
+    /*
+    // Keep rowFunction and columnFunction for now
+    // probably not needed
     static Function<Integer, Integer> rowFunction = index -> index / 8;
+
     //Gets the column by an index (0-64)
     static Function<Integer, Integer> columnFunction = index -> index % 8;
+     */
 
     static Function<String, Integer> columnToIndex = index -> switch (index) {
         case "A" -> 0;
