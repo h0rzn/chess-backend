@@ -27,6 +27,10 @@ public class Game extends GameBoard implements IGame {
         super();
     }
 
+    // Create game with given board scenario
+    public Game(long[] setWhite, long[] setBlack) {
+        super(setWhite, setBlack);
+    }
     public Game copy(){
         // Game copy = new Game();
         // TOOD check if we have to copy gameboard
