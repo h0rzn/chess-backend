@@ -3,7 +3,6 @@ package com.github.engine.utils;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.rmi.server.ExportException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -99,18 +98,29 @@ public class FenParser {
     }
 
     public int parseMoveClock(String clockGroup) throws Exception {
-        return Integer.parseInt(clockGroup);
+        try {
+            int clock = Integer.parseInt(clockGroup);
+            // Ignore 50-Rule for now
+            if (clock >= 0) {
+                return clock;
+            }
+            throw new Exception("move clock parsing: must be >= 0, have: "+clock);
+        } catch (NumberFormatException exception) {
+            throw new Exception("move clock parsing: failed to parse int: " + exception);
+        }
     }
 
     public void parse(String fenToken) throws Exception {
         //log(fenToken);
         String[] groups = fenToken.split(" ");
         if (groups.length != 6) {
-            throw new Exception("token does not have required 6 groups, has: "+groups.length);
+            throw new Exception("token does not have required 6 groups, have: "+groups.length);
         }
 
-        for (String group : groups) {
-            System.out.println("GROUP " + group);
+        if (logsEnabled) {
+            for (String group : groups) {
+                System.out.println("GROUP " + group);
+            }
         }
 
         // G0 Parse placements
@@ -145,9 +155,6 @@ public class FenParser {
         } else {
             throw new Exception("full move clock group: must be >= 0, have: "+fullMoveClock);
         }
-
-
-
     }
 
     public void log(String line) {
@@ -162,7 +169,11 @@ public class FenParser {
         this.activeColor = -1;
         this.halfMoveClock = -1;
         this.fullMoveClock = -1;
+    }
 
+    // Constructor to enable logs
+    public FenParser(boolean logsEnabled) {
+        this();
         this.logsEnabled = true;
     }
 }
