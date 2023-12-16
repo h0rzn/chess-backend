@@ -3,6 +3,7 @@ package com.github.engine.utils;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.rmi.server.ExportException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +24,13 @@ public class FenParser {
     private long[] setWhite;
     @Getter
     private long[] setBlack;
+    @Getter
+    private int activeColor;
+    @Getter
+    private int halfMoveClock;
+    @Getter
+    private int fullMoveClock;
+
     
     @Setter
     private boolean logsEnabled;
@@ -40,9 +48,18 @@ public class FenParser {
         return piece;
     }
 
+    // get piece color by uppercase (white)
+    // or lowercase (black)
     public int getColorForPiece(char pieceChar) {
         return Character.isUpperCase(pieceChar) ? 0 : 1;
     }
+
+    // parse placement group string
+    // starts on square index 0 (LL) and splits rows by '/'
+    // '8' -> empty row
+    // 'P7' -> white pawn on left most square, followed by 7 empty squares in that row
+    // '7P' -> 7 empty squares followed by white pawn
+    // can be combined like: Q6n
     public List<long[]> parsePlacements(String group) {
         ArrayList<long[]> pieceSets = new ArrayList<>();
         String[] placements = group.split("/");
@@ -54,6 +71,7 @@ public class FenParser {
                 log("--> empty row" + " cursor: " +cursor+ " -> "+(cursor+8));
                 cursor += 8;
             } else {
+                // TODO throw exception if row malformed: not 8 or not all squares covered by FEN
                 for (char pieceChar : placements[row].toCharArray()) {
                     int charNum = Character.getNumericValue(pieceChar);
                     if (charNum <= 8) {
@@ -80,19 +98,56 @@ public class FenParser {
         return pieceSets;
     }
 
+    public int parseMoveClock(String clockGroup) throws Exception {
+        return Integer.parseInt(clockGroup);
+    }
+
     public void parse(String fenToken) throws Exception {
         //log(fenToken);
         String[] groups = fenToken.split(" ");
         if (groups.length != 6) {
             throw new Exception("token does not have required 6 groups, has: "+groups.length);
         }
-        /*
-        for (String group : groups) {
-            log(group);
-        }
-         */
 
+        for (String group : groups) {
+            System.out.println("GROUP " + group);
+        }
+
+        // G0 Parse placements
         parsePlacements(groups[0]);
+
+        // G1 Parse active color
+        String activeColorGroup = groups[1];
+        if (activeColorGroup.equals("w")) {
+            this.activeColor = 0;
+        } else if (activeColorGroup.equals("b")) {
+            this.activeColor = 1;
+        } else {
+            throw new Exception("active color group: unkown color "+activeColorGroup);
+        }
+
+        // TODO add parsing for group 2 & 3
+        // G2 Castling availability
+        // G3 En passant target square
+
+        // Move clock parsing throws NumberFormatException
+        // G4 Half Move Clock
+        int halfMoveClock = parseMoveClock(groups[4]);
+        if (halfMoveClock > -1) {
+            this.halfMoveClock = halfMoveClock;
+        } else {
+            throw new Exception("half move clock group: must be >= 0, have: "+halfMoveClock);
+        }
+        // G5 Full Move Clock
+        int fullMoveClock = parseMoveClock(groups[5]);
+        if (fullMoveClock > -1) {
+            this.fullMoveClock = fullMoveClock;
+        } else {
+            throw new Exception("full move clock group: must be >= 0, have: "+fullMoveClock);
+        }
+
+
+
     }
 
     public void log(String line) {
@@ -104,6 +159,10 @@ public class FenParser {
     public FenParser() {
         this.setWhite = new long[6];
         this.setBlack = new long[6];
+        this.activeColor = -1;
+        this.halfMoveClock = -1;
+        this.fullMoveClock = -1;
+
         this.logsEnabled = true;
     }
 }
