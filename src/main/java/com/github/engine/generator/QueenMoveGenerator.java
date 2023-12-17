@@ -68,7 +68,7 @@ public class QueenMoveGenerator implements IGenerator {
                     maxSouth = i;
                 } else {
                     currentMoves |= southCursor;
-                    southCursor >>= 8;
+                    southCursor >>>= 8;
                 }
             }
 
@@ -94,7 +94,7 @@ public class QueenMoveGenerator implements IGenerator {
                     maxWest = i;
                 } else {
                     currentMoves |= westCursor;
-                    westCursor >>= 1;
+                    westCursor >>>= 1;
                 }
             }
 
@@ -120,7 +120,7 @@ public class QueenMoveGenerator implements IGenerator {
                     maxNorthWest = i;
                 } else {
                     currentMoves |= northWestCursor;
-                    maxNorthWest <<= 7;
+                    northWestCursor <<= 7;
                 }
             }
 
@@ -133,7 +133,7 @@ public class QueenMoveGenerator implements IGenerator {
                     maxSouthEast = i;
                 } else {
                     currentMoves |= southEastCursor;
-                    maxSouthEast >>= 7;
+                    southEastCursor >>>= 7;
                 }
             }
 
@@ -146,7 +146,7 @@ public class QueenMoveGenerator implements IGenerator {
                     maxSouthWest = i;
                 } else {
                     currentMoves |= southWestCursor;
-                    maxSouthWest >>= 9;
+                    southWestCursor >>>= 9;
                 }
             }
         }
