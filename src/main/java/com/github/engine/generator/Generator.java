@@ -79,7 +79,6 @@ public class Generator {
 
         for (int pieceType = 0; pieceType < 6; pieceType++) {
             for (Integer square : Bitboard.bitscanMulti(playerPieces[pieceType])) {
-                System.out.println(getPlayerColor() +" GEN ALL type "+pieceType+" square "+square);
                 Position position = new Position(square, pieceType);
                 generated[pieceType] |= generate(position);
             }

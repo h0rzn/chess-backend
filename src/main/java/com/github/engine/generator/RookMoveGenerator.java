@@ -71,7 +71,6 @@ public class RookMoveGenerator implements IGenerator {
                 } else {
                     currentMoves |= eastCursor;
                     eastCursor <<= 1;
-                    System.out.println("after east update "+currentMoves);
                 }
             }
 
