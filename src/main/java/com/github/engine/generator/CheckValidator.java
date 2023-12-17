@@ -50,17 +50,27 @@ public class CheckValidator {
         // generate enemy moves
         Generator generator = new Generator(enemyColor, gameBoard);
         for (int enemyPiece = 0; enemyPiece < 6; enemyPiece++) {
+            // skip empty piece boards
+            if (enemyPieces[enemyPiece] == 0) {
+                continue;
+            }
             // get all occupied squares of that pieceType
             List<Integer> enemyPieceSquares = Bitboard.bitscanMulti(enemyPieces[enemyPiece]);
 
             // iterate over each square (=each Piece) and run move gen
             for (Integer occupiedSquare : enemyPieceSquares) {
+                if (occupiedSquare == 0) {
+                    continue;
+                }
                 Position enemyPosition = new Position(occupiedSquare, enemyPiece);
                 long enemyPieceMoves = generator.generate(enemyPosition);
-                System.out.println("enemy:: piece "+enemyPiece+" moves "+enemyPieceMoves);
 
-
-                if ((enemyPieceMoves & kingSquare) != 0) {
+                // if enemy player move generation includes the players king square
+                // add that move generation to the combined attackRoutes and
+                // the attackBoard of the respective enemy piece
+                // if there is no match we still add the move gen to the enemy covers
+                // the get a map of all enemy reachable squares
+                if ((enemyPieceMoves & kingBoard) != 0) {
                     attackRoutes |= enemyPieceMoves;
                     attackBoards[enemyPiece] |= enemyPieceMoves;
                 } else {
