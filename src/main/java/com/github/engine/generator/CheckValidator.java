@@ -164,7 +164,6 @@ public class CheckValidator {
 
 
         int playerKingSquare = Bitboard.bitscanSingle(playerPieces[5]);
-        int playerKingColumn = playerKingSquare % 8;
         long[] playerMoves = generator.generateAll();
 
         generator.setPlayerColor(enemyColor);
@@ -272,7 +271,19 @@ public class CheckValidator {
 
     // extract the direct route between threatening enemy piece
     // and player king
-    private long isolateCheckRoute() {
+    private long isolateCheckRoute(int playerColor, List<Integer> matches, Position attacker, int kingSquare) {
+        int playerKingColumn = kingSquare % 8;
+
+        for (int match : matches) {
+
+            // Same column
+            if (playerKingColumn == match % 8) {
+
+            }
+
+
+        }
+
         return 0;
     }
 

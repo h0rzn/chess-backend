@@ -1,8 +1,11 @@
 package com.github.engine;
 
 import com.github.GameState;
+import com.github.engine.generator.CheckValidator;
 import com.github.engine.interfaces.IGame;
 import com.github.engine.interfaces.IUserAction;
+import com.github.engine.models.CheckInfo;
+import com.github.engine.models.CheckResolveInfo;
 import com.github.engine.models.MoveInfo;
 import com.github.engine.move.Move;
 import com.github.engine.move.Position;
@@ -30,11 +33,6 @@ public class Game extends GameBoard implements IGame {
     // Create game with given board scenario
     public Game(long[] setWhite, long[] setBlack) {
         super(setWhite, setBlack);
-    }
-    public Game copy(){
-        // Game copy = new Game();
-        // TOOD check if we have to copy gameboard
-        return null;
     }
 
     // execute a user action by calling
@@ -145,15 +143,82 @@ public class Game extends GameBoard implements IGame {
         // TODO check if to is generated legal moves
 
         // TODO Checkmate Player
+        CheckValidator playerCheckValidator = new CheckValidator(this);
+        CheckInfo playerCheckInfo = playerCheckValidator.inCheck(getActiveColor());
+        System.out.println(playerCheckInfo);
+
+        long moveToBoard = (1L << to.getIndex());
+        if (playerCheckInfo.isCheck()) {
+            info.pushLog("player in check");
+            // check if the king move is legal based on
+            // given king escapes
+            if (from.getPieceType() == 5) {
+                // king escapes does not contain wanted move --> illegal in check move
+                if ((moveToBoard&playerCheckInfo.kingEscapes()) == 0) {
+                    info.setFailMessage("illegal in check move for king");
+                    return info;
+                }
+            } else {
+                // resolve by player pieces
+                CheckResolveInfo resolveInfo = playerCheckValidator.isCheckResolvable(getActiveColor(), playerCheckInfo.attackBoards());
+                if (resolveInfo.resolvable()) {
+                    // check if move is legal attack to defend move
+                    // or legal block to defend move
+                    boolean moveResolvesCheck = false;
+                    for (int playerPiece = 0; playerPiece < 6; playerPiece++) {
+                        long[] a2d = resolveInfo.attack2Defend();
+                        long[] b2d = resolveInfo.block2Defend();
+
+                        if ((a2d[playerPiece]&moveToBoard) != 0) {
+                            info.pushLog("legal resolve move[a2d]");
+                            moveResolvesCheck = true;
+                            break;
+                        } else if ((b2d[playerPiece]&moveToBoard) != 0) {
+                            info.pushLog("legal resolve move[b2d]");;
+                            moveResolvesCheck = true;
+                            break;
+                        }
+                    }
+                    // move does not resolve check --> illegal
+                    if (!moveResolvesCheck) {
+                        info.setFailMessage("illegal in check move");
+                        return info;
+                    }
+                }
+            }
+        } else if (from.getPieceType() == 5){
+            // even though the players king is currently not in check
+            // we have to validate that this move would not put him in a check situation
+            if ((moveToBoard& playerCheckInfo.enemyMoveCovered()) != 0) {
+                info.setFailMessage("illegal non-check move: move puts king in check");
+                return info;
+            }
+        }
 
         // TODO handle piece Specials
+
 
         // TODO sync move
         // just force NORMAL Type for now
         move.setMoveType(Normal);
         syncMove(move);
 
-        // TODO Checkmate Enemy -> game over?
+        //
+        // POST MOVE
+        // check if legal move ends the game by placing enemy in checkmate
+        //
+        CheckValidator enemyCheckValidator = new CheckValidator(this);
+        int enemyColor = 1;
+        if (playerColor == 1) {
+            enemyColor = 0;
+        }
+        CheckInfo enemyCheckInfo = enemyCheckValidator.inCheck(enemyColor);
+        if (enemyCheckInfo.isCheck()) {
+            CheckResolveInfo resolveInfo = enemyCheckValidator.isCheckResolvable(enemyColor, enemyCheckInfo.attackBoards());
+            if (!resolveInfo.resolvable()) {
+                info.pushLog("-- game ends: enemy in checkmate --");
+            }
+        }
 
 
         info.pushLog("++ move is legal and synced ++");
