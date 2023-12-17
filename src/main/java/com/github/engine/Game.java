@@ -2,7 +2,7 @@ package com.github.engine;
 
 import com.github.GameState;
 import com.github.engine.generator.CheckValidator;
-import com.github.engine.generator.PawnMoveGenerator;
+import com.github.engine.generator.Generator;
 import com.github.engine.interfaces.IGame;
 import com.github.engine.interfaces.IUserAction;
 import com.github.engine.models.CheckInfo;
@@ -13,8 +13,7 @@ import com.github.engine.move.Position;
 import com.github.engine.utils.FenParser;
 import lombok.Getter;
 
-import static com.github.engine.move.MoveType.Normal;
-import static com.github.engine.move.MoveType.Promotion;
+import static com.github.engine.move.MoveType.*;
 
 // Game is the high level class to be interacted with.
 // Use 'execute' to send moves wrapped into a 'IUserAction'
@@ -52,6 +51,12 @@ public class Game extends GameBoard implements IGame {
     public MoveInfo execute(IUserAction action) {
         switch (action.getType()) {
             case Normal:
+                // Abort if Promotion as awaited
+                if (gameState == GameState.PROMOTION_BLACK || gameState == GameState.PROMOTION_WHITE) {
+                    MoveInfo info = new MoveInfo();
+                    info.setFailMessage("cannot make normal move: currently in promotion mode");
+                    return info;
+                }
                 System.out.println("NORMAL MOVE");
                 return moveNormal(action.getMove());
             case Promotion:
@@ -66,18 +71,11 @@ public class Game extends GameBoard implements IGame {
     // are set. when the game is in promotion state this method is a noop
     // and continues to work if the promotion state is resolved by
     // successfully calling the promotion method.
-    // TODO add proper insertion of moveType (especially for KickOut-Type)
     public MoveInfo moveNormal(Move move) {
         MoveInfo info = new MoveInfo();
 
         int playerColor = getActiveColor();
         info.setPlayerColor(playerColor);
-
-        // Abort if Promotion as awaited
-        if (gameState == GameState.PROMOTION_BLACK || gameState == GameState.PROMOTION_WHITE) {
-            info.setFailMessage("cannot make normal move: currently in promotion mode");
-            return info;
-        }
 
         Position from = move.getFrom();
         Position to = move.getTo();
@@ -114,6 +112,7 @@ public class Game extends GameBoard implements IGame {
 
             if ((playerPieces[i] & toBoard) != 0) {
                 to.setPieceType(i);
+                move.setMoveType(Capture);
             }
 
             mergedPlayerPieces |= playerPieces[i];
@@ -125,6 +124,7 @@ public class Game extends GameBoard implements IGame {
         // and not -1
         if (to.getPieceType() == -1) {
             to.setPieceType(from.getPieceType());
+            move.setMoveType(Normal);
         }
 
         info.pushLog("POSITION from: T" + from.getPieceType() + " @" + from.getIndex());
@@ -144,16 +144,7 @@ public class Game extends GameBoard implements IGame {
             return info;
         }
 
-        // get legal moves for selected piece
-        // Generator generator = new Generator(this);
-        /// List<Integer> legalSquares = generator.generate(from, getColorToMove());
-        // at the moment the move generator still works with square indexes
-        // the new move generation returns a bitboard with legal moves marked
-        // TODO adapt move generation logic to bitboard instead of indexes
-
-        // TODO check if to is generated legal moves
-
-        // TODO Checkmate Player
+        // Checkmate: Player
         CheckValidator playerCheckValidator = new CheckValidator(this);
         CheckInfo playerCheckInfo = playerCheckValidator.inCheck(getActiveColor());
         System.out.println(playerCheckInfo);
@@ -206,12 +197,32 @@ public class Game extends GameBoard implements IGame {
             }
         }
 
-        // TODO handle piece Specials
+        // handle piece specials
+        switch (move.getFrom().getPieceType()) {
+            case 0: // PROMOTION
+                if ((playerColor == 0 && to.getIndex() >= 56)) {
+                    move.setMoveType(Promotion);
+                    gameState = GameState.PROMOTION_WHITE;
+                    info.pushLog("legal promotion: next move should set promote piece");
+                } else if ((playerColor == 1 && to.getIndex() <= 7)) {
+                    move.setMoveType(Promotion);
+                    gameState = GameState.PROMOTION_BLACK;
+                    info.pushLog("legal promotion: next move should set promote piece");
+                }
+                break;
+            case 3: // CASTLE from Rook
+                if (move.getTo().getPieceType() == 5) {
+                    if (isCastleLegal(move.getFrom())) {
+                        move.setMoveType(Castle);
+                    } else {
+                        info.setFailMessage("illegal castle");
+                        return info;
+                    }
+                }
+                break;
+        }
 
-
-        // TODO sync move
-        // just force NORMAL Type for now
-        move.setMoveType(Normal);
+        // sync move with gameBoard
         syncMove(move);
 
         //
@@ -234,6 +245,44 @@ public class Game extends GameBoard implements IGame {
 
         info.pushLog("++ move is legal and synced ++");
         return info;
+    }
+
+    // check if potential castle is legal
+    public boolean isCastleLegal(Position from) {
+        long castleRange = switch (from.getIndex()) {
+            case 0 -> 0xeL;
+            case 7 -> 0x60L;
+            case 56 -> 0xe00000000000000L;
+            case 63 -> 0x6000000000000000L;
+            default -> 0;
+        };
+
+        if (castleRange == 0) {
+            return false;
+        }
+
+        long[] playerPieces;
+        Generator enemyGenerator;
+        if (activeColor == 0) {
+            playerPieces = getSetWhite();
+            enemyGenerator = new Generator(1, this);
+        } else {
+            playerPieces = getSetBlack();
+            enemyGenerator = new Generator(0, this);
+        }
+
+        long[] enemyMoves = enemyGenerator.generateAll();
+        for (int i = 0; i < 6; i++) {
+            // check if there are player pieces in castling range
+            if ((playerPieces[i] & castleRange) != 0) {
+                return false;
+            }
+            // check if enemy piece attack castling range
+            if ((enemyMoves[i] & castleRange) != 0) {
+                return false;
+            }
+        }
+        return true;
     }
 
     // promote a piece if game is in promotion mode
@@ -300,4 +349,5 @@ public class Game extends GameBoard implements IGame {
         activeColor = activeColor == 0 ? 1 : 0;
 
     }
+
 }

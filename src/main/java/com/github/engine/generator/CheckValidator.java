@@ -202,7 +202,7 @@ public class CheckValidator {
                     List<Integer> routeMatches = Bitboard.bitscanMulti(routeMatchBoard);
                     System.out.println("--> route matches: "+routeMatches);
 
-                    long attackRoute = isolateCheckRoute();
+                    // long attackRoute = isolateCheckRoute();
 
                 }
             }
