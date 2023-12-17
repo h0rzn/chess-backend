@@ -9,5 +9,5 @@ import java.util.List;
 // of a move generator class for a specific piece
 public interface IGenerator {
     //List<Integer> generate(int color, Position position);
-    long generate(int color, Position position);
+    long generate(Position position);
 }

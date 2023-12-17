@@ -21,12 +21,15 @@ public class CheckValidator {
     public CheckInfo inCheck(int playerColor) {
         long[] playerPieces;
         long[] enemyPieces;
+        int enemyColor;
         if (playerColor == 0) {
             playerPieces = gameBoard.getSetWhite();
             enemyPieces = gameBoard.getSetBlack();
+            enemyColor = 1;
         } else {
             playerPieces = gameBoard.getSetBlack();
             enemyPieces = gameBoard.getSetWhite();
+            enemyColor = 0;
         }
 
         long kingBoard = playerPieces[5];
@@ -45,15 +48,17 @@ public class CheckValidator {
         long enemyCovers = 0;
 
         // generate enemy moves
-        Generator enemyGenerator = new Generator(gameBoard);
+        Generator generator = new Generator(enemyColor, gameBoard);
         for (int enemyPiece = 0; enemyPiece < 6; enemyPiece++) {
             // get all occupied squares of that pieceType
             List<Integer> enemyPieceSquares = Bitboard.bitscanMulti(enemyPieces[enemyPiece]);
 
             // iterate over each square (=each Piece) and run move gen
             for (Integer occupiedSquare : enemyPieceSquares) {
-                Position enemyPosition = new Position(occupiedSquare);
-                long enemyPieceMoves = enemyGenerator.generate(enemyPosition, playerColor);
+                Position enemyPosition = new Position(occupiedSquare, enemyPiece);
+                long enemyPieceMoves = generator.generate(enemyPosition);
+                System.out.println("enemy:: piece "+enemyPiece+" moves "+enemyPieceMoves);
+
 
                 if ((enemyPieceMoves & kingSquare) != 0) {
                     attackRoutes |= enemyPieceMoves;
@@ -72,7 +77,7 @@ public class CheckValidator {
         // a **potential** check situation
         Position playerKingPosition = new Position(kingSquare);
         playerKingPosition.setPieceType(5);
-        long kingMoves = enemyGenerator.generate(playerKingPosition, playerColor);
+        long kingMoves = generator.generate(playerKingPosition);
         kingMoves &= ~enemyPieces[5];
 
         long kingEscapes = (kingMoves & ~enemyCovers);
@@ -96,7 +101,7 @@ public class CheckValidator {
         boolean a2dResolvable = false;
         boolean b2dResolvable = false;
 
-        Generator generator = new Generator(gameBoard);
+        Generator generator = new Generator(playerColor, gameBoard);
         //
         // ATTACK TO DEFEND
         // resolve chess by attacking threatening piece
@@ -116,7 +121,7 @@ public class CheckValidator {
                 List<Integer> playerPieceSquares = Bitboard.bitscanMulti(playerPieces[playerPiece]);
 
                 for (int singlePlayerPieceSquare : playerPieceSquares) {
-                    long playerAttackMoves = generator.generate(new Position(singlePlayerPieceSquare), playerColor);
+                    long playerAttackMoves = generator.generate(new Position(singlePlayerPieceSquare));
                     // for each occurrence of a attacker piece:
                     // check if player can attack
                     for (int enemyPieceSquare : enemyPieceSquares) {

@@ -16,14 +16,27 @@ public abstract class GameBoard {
     // Merges whitePieces and blackPieces respectively
     // decision on what is player and enemy is based on playerColor
     // returns [playerPiecesMerged, enemyPiecesMerged]
-    public static long[] mergePlayerBoards(int playerColor, long[] whitePieces, long[] blackPieces) {
-        long[] mergedBoards = new long[2];
-        long setWhitePieces = (whitePieces[0] | whitePieces[1] | whitePieces[2] | whitePieces[3] | whitePieces[4] | whitePieces[5]);
-        long setBlackPieces = (blackPieces[0] | blackPieces[1] | blackPieces[2] | blackPieces[3] | blackPieces[4] | blackPieces[5]);
-        mergedBoards[0] = (playerColor == 0) ? setWhitePieces : setBlackPieces;
-        mergedBoards[1] = (playerColor == 0) ? setBlackPieces : setWhitePieces;
+    public static long[] mergeAllPlayerBoards(int playerColor, long[] whitePieces, long[] blackPieces) {
+        long mergedWhite = (whitePieces[0] | whitePieces[1] | whitePieces[2] | whitePieces[3] | whitePieces[4] | whitePieces[5]);
+        long mergedBlack = (blackPieces[0] | blackPieces[1] | blackPieces[2] | blackPieces[3] | blackPieces[4] | blackPieces[5]);
 
-        return mergedBoards;
+        if (playerColor == 0) {
+            return new long[]{mergedWhite, mergedBlack};
+        }
+        return new long[]{mergedBlack, mergedWhite};
+    }
+
+    public long[] mergePlayerBoardsWithExclusion(int playerColor, int playerPieceExclusion) {
+        long mergedWhite = 0;
+        long mergedBlack = 0;
+        for (int i = 0; i < 6; i++) {
+            if (playerPieceExclusion == i && (playerColor == 0 || playerColor == 1)) {
+                continue;
+            }
+            mergedWhite |= setWhite[i];
+            mergedWhite |= setBlack[i];
+        }
+        return playerColor == 0 ?  new long[]{mergedWhite, mergedBlack} : new long[]{mergedBlack, mergedWhite};
     }
 
     public void print(int color) {
