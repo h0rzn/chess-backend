@@ -13,6 +13,11 @@ public abstract class GameBoard {
     @Getter
     private long[] setBlack;
 
+    public void loadPieceScenario(long[] setWhite, long[] setBlack) {
+        this.setWhite = setWhite;
+        this.setBlack = setBlack;
+    }
+
     // Merges whitePieces and blackPieces respectively
     // decision on what is player and enemy is based on playerColor
     // returns [playerPiecesMerged, enemyPiecesMerged]
@@ -128,8 +133,7 @@ public abstract class GameBoard {
     }
 
     public GameBoard(long[] setWhite, long[] setBlack) {
-        this.setWhite = setWhite;
-        this.setBlack = setBlack;
+        loadPieceScenario(setWhite, setBlack);
     }
 
 }

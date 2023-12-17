@@ -2,6 +2,7 @@ package com.github.engine;
 
 import com.github.GameState;
 import com.github.engine.generator.CheckValidator;
+import com.github.engine.generator.PawnMoveGenerator;
 import com.github.engine.interfaces.IGame;
 import com.github.engine.interfaces.IUserAction;
 import com.github.engine.models.CheckInfo;
@@ -9,6 +10,7 @@ import com.github.engine.models.CheckResolveInfo;
 import com.github.engine.models.MoveInfo;
 import com.github.engine.move.Move;
 import com.github.engine.move.Position;
+import com.github.engine.utils.FenParser;
 import lombok.Getter;
 
 import static com.github.engine.move.MoveType.Normal;
@@ -33,6 +35,15 @@ public class Game extends GameBoard implements IGame {
     // Create game with given board scenario
     public Game(long[] setWhite, long[] setBlack) {
         super(setWhite, setBlack);
+    }
+
+    // load a game with FEN input
+    public void loadFEN(String fenString) throws Exception {
+        FenParser parser = new FenParser();
+        parser.parse(fenString);
+
+        loadPieceScenario(parser.getSetWhite(), parser.getSetBlack());
+        activeColor = parser.getActiveColor();
     }
 
     // execute a user action by calling
