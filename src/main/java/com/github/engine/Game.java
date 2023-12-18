@@ -21,6 +21,17 @@ import static com.github.engine.move.MoveType.*;
 // For now the different move methods are still exposed,
 // but this can change when the CheckValidator class is fully
 // implemented.
+//
+// HOW TO MAKE A MOVE
+// As an action:
+//    1) create a MoveAction
+//       - normal move: use MoveAction(move)
+//       - promotion  : use MoveAction(pieceTypeToPromoteTo)
+//    2) pass to: execute(moveAction)
+//       -> returns MoveInfo
+// or directly (not recommended as some validity checks are not made):
+// Normal Move: moveNormal(move)
+// Promotion  : movePromotion(move) --> not fully implemented
 public class Game extends GameBoard implements IGame {
     @Getter
     private GameState gameState;
