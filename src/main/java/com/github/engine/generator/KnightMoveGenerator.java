@@ -6,21 +6,17 @@ import com.github.engine.interfaces.IGenerator;
 import com.github.engine.move.Position;
 
 public class KnightMoveGenerator implements IGenerator {
-    private final long[] boardWhite;
-    private final long[] boardBlack;
+    private final long mergedPlayerPieces;
 
-    public KnightMoveGenerator(GameBoard gameBoard) {
-        this.boardWhite = gameBoard.getSetWhite();
-        this.boardBlack = gameBoard.getSetBlack();
+    public KnightMoveGenerator(int playerColor, GameBoard gameBoard) {
+        long[] mergedPieces = gameBoard.mergePlayerBoardsWithExclusion(playerColor, 3);
+        this.mergedPlayerPieces = mergedPieces[0];
     }
 
     // Knight: Move Generation
     // potential squares are hardcoded and filtered by file masks
     @Override
-    public long generate(int color, Position position) {
-        long[] mergedBoards = GameBoard.mergePlayerBoards(color, boardWhite, boardBlack);
-        long ownPieces = mergedBoards[0];
-
+    public long generate(Position position) {
         long pos = 1L << position.getIndex();
         long spots = (pos >> 17) & Bitboard.NOT_H_FILE; // Springe 2 hoch, 1 rechts
         spots |= (pos >> 15) & Bitboard.NOT_A_FILE; // Springe 2 hoch, 1 links
@@ -30,7 +26,7 @@ public class KnightMoveGenerator implements IGenerator {
         spots |= (pos << 15) & Bitboard.NOT_H_FILE; // Springe 2 runter, 1 links
         spots |= (pos << 10) & Bitboard.NOT_AB_FILE; // Springe 1 runter, 2 rechts
         spots |= (pos << 6) & Bitboard.NOT_GH_FILE;
-        spots &= ~ownPieces;
+        spots &= ~mergedPlayerPieces;
 
         return spots;
     }

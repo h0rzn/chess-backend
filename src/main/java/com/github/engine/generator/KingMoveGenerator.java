@@ -7,22 +7,18 @@ import com.github.engine.move.Position;
 
 
 public class KingMoveGenerator implements IGenerator {
+    private final long mergedPlayerPieces;
 
-    private final long[] boardWhite;
-    private final long[] boardBlack;
-
-    public KingMoveGenerator(GameBoard gameBoard) {
-        this.boardWhite = gameBoard.getSetWhite();
-        this.boardBlack = gameBoard.getSetBlack();
+    public KingMoveGenerator(int playerColor, GameBoard gameBoard) {
+        long[] mergedPieces = gameBoard.mergePlayerBoardsWithExclusion(playerColor, 3);
+        this.mergedPlayerPieces = mergedPieces[0];
     }
 
     // King: Move Generation
     // fixed index offsets
     // wrapping cut of with NO_* masks
     @Override
-    public long generate(int color, Position position) {
-        long[] mergedBoards = GameBoard.mergePlayerBoards(color, boardWhite, boardBlack);
-        long ownPieces = mergedBoards[0];
+    public long generate(Position position) {
         long currentMoves = 0;
 
         long pos = 1L << position.getIndex();
@@ -37,6 +33,6 @@ public class KingMoveGenerator implements IGenerator {
         // west dia
         currentMoves |= ((pos << 7) | (pos >> 9) & Bitboard.NOT_H_FILE);
 
-        return currentMoves &~ ownPieces;
+        return currentMoves &~ mergedPlayerPieces;
     }
 }

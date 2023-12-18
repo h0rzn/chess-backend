@@ -5,12 +5,13 @@ import com.github.engine.interfaces.IGenerator;
 import com.github.engine.move.Position;
 
 public class QueenMoveGenerator implements IGenerator {
-    private final long[] boardWhite;
-    private final long[] boardBlack;
+    private final long mergedPlayerPieces;
+    private final long mergedEnemyPieces;
 
-    public QueenMoveGenerator(GameBoard gameBoard) {
-        this.boardWhite = gameBoard.getSetWhite();
-        this.boardBlack = gameBoard.getSetBlack();
+    public QueenMoveGenerator(int playerColor, GameBoard gameBoard) {
+        long[] mergedPieces = gameBoard.mergePlayerBoardsWithExclusion(playerColor, 3);
+        this.mergedPlayerPieces = mergedPieces[0];
+        this.mergedEnemyPieces = mergedPieces[1];
     }
 
     // Queen: Move Generation
@@ -20,23 +21,20 @@ public class QueenMoveGenerator implements IGenerator {
     // max values indicate squares that can possibly be iterated until board border and will be degraded to
     // the first own piece occurrence iteration index
     @Override
-    public long generate(int color, Position position) {
-        long[] mergedPieces = GameBoard.mergePlayerBoards(color, boardWhite, boardWhite);
-        long ownPieces = mergedPieces[0];
-        long enemyPieces = mergedPieces[1];
+    public long generate(Position position) {
         long currentMoves = 0;
 
         int queenIndex = position.getIndex();
         // Cursor checking current position
         long cursor = 1L << queenIndex;
         long northCursor = cursor << 8;
-        long southCursor = cursor >> 8;
+        long southCursor = cursor >>> 8;
         long eastCursor = cursor << 1;
-        long westCursor = cursor >> 1;
+        long westCursor = cursor >>> 1;
         long northEastCursor = cursor << 9;
         long northWestCursor = cursor << 7;
-        long southEastCursor = cursor >> 7;
-        long southWestCursor = cursor >> 9;
+        long southEastCursor = cursor >>> 7;
+        long southWestCursor = cursor >>> 9;
         // Max amount of positions to check for each direction
         int maxSouth = queenIndex / 8;
         int maxNorth = 8 - maxSouth - 1;
@@ -50,10 +48,10 @@ public class QueenMoveGenerator implements IGenerator {
         for (int i = 0; i < 8; i++) {
             // NORTH
             if (i < maxNorth) {
-                if ((northCursor & enemyPieces) != 0) {
+                if ((northCursor & mergedEnemyPieces) != 0) {
                     currentMoves |= northCursor;
                     maxNorth = i;
-                } else if ((northCursor & ownPieces) != 0) {
+                } else if ((northCursor & mergedPlayerPieces) != 0) {
                     maxNorth = i;
                 } else {
                     currentMoves |= northCursor;
@@ -63,23 +61,23 @@ public class QueenMoveGenerator implements IGenerator {
 
             // SOUTH
             if (i < maxSouth) {
-                if ((southCursor & enemyPieces) != 0) {
+                if ((southCursor & mergedEnemyPieces) != 0) {
                     currentMoves |= southCursor;
                     maxSouth = i;
-                } else if ((southCursor & ownPieces) != 0) {
+                } else if ((southCursor & mergedPlayerPieces) != 0) {
                     maxSouth = i;
                 } else {
                     currentMoves |= southCursor;
-                    southCursor >>= 8;
+                    southCursor >>>= 8;
                 }
             }
 
             // EAST
             if (i < maxEast) {
-                if ((eastCursor & enemyPieces) != 0) {
+                if ((eastCursor & mergedEnemyPieces) != 0) {
                     currentMoves |= eastCursor;
                     maxEast = i;
-                } else if ((southCursor & ownPieces) != 0) {
+                } else if ((southCursor & mergedPlayerPieces) != 0) {
                     maxEast = i;
                 } else {
                     currentMoves |= eastCursor;
@@ -89,23 +87,23 @@ public class QueenMoveGenerator implements IGenerator {
 
             // WEST
             if (i < maxWest) {
-                if ((westCursor & enemyPieces) != 0) {
+                if ((westCursor & mergedEnemyPieces) != 0) {
                     currentMoves |= westCursor;
                     maxWest = i;
-                } else if ((southCursor & ownPieces) != 0) {
+                } else if ((southCursor & mergedPlayerPieces) != 0) {
                     maxWest = i;
                 } else {
                     currentMoves |= westCursor;
-                    westCursor >>= 1;
+                    westCursor >>>= 1;
                 }
             }
 
             // NORTH EAST
             if (i < maxNorthEast) {
-                if ((northEastCursor & enemyPieces) != 0) {
+                if ((northEastCursor & mergedEnemyPieces) != 0) {
                     currentMoves |= northEastCursor;
                     maxNorthEast = i;
-                } else if ((northEastCursor & ownPieces) != 0) {
+                } else if ((northEastCursor & mergedPlayerPieces) != 0) {
                     maxNorthEast = i;
                 } else {
                     currentMoves |= northEastCursor;
@@ -115,40 +113,40 @@ public class QueenMoveGenerator implements IGenerator {
 
             // NORTH WEST
             if (i < maxNorthWest) {
-                if ((northWestCursor & enemyPieces) != 0) {
+                if ((northWestCursor & mergedEnemyPieces) != 0) {
                     currentMoves |= northWestCursor;
                     maxNorthWest = i;
-                } else if ((northWestCursor & ownPieces) != 0) {
+                } else if ((northWestCursor & mergedPlayerPieces) != 0) {
                     maxNorthWest = i;
                 } else {
                     currentMoves |= northWestCursor;
-                    maxNorthWest <<= 7;
+                    northWestCursor <<= 7;
                 }
             }
 
             // SOUTH EAST
             if (i < maxSouthEast) {
-                if ((southEastCursor & enemyPieces) != 0) {
+                if ((southEastCursor & mergedEnemyPieces) != 0) {
                     currentMoves |= southEastCursor;
                     maxSouthEast = i;
-                } else if ((southEastCursor & ownPieces) != 0) {
+                } else if ((southEastCursor & mergedPlayerPieces) != 0) {
                     maxSouthEast = i;
                 } else {
                     currentMoves |= southEastCursor;
-                    maxSouthEast >>= 7;
+                    southEastCursor >>>= 7;
                 }
             }
 
             // SOUTH WEST
             if (i < maxSouthWest) {
-                if ((southWestCursor & enemyPieces) != 0) {
+                if ((southWestCursor & mergedEnemyPieces) != 0) {
                     currentMoves |= southWestCursor;
                     maxSouthWest = i;
-                } else if ((southWestCursor & ownPieces) != 0) {
+                } else if ((southWestCursor & mergedPlayerPieces) != 0) {
                     maxSouthWest = i;
                 } else {
                     currentMoves |= southWestCursor;
-                    maxSouthWest >>= 9;
+                    southWestCursor >>>= 9;
                 }
             }
         }

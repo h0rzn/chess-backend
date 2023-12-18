@@ -6,12 +6,15 @@ import com.github.engine.interfaces.IGenerator;
 import com.github.engine.move.Position;
 
 public class PawnMoveGenerator implements IGenerator {
-    private final long[] boardWhite;
-    private final long[] boardBlack;
+    private final long mergedPlayerPieces;
+    private final long mergedEnemyPieces;
+    private final int playerColor;
 
-    public PawnMoveGenerator(GameBoard gameBoard) {
-        this.boardWhite = gameBoard.getSetWhite();
-        this.boardBlack = gameBoard.getSetBlack();
+    public PawnMoveGenerator(int playerColor, GameBoard gameBoard) {
+        long[] mergedPieces = gameBoard.mergePlayerBoardsWithExclusion(playerColor, 3);
+        this.mergedPlayerPieces = mergedPieces[0];
+        this.mergedEnemyPieces = mergedPieces[1];
+        this.playerColor = playerColor;
     }
 
     // Pawn: Move Generation
@@ -20,18 +23,14 @@ public class PawnMoveGenerator implements IGenerator {
     // double square move on default position (only once -> should be handled by move method)
     // not implement: en passant; promotion handled by move method
     @Override
-    public long generate(int color, Position position) {
-        long[] mergedBoards = GameBoard.mergePlayerBoards(color, boardWhite, boardBlack);
-        long ownPieces = mergedBoards[0];
-        long enemyPieces = mergedBoards[1];
-
+    public long generate(Position position) {
         long pos = 1L << position.getIndex();
         long attacks;
         long forward;
         long currentMoves = 0;
-        if (color == 0) {
+        if (playerColor == 0) {
             forward = (pos << 8);
-            if ((forward & enemyPieces) == 0) {
+            if ((forward & mergedEnemyPieces) == 0) {
                 currentMoves |= forward;
             }
 
@@ -42,7 +41,7 @@ public class PawnMoveGenerator implements IGenerator {
             attacks |= (pos << 7) & Bitboard.NOT_H_FILE;
         } else {
             forward = (pos >> 8);
-            if ((forward & enemyPieces) == 0) {
+            if ((forward & mergedEnemyPieces) == 0) {
                 currentMoves |= forward;
             }
 
@@ -53,8 +52,8 @@ public class PawnMoveGenerator implements IGenerator {
             attacks |= (pos >> 7) & Bitboard.NOT_A_FILE;
         }
 
-        currentMoves |= attacks & enemyPieces;
-        currentMoves &= ~ownPieces;
+        currentMoves |= attacks & mergedEnemyPieces;
+        currentMoves &= ~mergedPlayerPieces;
         return currentMoves;
     }
 }
