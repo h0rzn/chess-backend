@@ -13,6 +13,7 @@ import java.util.UUID;
 
 @Service
 public class GameService {
+    public Game gameStorageDebug;
 
     private final RedisGameRepository redisGameRepository;
 
@@ -31,6 +32,25 @@ public class GameService {
             return null;
         }
         return Optional.of(redisGameRepository.findById(UUID).get()).map(GameEntity::getGame).orElseThrow(GameNotFoundException::new);
+    }
 
+    public Game createDebugGame(){
+        Game game = new Game();
+        gameStorageDebug = game;
+        return game;
+    }
+
+    public Game createDebugGame(String fenString){
+        Game game = new Game();
+        gameStorageDebug = game;
+        return game;
+    }
+
+    public Game getDebugGame(){
+        return gameStorageDebug;
+    }
+
+    public void makeMove(){
+        gameStorageDebug.makeMove();
     }
 }
