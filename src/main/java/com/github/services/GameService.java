@@ -1,6 +1,9 @@
 package com.github.services;
 
 import com.github.engine.Game;
+import com.github.engine.MoveAction;
+import com.github.engine.models.MoveInfo;
+import com.github.engine.move.Move;
 import com.github.exceptions.GameNotFoundException;
 import com.github.entity.GameEntity;
 import com.github.model.GameModel;
@@ -40,17 +43,27 @@ public class GameService {
         return game;
     }
 
-    public Game createDebugGame(String fenString){
+    public Game createDebugGame(String fenString) throws Exception {
         Game game = new Game();
+        game.loadFEN(fenString);
         gameStorageDebug = game;
-        return game;
+        return gameStorageDebug;
+    }
+
+    public Game loadPosition(String fenString) throws Exception {
+        if(gameStorageDebug != null){
+            gameStorageDebug.loadFEN(fenString);
+            return gameStorageDebug;
+        }
+        return null;
     }
 
     public Game getDebugGame(){
         return gameStorageDebug;
     }
 
-    public void makeMove(){
-        gameStorageDebug.makeMove();
+    public MoveInfo makeMove(Move move){
+        MoveAction moveAction = new MoveAction(move);
+        return gameStorageDebug.execute(moveAction);
     }
 }
