@@ -35,7 +35,6 @@ public class RookMoveGenerator implements IGenerator {
 
         for (int i = 0; i < 8; i++) {
             // NORTH
-
             if (i < maxNorth) {
                 if ((northCursor & mergedEnemyPieces) != 0) {
                     currentMoves |= northCursor;
@@ -111,6 +110,7 @@ public class RookMoveGenerator implements IGenerator {
         if ((rookBoard&currentMoves) != 0) {
             currentMoves |= 0x10;
         }
+
 
         return currentMoves;
     }

@@ -13,7 +13,6 @@ import lombok.Setter;
 // class of the piece.
 // The generator instance can be reused for the enemy,
 // by updating the playerColor with setPlayerColor
-// TODO implement logic to pass playerColor to generate for enemy player
 public class Generator {
     private long[] boardWhite;
     private long[] boardBlack;
