@@ -4,6 +4,7 @@ import com.github.engine.models.Board;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -160,9 +161,11 @@ public class FenParser {
         }
     }
 
+    /*
     public Pair<String, String> parseMetaLine(String line) {
-
+        return new Pair<String, String>("one", "two");
     }
+     */
 
     public Board getResult() {
          return new Board(
