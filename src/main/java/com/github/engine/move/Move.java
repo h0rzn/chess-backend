@@ -37,26 +37,4 @@ public class Move {
     public Move(MoveType moveType) {
         this.moveType = moveType;
     }
-
-    /*
-    public Move(Position from, Position to) {
-        this.from = from;
-        this.to = to;
-    }
-
-    public Move(int from, int to) {
-        this.from = new Position(from);
-        this.to = new Position(to);
-    }
-
-    public Move(int fromRank, int fromFile, int toRank, int toFile, int index) {
-        this.from = new Position(fromRank, fromFile, index);
-        this.to = new Position(toRank, toFile, index);
-    }
-
-    public Move(int fromRank, int fromFile, int toRank, int toFile, int index, int piece) {
-        this.from = new Position(fromRank, fromFile, index);
-        this.to = new Position(toRank, toFile, index);
-    }
-    */
 }

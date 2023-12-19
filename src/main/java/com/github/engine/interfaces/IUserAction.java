@@ -16,7 +16,7 @@ public interface IUserAction {
 
     // providing piece type to promote
     // only when user action is a promotion
-    default int promotoTo() {
+    default int promoteTo() {
         return -1;
     }
 }
