@@ -35,11 +35,17 @@ public abstract class GameBoard {
         long mergedWhite = 0;
         long mergedBlack = 0;
         for (int i = 0; i < 6; i++) {
-            if (playerPieceExclusion == i && (playerColor == 0 || playerColor == 1)) {
-                continue;
+            if (playerColor == 0) {
+                if (playerPieceExclusion != i) {
+                    mergedWhite |= setWhite[i];
+                }
+                mergedBlack |= setBlack[i];
+            } else {
+                if (playerPieceExclusion != i) {
+                    mergedBlack |= setBlack[i];
+                }
+                mergedWhite |= setWhite[i];
             }
-            mergedWhite |= setWhite[i];
-            mergedWhite |= setBlack[i];
         }
         return playerColor == 0 ?  new long[]{mergedWhite, mergedBlack} : new long[]{mergedBlack, mergedWhite};
     }

@@ -1,13 +1,14 @@
 package com.github.engine.generator;
 
 import com.github.engine.Bitboard;
-import com.github.engine.Game;
 import com.github.engine.GameBoard;
 import com.github.engine.models.CheckInfo;
 import com.github.engine.models.CheckResolveInfo;
 import com.github.engine.move.Position;
 import lombok.Setter;
 
+import javax.imageio.plugins.tiff.BaselineTIFFTagSet;
+import java.util.ArrayList;
 import java.util.List;
 
 // CheckValidator contains methods to inspect a potential
@@ -61,6 +62,7 @@ public class CheckValidator {
             for (Integer occupiedSquare : enemyPieceSquares) {
                 Position enemyPosition = new Position(occupiedSquare, enemyPiece);
                 long enemyPieceMoves = generator.generate(enemyPosition);
+                System.out.println(enemyPiece+ " :: "+enemyPieceMoves);
 
                 // if enemy player move generation includes the players king square
                 // add that move generation to the combined attackRoutes and
@@ -112,58 +114,8 @@ public class CheckValidator {
         boolean b2dResolvable = false;
 
         Generator generator = new Generator(playerColor, gameBoard);
-        //
-        // ATTACK TO DEFEND
-        // resolve chess by attacking threatening piece
-        //
-        /*
-        for (int enemyPiece = 0; enemyPiece < 6; enemyPiece++) {
-            // there are no attacks for this enemy piece
-            // or the enemy piece is the king
-            // TODO check if this actually works/is needed
-            //if (attackBoards[enemyPiece] == 0 || enemyPiece == 5) {
-            //    continue;
-            //}
-
-            // check if any of players pieces can directly attack enemy pieces that threaten
-            // the players king
-            List<Integer> enemyPieceSquares = Bitboard.bitscanMulti(enemyPieces[enemyPiece]);
-            for (int playerPiece = 0; playerPiece < 6; playerPiece++) {
-                List<Integer> playerPieceSquares = Bitboard.bitscanMulti(playerPieces[playerPiece]);
-
-                for (int singlePlayerPieceSquare : playerPieceSquares) {
-                    long playerAttackMoves = generator.generate(new Position(singlePlayerPieceSquare, playerPiece));
-                    // for each occurrence of a attacker piece:
-                    // check if player can attack
-                    for (int enemyPieceSquare : enemyPieceSquares) {
-                        if ((playerAttackMoves&(1L << enemyPieceSquare)) != 0) {
-                            attack2Defend[playerPiece] |= (1L << enemyPieceSquare);
-                        }
-                    }
-                }
-            }
-
-        }
-
-        //
-        // check resolvability with player move generation
-        //
-        /*
-        Generator resolveMoves = new Generator(enemyColor, gameBoard);
-        long[] playerMoves = generator.generateAll();
-
-        for (int ePiece = 0; ePiece < 6; ePiece++) {
-            //
-            // ATTACK 2 DEFEND (a2d)
-            //
-            List<Integer> enemyPieceSquares = Bitboard.bitscanMulti(enemyPieces[enemyPiece]);
-
-
-        }
-         */
-
-
         int playerKingSquare = Bitboard.bitscanSingle(playerPieces[5]);
+        int playerKingColumn = playerKingSquare % 8;
         long[] playerMoves = generator.generateAll();
 
         generator.setPlayerColor(enemyColor);
@@ -175,116 +127,113 @@ public class CheckValidator {
 
             // check resolve actions for each player piece
             for (int playerPiece = 0; playerPiece < 6; playerPiece++) {
+                List<Integer> pieceSquares = Bitboard.bitscanMulti(playerPieces[playerPiece]);
                 //
                 // ATTACK 2 DEFEND
                 //
-                List<Integer> pieceSquares = Bitboard.bitscanMulti(playerPieces[playerPiece]);
                 for (Integer pieceSquare : pieceSquares) {
                     if ((playerMoves[playerPiece] & enemyPieces[attackPiece]) != 0) {
-                        //System.out.println("attack piece "+attackPiece+" attackBoard "+attackBoards[attackPiece]+" player defender piece "+playerPiece+" (@"+pieceSquare+") with moves "+playerMoves[playerPiece]);
                         // store piece position in piece group board
-                        // TODO check if we should store attacked enemy piece as well
+                        // TODO check if we should store attacked enemy piece in bitboard as well
                         attack2Defend[playerPiece] |= (1L << pieceSquare);
+                        a2dResolvable = true;
+                    }
+
+
+                    //
+                    // BLOCK 2 DEFEND
+                    //
+                    if (playerPiece == 5) {
+                        continue;
+                    }
+                    // check if move generation routes of attacker and player piece match
+                    long routeMatchBoard = (playerMoves[playerPiece]&attackBoards[attackPiece]);
+                    if (routeMatchBoard != 0) {
+                        System.out.println("B2D handling attacker "+attackPiece+" with player piece "+playerPiece);
+                        List<Integer> routeMatches = Bitboard.bitscanMulti(routeMatchBoard);
+
+                        // TODO Revwrite this isolation logic with bitboards
+                        // TODO bitscan multiple pieces instead of the first occurrence
+                        int ePieceSquare = Bitboard.bitscanSingle(enemyPieces[attackPiece]);
+                        List<Integer> blocks = isolateBlocks(routeMatches, pieceSquare, playerPiece, ePieceSquare, playerKingSquare, playerKingColumn);
+
+                        // combine blocks
+                        long blockBoard = 0;
+                        for (int block : blocks) {
+                            blockBoard |= (1L << block);
+                            b2dResolvable = true;
+                        }
+
+                        block2Defend[playerPiece] = blockBoard;
                     }
                 }
-
-                //
-                // BLOCK 2 DEFEND
-                //
-                if (playerPiece == 5) {
-                    continue;
-                }
-                // check if move generation routes of attacker and player piece match
-                long routeMatchBoard = (playerMoves[playerPiece]&attackBoards[attackPiece]);
-                if (routeMatchBoard != 0) {
-                    System.out.println("B2D handling attacker "+attackPiece+" with player piece "+playerPiece);
-                    System.out.println("--> attacker move gen "+attackBoards[attackPiece]);
-                    List<Integer> routeMatches = Bitboard.bitscanMulti(routeMatchBoard);
-                    System.out.println("--> route matches: "+routeMatches);
-
-                    // long attackRoute = isolateCheckRoute();
-
-                }
-            }
-
-        }
-
-        for (int i = 0; i < 6; i++) {
-            if (attack2Defend[i] != 0) {
-                System.out.println("RESULT a2d "+i+" "+attack2Defend[i]);
-            }
-            if (block2Defend[i] != 0) {
-                System.out.println("RESULT b2d "+i+" "+block2Defend[i]);
             }
         }
 
-        /*
-        eMovesCombined := combine(enemyMoves)
-        attackToDefend[5] &^= eMovesCombined
-        for _, a2d := range attackToDefend {
-            if a2d != 0 {
-                a2dResolvable = true
-                break
-            }
-        }
-         */
-
-
-        // ...
-
-        // get all moves for enemy pieces
-        generator.setPlayerColor(enemyColor);
-        long[] enemyMoves = generator.generateAll();
-
-
-        System.out.println("ENEMY MOVES");
-        for (int i = 0; i < 6; i++) {
-            System.out.println(i+" "+enemyMoves[i]);
-        }
-
-        /*
-        eMovesCombined := combine(enemyMoves)
-        attackToDefend[5] &^= eMovesCombined
-        for _, a2d := range attackToDefend {
-            if a2d != 0 {
-                a2dResolvable = true
-                break
-            }
-        }
-         */
 
         // drop a2d for king if move puts him in check
+        // we could probably avoid this complete enemy move generation
+        generator.setPlayerColor(enemyColor);
+        long[] enemyMoves = generator.generateAll();
+        long enemyMovesCombined = 0;
+        for (long enemyMoveBoard : enemyMoves) {
+            enemyMovesCombined |= enemyMoveBoard;
+        }
+        attack2Defend[5] &= ~enemyMovesCombined;
 
-
-
-        //
-        // BLOCK TO DEFEND
-        // resolve chess by blocking attack path
-        //
-        //int playerKingSquare = Bitboard.bitscanSingle(playerPieces[5]);
-        //int playerKingColumn = playerKingSquare % 8;
-
-
-
-        return null;
+        return new CheckResolveInfo(a2dResolvable||b2dResolvable, attack2Defend, block2Defend);
     }
 
-    // extract the direct route between threatening enemy piece
-    // and player king
-    private long isolateCheckRoute(int playerColor, List<Integer> matches, Position attacker, int kingSquare) {
-        int playerKingColumn = kingSquare % 8;
+    public static List<Integer> isolateBlocks(List<Integer> matches, int pPieceSquare, int pPieceType, int ePieceSquare, int kingSquare, int kingColumn) {
+        List<Integer> blocks = new ArrayList<>();
 
-        for (int match : matches) {
-
-            // Same column
-            if (playerKingColumn == match % 8) {
-
-            }
-
-
+        if (pPieceSquare == 5) {
+            return blocks;
         }
 
-        return 0;
+        if (pPieceType == 0 || pPieceType == 2 || pPieceType == 4 || pPieceType == 1) {
+            // DIAGONALS
+            for (int match : matches) {
+                int matchColumn = match % 8;
+
+                if (match / 8 == ePieceSquare / 8) {
+                    continue;
+                }
+
+                if (matchColumn < (ePieceSquare % 8) && matchColumn > kingColumn) {
+                    System.out.println("> isolate: dia[A] -> " + match);
+                    blocks.add(match);
+                } else if (matchColumn > (ePieceSquare % 8) && matchColumn < kingColumn) {
+                    System.out.println("> isolate: dia[B] -> " + match);
+                    blocks.add(match);
+                }
+            }
+        }
+
+        if (pPieceType == 3 || pPieceType == 4) {
+            // LANES
+            for (int match : matches) {
+                int matchColumn = match % 8;
+
+                if (matchColumn == pPieceSquare % 8) {
+                    if (pPieceSquare > kingSquare) {
+                        if (match < pPieceSquare) {
+                            System.out.println("> isolate: lane[A] -> " + match);
+                            blocks.add(match);
+                        }
+                    } else {
+                        if (match > pPieceSquare) {
+                            System.out.println("> isolate: lane[B] -> " + match);
+                            blocks.add(match);
+                        }
+                    }
+                } else if (matchColumn == kingColumn) {
+                    blocks.add(match);
+                }
+            }
+        }
+
+        return blocks;
     }
 
     public CheckValidator(GameBoard gameBoard) {
