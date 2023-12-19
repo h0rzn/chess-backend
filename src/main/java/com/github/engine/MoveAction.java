@@ -11,6 +11,7 @@ import lombok.Getter;
 public class MoveAction implements IUserAction {
     @Getter
     private Move move;
+    @Getter
     private int promoteToPiece;
 
     public MoveType getType() {

@@ -1,6 +1,7 @@
 package com.github.engine;
 
 import lombok.Getter;
+import lombok.Setter;
 
 // GameBoard class represents the chess field
 // SetWhite & SetBlack contain sets of bitboards
@@ -8,8 +9,10 @@ import lombok.Getter;
 // Default constructor loads standard piece constellation
 // of pieces on a chess board
 public abstract class GameBoard {
+    @Setter
     @Getter
     private long[] setWhite;
+    @Setter
     @Getter
     private long[] setBlack;
 

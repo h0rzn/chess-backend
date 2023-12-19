@@ -9,11 +9,14 @@ import com.github.engine.models.CheckInfo;
 import com.github.engine.models.CheckResolveInfo;
 import com.github.engine.models.MoveInfo;
 import com.github.engine.move.Move;
+import com.github.engine.move.MoveType;
 import com.github.engine.move.Position;
 import com.github.engine.utils.FenParser;
 import com.github.engine.utils.FenSerializer;
 import lombok.Getter;
-import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.github.engine.move.MoveType.*;
 
@@ -45,12 +48,14 @@ public class Game extends GameBoard implements IGame {
     public Game(){
         super();
         FenSerializer serializer = new FenSerializer(this);
-        lastMoveFen = serializer.serializeAll();
+        this.lastMoveFen = serializer.serializeAll();
     }
 
     // Create game with given board scenario
     public Game(long[] setWhite, long[] setBlack) {
         super(setWhite, setBlack);
+        FenSerializer serializer = new FenSerializer(this);
+        this.lastMoveFen = serializer.serializeAll();
     }
 
     // load a game with FEN input
@@ -79,7 +84,7 @@ public class Game extends GameBoard implements IGame {
                 return moveNormal(action.getMove());
             case Promotion:
                 System.out.println("PROMOTION MOVE");
-                return movePromotion(action.getMove());
+                return movePromotion(action);
         }
         return null;
     }
@@ -91,92 +96,53 @@ public class Game extends GameBoard implements IGame {
     // successfully calling the promotion method.
     public MoveInfo moveNormal(Move move) {
         MoveInfo info = new MoveInfo();
-
-        int playerColor = getActiveColor();
-        info.setPlayerColor(playerColor);
+        info.setPlayerColor(getActiveColor());
 
         Position from = move.getFrom();
         Position to = move.getTo();
-        long[] playerPieces;
         long[] enemyPieces;
         int attackerColor;
 
         if (getActiveColor() == 0) {
-            playerPieces = getSetWhite();
             enemyPieces = getSetBlack();
             attackerColor = 1;
         } else {
-            playerPieces = getSetBlack();
             enemyPieces = getSetWhite();
             attackerColor = 0;
         }
-        info.pushLog(String.format("colors :: player: %d | enemy %d", playerColor, attackerColor));
+        info.pushLog(String.format("colors :: player: %d | enemy %d", activeColor, attackerColor));
 
-
-        long mergedPlayerPieces = 0;
-        long mergedEnemyPieces = 0;
-
-        for (int i = 0; i < 6; i++) {
-            long toBoard = 1L << to.getIndex();
-            long fromBoard = 1L << from.getIndex();
-
-            if ((playerPieces[i] & fromBoard) != 0) {
-                from.setPieceType(i);
-                // castling (go code)
-                // if i == 3 && playerPieces[5]&uint64(1<<to) != 0 {
-                //    toSquare.Piece = 5
-                //}
-            }
-
-            if ((playerPieces[i] & toBoard) != 0) {
-                to.setPieceType(i);
-                move.setMoveType(Capture);
-            }
-
-            mergedPlayerPieces |= playerPieces[i];
-            mergedEnemyPieces |= enemyPieces[i];
-        }
-
-        // to square is empty -> set piece type to type of
-        // piece making the move so sync works with the same board
-        // and not -1
-        if (to.getPieceType() == -1) {
-            to.setPieceType(from.getPieceType());
-            move.setMoveType(Normal);
-        }
-
-        info.pushLog("POSITION from: T" + from.getPieceType() + " @" + from.getIndex());
-        info.pushLog("POSITION to: T" + to.getPieceType() + " @" + to.getIndex());
+        // extend move
+        move = extendMove(move);
 
         // the selected piece could not be found -> illegal move
         if (from.noPiece()) {
-            info.setFailMessage("failed to find selection piece on square " + from.getIndex());
-            info.setLegal(false);
-            return info;
+            return info.WithFailure("failed to find selection piece on square " + from.getIndex(), move);
         }
 
         // cannot kick out enemy king
         if (((1L << from.getIndex()) & enemyPieces[5]) != 0) {
-            info.setFailMessage("cannot kick out enemy king: this could be an engine error");
-            info.setLegal(false);
-            return info;
+            return info.WithFailure("cannot kick out enemy king: this could be an engine error", move);
         }
 
+
         // is destination square reachable
-        Generator generator = new Generator(playerColor, this);
+        Generator generator = new Generator(getActiveColor(), this);
         long legalMoves = generator.generate(from);
         long moveToBoard = (1L << to.getIndex());
 
         if ((legalMoves&moveToBoard) == 0) {
-            info.setFailMessage("destination square is not reachable (not in move gen)");
-            info.setLegal(false);
-            return info;
+            return info.WithFailure("destination square is not reachable (not in move gen)", move);
+        }
+
+        // is destination square occupied by enemy? --> CAPTURE
+        if (move.getTo().getColor() != getActiveColor()) {
+            move.setMoveType(Capture);
         }
 
         // Checkmate: Player
         CheckValidator playerCheckValidator = new CheckValidator(this);
         CheckInfo playerCheckInfo = playerCheckValidator.inCheck(getActiveColor());
-        System.out.println(playerCheckInfo);
 
         if (playerCheckInfo.isCheck()) {
             info.pushLog("player in check");
@@ -185,8 +151,7 @@ public class Game extends GameBoard implements IGame {
             if (from.getPieceType() == 5) {
                 // king escapes does not contain wanted move --> illegal in check move
                 if ((moveToBoard&playerCheckInfo.kingEscapes()) == 0) {
-                    info.setFailMessage("illegal in check move for king");
-                    return info;
+                    return info.WithFailure("illegal in check move for king", move);
                 }
             } else {
                 // resolve by player pieces
@@ -211,8 +176,7 @@ public class Game extends GameBoard implements IGame {
                     }
                     // move does not resolve check --> illegal
                     if (!moveResolvesCheck) {
-                        info.setFailMessage("illegal in check move");
-                        return info;
+                        return info.WithFailure("illegal in check move", move);
                     }
                 }
             }
@@ -220,32 +184,21 @@ public class Game extends GameBoard implements IGame {
             // even though the players king is currently not in check
             // we have to validate that this move would not put him in a check situation
             if ((moveToBoard& playerCheckInfo.enemyMoveCovered()) != 0) {
-                info.setFailMessage("illegal non-check move: move puts king in check");
-                return info;
+                return info.WithFailure("illegal non-check move: move puts king in check", move);
             }
         }
 
-        // handle piece specials
-        switch (move.getFrom().getPieceType()) {
-            case 0: // PROMOTION
-                if ((playerColor == 0 && to.getIndex() >= 56)) {
-                    move.setMoveType(Promotion);
-                    gameState = GameState.PROMOTION_WHITE;
-                    info.pushLog("legal promotion: next move should set promote piece");
-                } else if ((playerColor == 1 && to.getIndex() <= 7)) {
-                    move.setMoveType(Promotion);
-                    gameState = GameState.PROMOTION_BLACK;
-                    info.pushLog("legal promotion: next move should set promote piece");
-                }
+        // handle specials
+        switch (move.getMoveType()) {
+            case Promotion:
+                gameState = activeColor == 0 ? GameState.PROMOTION_WHITE : GameState.PROMOTION_BLACK;
+                info.pushLog("legal promotion: next move should set promote piece");
                 break;
-            case 3: // CASTLE from Rook
-                if (move.getTo().getPieceType() == 5) {
-                    if (isCastleLegal(move.getFrom())) {
-                        move.setMoveType(Castle);
-                    } else {
-                        info.setFailMessage("illegal castle");
-                        return info;
-                    }
+            case Castle:
+                if (isCastleLegal(move.getFrom())) {
+                    info.pushLog("legal castle");
+                } else {
+                    return info.WithFailure("illegal castle", move);
                 }
                 break;
         }
@@ -260,7 +213,7 @@ public class Game extends GameBoard implements IGame {
         //
         CheckValidator enemyCheckValidator = new CheckValidator(this);
         int enemyColor = 1;
-        if (playerColor == 1) {
+        if (getActiveColor() == 1) {
             enemyColor = 0;
         }
         CheckInfo enemyCheckInfo = enemyCheckValidator.inCheck(enemyColor);
@@ -275,7 +228,72 @@ public class Game extends GameBoard implements IGame {
         String fen = serializer.serialize(move, lastMoveFen);
         info.setStateFEN(fen);
         info.pushLog("++ move is legal and synced ++");
+        info.setMove(move);
+
         return info;
+    }
+
+    // extend move
+    // 1) fill pieceTypes (if toPiece -1 -> fromPiece type)
+    // 2) castle or promotion move type
+    //
+    public Move extendMove(Move move) {
+        long[] playerPieces;
+        long [] enemyPieces;
+        int enemyColor;
+        if (getActiveColor() == 0) {
+            playerPieces = getSetWhite();
+            enemyPieces = getSetBlack();
+            enemyColor = 1;
+        } else {
+            playerPieces = getSetBlack();
+            enemyPieces = getSetWhite();
+            enemyColor = 0;
+        }
+
+        for (int i = 0; i < 6; i++) {
+            long toBoard = 1L << move.getTo().getIndex();
+            long fromBoard = 1L << move.getFrom().getIndex();
+
+            // player
+            if ((playerPieces[i] & fromBoard) != 0) {
+                move.getFrom().setPieceType(i);
+                move.getTo().setColor(getActiveColor());
+            }
+            if ((playerPieces[i] & toBoard) != 0) {
+                move.getTo().setPieceType(i);
+                move.getTo().setColor(getActiveColor());
+            }
+            // destination could be enemy square
+            if ((enemyPieces[i] & toBoard) != 0) {
+                move.getTo().setPieceType(i);
+                move.getTo().setColor(enemyColor);
+            }
+        }
+
+        // to square is empty -> set piece type to type of
+        // piece making the move so sync works with the same board
+        // and not -1
+        if (move.getTo().noPiece()) {
+            move.getTo().setPieceType(move.getFrom().getPieceType());
+            move.setMoveType(Normal);
+        }
+
+        // Promotion
+        if ((activeColor == 0 && move.getTo().getIndex() >= 56)) {
+            move.setMoveType(Promotion);
+        } else if ((activeColor == 1 &&  move.getTo().getIndex() <= 7)) {
+            move.setMoveType(Promotion);
+        }
+        // Castling
+        if (move.getTo().getPieceType() == 5) {
+            if (isCastleLegal(move.getFrom())) {
+                move.setMoveType(Castle);
+            }
+        }
+        // could be other move types if none of these cases match
+
+        return move;
     }
 
     // check if potential castle is legal
@@ -317,14 +335,37 @@ public class Game extends GameBoard implements IGame {
     }
 
     // promote a piece if game is in promotion mode
-    public MoveInfo movePromotion(Move move) {
-        // check if we can promote
-
-
-
-        System.out.println("inside move promotion");
+    public MoveInfo movePromotion(IUserAction action) {
         MoveInfo info = new MoveInfo();
-        info.setMove(move);
+        Move move = action.getMove();
+        // check if we can promote
+        if (!(gameState == GameState.PROMOTION_WHITE || gameState == GameState.PROMOTION_BLACK)) {
+            info.setFailMessage("not in promotion mode");
+            return info;
+        }
+
+        int promoteTo = action.promoteTo();
+        if (promoteTo > 0 && promoteTo < 5) {
+            // update bitboards
+            if (activeColor == 0) {
+                long[] pieces = getSetWhite();
+                pieces[0] &= ~(1L << move.getFrom().getIndex());
+
+                pieces[action.promoteTo()] |= (1L << move.getFrom().getIndex());
+                setSetWhite(pieces);
+            } else {
+                long[] pieces = getSetBlack();
+                pieces[0] &= ~(1L << move.getFrom().getIndex());
+
+                pieces[action.promoteTo()] |= (1L << move.getFrom().getIndex());
+                setSetBlack(pieces);
+            }
+            info.pushLog("promoting "+action.promoteTo()+ " of player "+activeColor);
+            return info;
+        }
+
+
+        info.Fail("illegal piece to promote to");
         return info;
     }
 

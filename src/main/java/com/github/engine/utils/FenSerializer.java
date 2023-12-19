@@ -25,7 +25,7 @@ public class FenSerializer {
         StringBuilder fenFrom = new StringBuilder();
         StringBuilder fenTo = new StringBuilder();
 
-        System.out.println("[serialize updated] from "+from+" to "+to+ " fromStart "+fromStart+" toStart "+toStart);
+        //System.out.println("[serialize updated] from "+from+" to "+to+ " fromStart "+fromStart+" toStart "+toStart);
 
         long cursorFrom = (1L << fromStart);
         long cursorTo = (1L << toStart);
@@ -63,12 +63,12 @@ public class FenSerializer {
 
                 if (!toFound) {
                     if ((setWhite[p]&cursorTo) != 0) {
-                        System.out.println("[TO] MATCH W "+p+ " on "+i+ " cursor: "+i+ " --> "+cursorTo);
+                        //System.out.println("[TO] MATCH W "+p+ " on "+i+ " cursor: "+i+ " --> "+cursorTo);
                         pieceTo = p;
                         toFound = true;
                     }
                     if ((setBlack[p]&cursorTo) != 0) {
-                        System.out.println("[TO] MATCH W "+p+ " on "+i+ " cursor: "+i+ " --> "+cursorTo);
+                        //System.out.println("[TO] MATCH W "+p+ " on "+i+ " cursor: "+i+ " --> "+cursorTo);
                         pieceTo = p+6;
                         toFound = true;
                     }
@@ -81,8 +81,8 @@ public class FenSerializer {
                     break;
                 }
             }
-            System.out.println("## FROM "+(fromStart+i)+ " TO "+(toStart+i)+ " i :: "+i+ " --> "+(i+fromStart));
-            System.out.println("|--> from piece: "+pieceFrom);
+            //System.out.println("## FROM "+(fromStart+i)+ " TO "+(toStart+i)+ " i :: "+i+ " --> "+(i+fromStart));
+            //System.out.println("|--> from piece: "+pieceFrom);
             // move both cursors one square further
             cursorFrom <<= 1;
             cursorTo <<= 1;
@@ -111,12 +111,12 @@ public class FenSerializer {
                 if (emptyTo > 0) {
                     fenTo.append(emptyTo);
                     emptyTo = 0;
-                    System.out.println("-- TO: write empty "+i);
+                    //System.out.println("-- TO: write empty "+i);
                 }
                 fenTo.append(tokenByPieceType(pieceTo));
             } else {
                 emptyTo++;
-                System.out.println("++ emptyTo");
+                //System.out.println("++ emptyTo");
             }
 
             // fill empty squares with empty square amount number
@@ -126,14 +126,14 @@ public class FenSerializer {
                     fenFrom.append(emptyFrom);
                 }
                 if (emptyTo > 0) {
-                    System.out.println("TO: filling empty: "+emptyTo);
+                    //System.out.println("TO: filling empty: "+emptyTo);
                     fenTo.append(emptyTo);
                 }
             }
         }
 
-        System.out.println("FROM: "+fenFrom.toString());
-        System.out.println("TO  : "+fenTo.toString());
+        //System.out.println("FROM: "+fenFrom.toString());
+        //System.out.println("TO  : "+fenTo.toString());
 
         List<String> result = new ArrayList<>();
         result.add(fenFrom.toString());

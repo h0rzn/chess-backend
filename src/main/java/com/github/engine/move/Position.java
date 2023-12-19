@@ -14,7 +14,9 @@ public class Position {
     @Getter
     @Setter
     private int pieceType;
-
+    @Getter
+    @Setter
+    private int color;
     // noPiece returns true if no piece has been set
     // so pieceType is -1
     public boolean noPiece() {

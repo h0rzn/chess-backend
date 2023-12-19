@@ -62,7 +62,7 @@ public class CheckValidator {
             for (Integer occupiedSquare : enemyPieceSquares) {
                 Position enemyPosition = new Position(occupiedSquare, enemyPiece);
                 long enemyPieceMoves = generator.generate(enemyPosition);
-                System.out.println(enemyPiece+ " :: "+enemyPieceMoves);
+                //System.out.println(enemyPiece+ " :: "+enemyPieceMoves);
 
                 // if enemy player move generation includes the players king square
                 // add that move generation to the combined attackRoutes and
@@ -149,7 +149,7 @@ public class CheckValidator {
                     // check if move generation routes of attacker and player piece match
                     long routeMatchBoard = (playerMoves[playerPiece]&attackBoards[attackPiece]);
                     if (routeMatchBoard != 0) {
-                        System.out.println("B2D handling attacker "+attackPiece+" with player piece "+playerPiece);
+                        //System.out.println("B2D handling attacker "+attackPiece+" with player piece "+playerPiece);
                         List<Integer> routeMatches = Bitboard.bitscanMulti(routeMatchBoard);
 
                         // TODO Revwrite this isolation logic with bitboards
@@ -201,10 +201,10 @@ public class CheckValidator {
                 }
 
                 if (matchColumn < (ePieceSquare % 8) && matchColumn > kingColumn) {
-                    System.out.println("> isolate: dia[A] -> " + match);
+                    //System.out.println("> isolate: dia[A] -> " + match);
                     blocks.add(match);
                 } else if (matchColumn > (ePieceSquare % 8) && matchColumn < kingColumn) {
-                    System.out.println("> isolate: dia[B] -> " + match);
+                    //System.out.println("> isolate: dia[B] -> " + match);
                     blocks.add(match);
                 }
             }
@@ -218,12 +218,12 @@ public class CheckValidator {
                 if (matchColumn == pPieceSquare % 8) {
                     if (pPieceSquare > kingSquare) {
                         if (match < pPieceSquare) {
-                            System.out.println("> isolate: lane[A] -> " + match);
+                            //System.out.println("> isolate: lane[A] -> " + match);
                             blocks.add(match);
                         }
                     } else {
                         if (match > pPieceSquare) {
-                            System.out.println("> isolate: lane[B] -> " + match);
+                            //System.out.println("> isolate: lane[B] -> " + match);
                             blocks.add(match);
                         }
                     }

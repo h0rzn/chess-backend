@@ -37,6 +37,30 @@ public class MoveInfo {
         this.log.add(content);
     }
 
+    public void Fail(String message) {
+        this.legal = false;
+        this.failMessage = message;
+    }
+
+    public MoveInfo WithFailure(String message, Move move) {
+        Fail(message);
+        this.move = move;
+        return this;
+    }
+
+    @Override
+    public String toString() {
+        return "MoveInfo{" +
+                "legal=" + legal +
+                ", playerColor=" + playerColor +
+                ", gameState=" + gameState +
+                ", move=" + move +
+                ", stateFEN='" + stateFEN + '\'' +
+                ", failMessage='" + failMessage + '\'' +
+                ", log=" + log +
+                '}';
+    }
+
     public MoveInfo() {
         this.gameState = GameState.UNKOWN;
         this.log = new ArrayList<String>();
