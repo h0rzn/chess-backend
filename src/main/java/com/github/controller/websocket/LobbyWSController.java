@@ -71,4 +71,14 @@ public class LobbyWSController {
         ResponseModel responseModel = new ResponseModel(message.getId(), execute);
         messagingTemplate.convertAndSend("/topic/debug/move/", responseModel);
     }
+
+    @MessageMapping("/debug/loadfen")
+    public void receiveFen(GameDebugModel message) throws Exception {
+        GameDebugModel gameDebugModel = message;
+
+        String fenString = gameDebugModel.getFen();
+        
+        gameService.getGameStorageDebug().loadFEN(fenString);
+        messagingTemplate.convertAndSend("/topic/debug/fen/", "done");
+    }
 }

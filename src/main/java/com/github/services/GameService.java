@@ -8,6 +8,7 @@ import com.github.exceptions.GameNotFoundException;
 import com.github.entity.GameEntity;
 import com.github.model.GameModel;
 import com.github.repository.RedisGameRepository;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,7 @@ import java.util.UUID;
 
 @Service
 public class GameService {
+    @Getter
     public Game gameStorageDebug;
 
     private final RedisGameRepository redisGameRepository;
