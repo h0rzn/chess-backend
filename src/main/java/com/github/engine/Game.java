@@ -155,12 +155,49 @@ public class Game extends GameBoard implements IGame {
             return info;
         }
 
+        /*
+        switch fromSquare.Piece {
+            case 0:
+                legalMoves = moves.PawnMoves(from, playerColor, pPiecesMerged, ePiecesMerged)
+            case 1:
+                legalMoves = moves.KnightMoves(from, pPiecesMerged, ePiecesMerged)
+            case 2:
+                legalMoves = moves.BishopMoves(from, pPiecesMerged, ePiecesMerged)
+            case 3:
+                legalMoves = moves.RookMoves(from, pPiecesMerged, ePiecesMerged, c.PiecesMoved)
+            case 4:
+                legalMoves = moves.QueenMoves(from, pPiecesMerged, ePiecesMerged)
+            case 5:
+                legalMoves = moves.KingMoves(from, pPiecesMerged, ePiecesMerged)
+            default:
+                moveInfo.Message = "could not find player piece on square"
+                return false, moveInfo
+        }
+
+        // is destination reachable
+        if (uint64(1<<to) & legalMoves) == 0 {
+            moveInfo.Message = "destination not reachable (not in move gen)"
+            return false, moveInfo
+        }
+
+         */
+
+        // is destination square reachable
+        Generator generator = new Generator(playerColor, this);
+        long legalMoves = generator.generate(from);
+        long moveToBoard = (1L << to.getIndex());
+
+        if ((legalMoves&moveToBoard) == 0) {
+            info.setFailMessage("destination square is not reachable (not in move gen)");
+            info.setLegal(false);
+            return info;
+        }
+
         // Checkmate: Player
         CheckValidator playerCheckValidator = new CheckValidator(this);
         CheckInfo playerCheckInfo = playerCheckValidator.inCheck(getActiveColor());
         System.out.println(playerCheckInfo);
 
-        long moveToBoard = (1L << to.getIndex());
         if (playerCheckInfo.isCheck()) {
             info.pushLog("player in check");
             // check if the king move is legal based on
@@ -234,6 +271,7 @@ public class Game extends GameBoard implements IGame {
         }
 
         // sync move with gameBoard
+        info.setLegal(true);
         syncMove(move);
 
         //

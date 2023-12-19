@@ -1,5 +1,6 @@
 package com.github.engine.utils;
 
+import com.github.engine.models.Board;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,6 +21,10 @@ import java.util.List;
 // rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
 public class FenParser {
     @Getter
+    private String name;
+    @Getter
+    private String description;
+    @Getter
     private long[] setWhite;
     @Getter
     private long[] setBlack;
@@ -29,12 +34,10 @@ public class FenParser {
     private int halfMoveClock;
     @Getter
     private int fullMoveClock;
-
-    
     @Setter
     private boolean logsEnabled;
 
-    public int pieceByChar(char pieceChar) {
+    private int pieceByChar(char pieceChar) {
         int piece = switch (pieceChar) {
             case 'p', 'P' -> 0;
             case 'n', 'N' -> 1;
@@ -49,7 +52,7 @@ public class FenParser {
 
     // get piece color by uppercase (white)
     // or lowercase (black)
-    public int getColorForPiece(char pieceChar) {
+    private int getColorForPiece(char pieceChar) {
         return Character.isUpperCase(pieceChar) ? 0 : 1;
     }
 
@@ -59,7 +62,7 @@ public class FenParser {
     // 'P7' -> white pawn on left most square, followed by 7 empty squares in that row
     // '7P' -> 7 empty squares followed by white pawn
     // can be combined like: Q6n
-    public List<long[]> parsePlacements(String group) {
+    private List<long[]> parsePlacements(String group) {
         ArrayList<long[]> pieceSets = new ArrayList<>();
         String[] placements = group.split("/");
 
@@ -97,7 +100,7 @@ public class FenParser {
         return pieceSets;
     }
 
-    public int parseMoveClock(String clockGroup) throws Exception {
+    private int parseMoveClock(String clockGroup) throws Exception {
         try {
             int clock = Integer.parseInt(clockGroup);
             // Ignore 50-Rule for now
@@ -155,6 +158,22 @@ public class FenParser {
         } else {
             throw new Exception("full move clock group: must be >= 0, have: "+fullMoveClock);
         }
+    }
+
+    public Pair<String, String> parseMetaLine(String line) {
+
+    }
+
+    public Board getResult() {
+         return new Board(
+                 name,
+                 description,
+                 setWhite,
+                 setBlack,
+                 activeColor,
+                 halfMoveClock,
+                 fullMoveClock
+        );
     }
 
     public void log(String line) {
