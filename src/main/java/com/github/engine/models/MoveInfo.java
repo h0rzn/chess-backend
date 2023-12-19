@@ -24,6 +24,9 @@ public class MoveInfo {
     @Setter
     @Getter
     private Move move;
+    @Getter
+    @Setter
+    private String stateFEN;
     @Setter
     @Getter
     private String failMessage;

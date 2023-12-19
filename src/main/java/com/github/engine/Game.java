@@ -11,7 +11,9 @@ import com.github.engine.models.MoveInfo;
 import com.github.engine.move.Move;
 import com.github.engine.move.Position;
 import com.github.engine.utils.FenParser;
+import com.github.engine.utils.FenSerializer;
 import lombok.Getter;
+import lombok.Setter;
 
 import static com.github.engine.move.MoveType.*;
 
@@ -37,6 +39,7 @@ public class Game extends GameBoard implements IGame {
     private GameState gameState;
     @Getter
     private int activeColor;
+    private String lastMoveFen;
 
     public Game(){
         super();
@@ -54,6 +57,7 @@ public class Game extends GameBoard implements IGame {
 
         loadPieceScenario(parser.getSetWhite(), parser.getSetBlack());
         activeColor = parser.getActiveColor();
+        lastMoveFen = fenString;
     }
 
     // execute a user action by calling
@@ -224,7 +228,7 @@ public class Game extends GameBoard implements IGame {
                             moveResolvesCheck = true;
                             break;
                         } else if ((b2d[playerPiece]&moveToBoard) != 0) {
-                            info.pushLog("legal resolve move[b2d]");;
+                            info.pushLog("legal resolve move[b2d]");
                             moveResolvesCheck = true;
                             break;
                         }
@@ -291,7 +295,9 @@ public class Game extends GameBoard implements IGame {
             }
         }
 
-
+        FenSerializer serializer = new FenSerializer(this);
+        String fen = serializer.serialize(move, lastMoveFen);
+        info.setStateFEN(fen);
         info.pushLog("++ move is legal and synced ++");
         return info;
     }
@@ -396,6 +402,8 @@ public class Game extends GameBoard implements IGame {
         // reassign of bitboards needed?
         // Update color
         activeColor = activeColor == 0 ? 1 : 0;
+
+        // update last fen
 
     }
 

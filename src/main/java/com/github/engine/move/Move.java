@@ -20,6 +20,11 @@ public class Move {
         this.moveType = MoveType.Normal;
     }
 
+    public Move(Position from, Position to) {
+        this.from = from;
+        this.to = to;
+    }
+
     public Move(String move) {
         if (move.length() != 5) {
             throw new IllegalArgumentException("Move must be 5 characters long");
