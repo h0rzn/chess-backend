@@ -33,4 +33,24 @@ public class Bitboard {
         }
         return squares;
     }
+
+    public static List<List<List<Integer>>> serialize(long[] setWhite, long[] setBlack) {
+        List<List<Integer>> serWhite = new ArrayList<>(new ArrayList<>());
+        List<List<Integer>> serBlack = new ArrayList<>(new ArrayList<>());
+
+        for (int i = 0; i < 6; i++) {
+            List<Integer> squaresWhite = Bitboard.bitscanMulti(setWhite[i]);
+            serWhite.add(squaresWhite);
+
+            List<Integer> squaresBlack = Bitboard.bitscanMulti(setBlack[i]);
+            serBlack.add(squaresBlack);
+
+        }
+
+
+        List<List<List<Integer>>> result = new ArrayList<>();
+        result.add(serWhite);
+        result.add(serBlack);
+        return result;
+    }
 }

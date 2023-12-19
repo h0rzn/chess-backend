@@ -1,6 +1,10 @@
 package com.github.engine.utils;
 
+import com.github.engine.Bitboard;
+import com.github.engine.Game;
+import com.github.engine.GameBoard;
 import com.github.engine.models.Board;
+import com.github.engine.move.Move;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -160,12 +164,6 @@ public class FenParser {
             throw new Exception("full move clock group: must be >= 0, have: "+fullMoveClock);
         }
     }
-
-    /*
-    public Pair<String, String> parseMetaLine(String line) {
-        return new Pair<String, String>("one", "two");
-    }
-     */
 
     public Board getResult() {
          return new Board(
