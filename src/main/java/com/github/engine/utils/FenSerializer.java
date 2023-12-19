@@ -7,8 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FenSerializer {
-
-    private Game game;
+    private final Game game;
 
     // serializes relevant rows from move and returns
     // list of serialized rows [fromRow, toRow]
@@ -149,17 +148,15 @@ public class FenSerializer {
         String toRowUpdated = updates.get(1);
 
         String[] fenGroups = oldFen.split(" ");
-
-
         String placementGroup = fenGroups[0];
         String[] rows = placementGroup.split("/");
 
-        int fromRow = move.getFrom().getIndex() / 8;
-        int toRow = move.getTo().getIndex() / 8;
+        // serialization directions are inverted
+        int fromRow = 7 - (move.getFrom().getIndex() / 8);
+        int toRow = 7 - (move.getTo().getIndex() / 8);
 
         rows[fromRow] = fromRowUpdated;
         rows[toRow] = toRowUpdated;
-
         fenGroups[0] = String.join("/", rows);
 
         return String.join(" ", fenGroups);
@@ -213,6 +210,12 @@ public class FenSerializer {
 
             cursor <<= 1;
         }
+
+        // add other groups
+        String colorToken = game.getActiveColor() == 0 ? "w" : "b";
+        fenString.append(" ").append(colorToken);
+        // placeholders
+        fenString.append(" - - 0 0");
 
         return fenString.toString();
     }
