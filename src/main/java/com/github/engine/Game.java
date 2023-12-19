@@ -39,10 +39,13 @@ public class Game extends GameBoard implements IGame {
     private GameState gameState;
     @Getter
     private int activeColor;
+    @Getter
     private String lastMoveFen;
 
     public Game(){
         super();
+        FenSerializer serializer = new FenSerializer(this);
+        lastMoveFen = serializer.serializeAll();
     }
 
     // Create game with given board scenario
@@ -158,33 +161,6 @@ public class Game extends GameBoard implements IGame {
             info.setLegal(false);
             return info;
         }
-
-        /*
-        switch fromSquare.Piece {
-            case 0:
-                legalMoves = moves.PawnMoves(from, playerColor, pPiecesMerged, ePiecesMerged)
-            case 1:
-                legalMoves = moves.KnightMoves(from, pPiecesMerged, ePiecesMerged)
-            case 2:
-                legalMoves = moves.BishopMoves(from, pPiecesMerged, ePiecesMerged)
-            case 3:
-                legalMoves = moves.RookMoves(from, pPiecesMerged, ePiecesMerged, c.PiecesMoved)
-            case 4:
-                legalMoves = moves.QueenMoves(from, pPiecesMerged, ePiecesMerged)
-            case 5:
-                legalMoves = moves.KingMoves(from, pPiecesMerged, ePiecesMerged)
-            default:
-                moveInfo.Message = "could not find player piece on square"
-                return false, moveInfo
-        }
-
-        // is destination reachable
-        if (uint64(1<<to) & legalMoves) == 0 {
-            moveInfo.Message = "destination not reachable (not in move gen)"
-            return false, moveInfo
-        }
-
-         */
 
         // is destination square reachable
         Generator generator = new Generator(playerColor, this);
@@ -342,6 +318,10 @@ public class Game extends GameBoard implements IGame {
 
     // promote a piece if game is in promotion mode
     public MoveInfo movePromotion(Move move) {
+        // check if we can promote
+
+
+
         System.out.println("inside move promotion");
         MoveInfo info = new MoveInfo();
         info.setMove(move);
