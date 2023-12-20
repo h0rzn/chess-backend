@@ -15,10 +15,14 @@ public abstract class GameBoard {
     @Setter
     @Getter
     private long[] setBlack;
+    @Getter
+    private long unmovedPieces;
 
     public void loadPieceScenario(long[] setWhite, long[] setBlack) {
         this.setWhite = setWhite;
         this.setBlack = setBlack;
+        long[] merged = mergeAllPlayerBoards(0, setWhite, setBlack);
+        this.unmovedPieces = merged[0] | merged[1];
     }
 
     // Merges whitePieces and blackPieces respectively
@@ -105,6 +109,10 @@ public abstract class GameBoard {
         }
     }
 
+    public void markMovedPiece(int square) {
+        this.unmovedPieces &= ~(1L << square);
+    }
+
     public GameBoard() {
         this.setWhite = new long[6];
         this.setBlack = new long[6];
@@ -139,6 +147,9 @@ public abstract class GameBoard {
         long kingsW = 0b00010000;
         this.setWhite[5] = this.setWhite[5] | kingsW;
         this.setBlack[5] = this.setBlack[5] | (kingsW << 56);
+
+        // unmoved pieces on default squares
+        this.unmovedPieces = 0xffff00000000ffffL;
     }
 
     public GameBoard(long[] setWhite, long[] setBlack) {

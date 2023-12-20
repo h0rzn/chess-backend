@@ -65,7 +65,7 @@ public class Game extends GameBoard implements IGame {
 
         loadPieceScenario(parser.getSetWhite(), parser.getSetBlack());
         activeColor = parser.getActiveColor();
-        lastMoveFen = fenString;
+        lastMoveFen = new FenSerializer(this).serializeAll();
     }
 
     // execute a user action by calling
@@ -225,7 +225,8 @@ public class Game extends GameBoard implements IGame {
         }
 
         FenSerializer serializer = new FenSerializer(this);
-        String fen = serializer.serialize(move, lastMoveFen);
+        //String fen = serializer.serialize(move, lastMoveFen);
+        String fen = serializer.serializeAll();
         info.setStateFEN(fen);
         info.pushLog("++ move is legal and synced ++");
         info.setMove(move);
@@ -236,7 +237,6 @@ public class Game extends GameBoard implements IGame {
     // extend move
     // 1) fill pieceTypes (if toPiece -1 -> fromPiece type)
     // 2) castle or promotion move type
-    //
     public Move extendMove(Move move) {
         long[] playerPieces;
         long [] enemyPieces;
@@ -374,13 +374,12 @@ public class Game extends GameBoard implements IGame {
     // this method does not implement game logic and expects
     // the given move to be legal
     private void syncMove(Move move) {
-        int activeColor = getActiveColor();
         Position from = move.getFrom();
         Position to = move.getTo();
 
         long[] playerBoards;
         long[] enemyBoards;
-        if (activeColor == 0) {
+        if (getActiveColor() == 0) {
             playerBoards = getSetWhite();
             enemyBoards = getSetBlack();
         } else {
@@ -413,19 +412,17 @@ public class Game extends GameBoard implements IGame {
         }
 
         // Skip activeColor change when Promotion
-        // because we wait for Promotion call before switchting sides
+        // because we wait for Promotion call before switching sides
         if (move.getMoveType() == Promotion) {
             return;
         }
 
-        // TODO Update bit on moved-indication bitboard
+        // update unmoved bitboard (noop if bit is already 0)
+        markMovedPiece(move.getFrom().getIndex());
 
         // reassign of bitboards needed?
         // Update color
-        activeColor = activeColor == 0 ? 1 : 0;
-
-        // update last fen
-
+        this.activeColor = getActiveColor() == 0 ? 1 : 0;
     }
 
 }

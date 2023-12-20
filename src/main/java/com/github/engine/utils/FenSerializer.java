@@ -164,60 +164,67 @@ public class FenSerializer {
 
     // serialize full board
     public String serializeAll() {
-        long cursor = 1;
         int empty = 0;
-
 
         long[] setWhite = game.getSetWhite();
         long[] setBlack = game.getSetBlack();
 
         StringBuilder fenString = new StringBuilder();
 
-        for (int i = 0; i < 64; i++) {
-            if(i % 8 == 0 && i != 0) {
-                fenString.insert(0, "/");
-            }
-
+        StringBuilder fen = new StringBuilder();
+        int curIdx = 56;
+        while (curIdx > -8) {
+            long currentCursor = (1L << curIdx);
             int piece = -1;
-
             for (int p = 0; p < 6; p++) {
-                if ((setWhite[p]&cursor) != 0) {
+                if ((setWhite[p]&currentCursor) != 0) {
                     piece = p;
                 }
-                if ((setBlack[p]&cursor) != 0) {
+                if ((setBlack[p]&currentCursor) != 0) {
                     piece = p+6;
+                }
+                // exit from piece type search
+                if (piece > -1) {
+                    break;
                 }
             }
 
             if (piece > -1) {
+                // leading empty square
                 if (empty > 0) {
-                    fenString.insert(0, empty);
+                    fen.append(empty);
                     empty = 0;
                 }
                 String token = tokenByPieceType(piece);
-                fenString.insert(0, token);
+                fen.append(token);
             } else {
                 empty++;
             }
 
-            if (i % 8 == 7) {
+            // preparation for next row
+            if (curIdx % 8 == 7) {
+                curIdx -= 15; // wrap to first square of next line
                 if (empty > 0) {
-                    fenString.insert(0, empty);
+                    fen.append(empty);
                     empty = 0;
                 }
+                // skip row delimiter for last row
+                if (curIdx != -8) {
+                    fen.append("/");
+
+                }
+            } else {
+                curIdx++; // push cursor on square to the right (++direction)
             }
-
-
-            cursor <<= 1;
         }
 
         // add other groups
         String colorToken = game.getActiveColor() == 0 ? "w" : "b";
-        fenString.append(" ").append(colorToken);
+        fen.append(" ").append(colorToken);
         // placeholders
-        fenString.append(" - - 0 0");
+        fen.append(" - - 0 0");
 
-        return fenString.toString();
+        return fen.toString();
     }
 
     public String tokenByPieceType(int pieceType) {
