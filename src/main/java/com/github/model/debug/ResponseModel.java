@@ -9,7 +9,6 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
-public class ResponseModel {
+public abstract class ResponseModel {
     private Integer id;
-    private MoveInfo moveInfo;
 }

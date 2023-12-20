@@ -3,9 +3,7 @@ package com.github.controller.websocket;
 import com.github.engine.models.MoveInfo;
 import com.github.engine.move.Move;
 import com.github.entity.websocket.LobbyMessage;
-import com.github.model.debug.GameDebugModel;
-import com.github.model.debug.MoveDebugModel;
-import com.github.model.debug.ResponseModel;
+import com.github.model.debug.*;
 import com.github.services.GameService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -68,17 +66,19 @@ public class LobbyWSController {
 
         Move move = new Move(moveString);
         MoveInfo execute = gameService.makeMove(move);
-        ResponseModel responseModel = new ResponseModel(message.getId(), execute);
+       MoveInfoResponseModel responseModel = new MoveInfoResponseModel(message.getId(), execute);
         messagingTemplate.convertAndSend("/topic/debug/move/", responseModel);
     }
 
     @MessageMapping("/debug/loadfen")
     public void receiveFen(GameDebugModel message) throws Exception {
         GameDebugModel gameDebugModel = message;
+        System.out.println("Message ID" + message.getId());
 
         String fenString = gameDebugModel.getFen();
-        
+        System.out.println("FenString: " + fenString);
         gameService.getGameStorageDebug().loadFEN(fenString);
-        messagingTemplate.convertAndSend("/topic/debug/fen/", "done");
+        LoadFenResponseModel responseModel = new LoadFenResponseModel(message.getId(), gameService.gameStorageDebug.getLastMoveFen());
+        messagingTemplate.convertAndSend("/topic/debug/fen/", responseModel);
     }
 }
