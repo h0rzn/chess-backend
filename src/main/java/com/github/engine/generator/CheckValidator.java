@@ -50,6 +50,7 @@ public class CheckValidator {
 
         // generate enemy moves
         Generator generator = new Generator(enemyColor, gameBoard);
+        System.out.println("[INCHECK] generator for enemy: "+enemyColor);
         for (int enemyPiece = 0; enemyPiece < 6; enemyPiece++) {
             // skip empty piece boards
             if (enemyPieces[enemyPiece] == 0) {
@@ -70,6 +71,7 @@ public class CheckValidator {
                 // if there is no match we still add the move gen to the enemy covers
                 // the get a map of all enemy reachable squares
                 if ((enemyPieceMoves & kingBoard) != 0) {
+                    System.out.println("e "+enemyPiece+ " attacks king; moves: "+enemyPieceMoves);
                     attackRoutes |= enemyPieceMoves;
                     attackBoards[enemyPiece] |= enemyPieceMoves;
                 } else {
@@ -89,7 +91,12 @@ public class CheckValidator {
         long kingMoves = generator.generate(playerKingPosition);
         kingMoves &= ~enemyPieces[5];
 
+        // cant escape to enemy occupied squares
         long kingEscapes = (kingMoves & ~enemyCovers);
+        // remove player squares from escape square
+        for (int p = 0; p < 6; p++) {
+            kingEscapes &= ~playerPieces[p];
+        }
 
         return new CheckInfo(kingInCheck, kingEscapes,attackBoards, enemyCovers);
     }

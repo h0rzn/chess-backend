@@ -89,12 +89,21 @@ public class RookMoveGenerator implements IGenerator {
             }
         }
 
+
         // we don't care which side of the board the king is on
         long kingPosPotentials = (1 << 4) | (1L << 60);
-        // no match of potential king position and own pieces
-        if ((kingPosPotentials&mergedPlayerPieces) == 0) {
+        // no match of potential king position and own pieces (unmoved pieces)
+        if ((kingPosPotentials&unmovedPieces) == 0) {
             return currentMoves;
         }
+        /*
+        long rookBoard = (1L << rookIndex);
+        if ((rookBoard&unmovedPieces) != 0) {
+            currentMoves |= 0x10;
+        }
+         */
+
+        /*
         // this should only catch our king
         if ((unmovedPieces&kingPosPotentials) == 0) {
             return currentMoves;
@@ -105,6 +114,9 @@ public class RookMoveGenerator implements IGenerator {
             currentMoves |= 0x10;
         }
 
+         */
+
+        System.out.println("ROOK c: "+position.getColor()+" moves: "+currentMoves);
 
         return currentMoves;
     }

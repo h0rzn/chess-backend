@@ -95,6 +95,8 @@ public class Game extends GameBoard implements IGame {
     // and continues to work if the promotion state is resolved by
     // successfully calling the promotion method.
     public MoveInfo moveNormal(Move move) {
+        System.out.println("MOVE NORMAL: "+getLastMoveFen());
+
         MoveInfo info = new MoveInfo();
         info.setPlayerColor(getActiveColor());
 
@@ -145,7 +147,7 @@ public class Game extends GameBoard implements IGame {
         CheckInfo playerCheckInfo = playerCheckValidator.inCheck(getActiveColor());
 
         if (playerCheckInfo.isCheck()) {
-            info.pushLog("player in check");
+            info.pushLog("player in check: "+playerCheckInfo);
             // check if the king move is legal based on
             // given king escapes
             if (from.getPieceType() == 5) {
