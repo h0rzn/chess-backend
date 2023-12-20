@@ -7,11 +7,13 @@ import com.github.engine.move.Position;
 public class RookMoveGenerator implements IGenerator {
     private final long mergedPlayerPieces;
     private final long mergedEnemyPieces;
+    private final long unmovedPieces;
 
     public RookMoveGenerator(int playerColor, GameBoard gameBoard) {
         long[] mergedPieces = gameBoard.mergePlayerBoardsWithExclusion(playerColor, 3);
         this.mergedPlayerPieces = mergedPieces[0];
         this.mergedEnemyPieces = mergedPieces[1];
+        this.unmovedPieces = gameBoard.getUnmovedPieces();
     }
 
     // Rook: Move Generation
@@ -87,14 +89,6 @@ public class RookMoveGenerator implements IGenerator {
             }
         }
 
-        // bitboard with pieces moved unmoved is 0
-        // if 0: all pieces have been moved -> ignore castling
-        /*
-        if (currentMoves == 0) {
-            return currentMoves;
-        }
-        */
-
         // we don't care which side of the board the king is on
         long kingPosPotentials = (1 << 4) | (1L << 60);
         // no match of potential king position and own pieces
@@ -102,12 +96,12 @@ public class RookMoveGenerator implements IGenerator {
             return currentMoves;
         }
         // this should only catch our king
-        if ((currentMoves&kingPosPotentials) == 0) {
+        if ((unmovedPieces&kingPosPotentials) == 0) {
             return currentMoves;
         }
         // just check if the rook has been moved and we are done
         long rookBoard = (1L << rookIndex);
-        if ((rookBoard&currentMoves) != 0) {
+        if ((rookBoard&unmovedPieces) != 0) {
             currentMoves |= 0x10;
         }
 
