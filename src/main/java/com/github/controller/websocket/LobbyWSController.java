@@ -64,10 +64,17 @@ public class LobbyWSController {
 
         String moveString = moveDebugModel.getMove();
 
-        Move move = new Move(moveString);
-        MoveInfo execute = gameService.makeMove(move);
-       MoveInfoResponseModel responseModel = new MoveInfoResponseModel(message.getId(), execute);
+        if(moveDebugModel.getPromoteTo() == -1){
+            Move move = new Move(moveString);
+            MoveInfo execute = gameService.makeMove(move);
+            MoveInfoResponseModel responseModel = new MoveInfoResponseModel(message.getId(), execute);
+            messagingTemplate.convertAndSend("/topic/debug/move/", responseModel);
+            return;
+        }
+        MoveInfo execute = gameService.makeMove(moveDebugModel.getPromoteTo());
+        MoveInfoResponseModel responseModel = new MoveInfoResponseModel(message.getId(), execute);
         messagingTemplate.convertAndSend("/topic/debug/move/", responseModel);
+
     }
 
     @MessageMapping("/debug/loadfen")

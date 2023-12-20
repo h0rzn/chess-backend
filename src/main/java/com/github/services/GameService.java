@@ -68,4 +68,9 @@ public class GameService {
         MoveAction moveAction = new MoveAction(move);
         return gameStorageDebug.execute(moveAction);
     }
+
+    public MoveInfo makeMove(Integer promoteTo){
+        MoveAction moveAction = new MoveAction(promoteTo);
+        return gameStorageDebug.execute(moveAction);
+    }
 }
