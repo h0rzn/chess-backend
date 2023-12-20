@@ -396,6 +396,7 @@ public class Game extends GameBoard implements IGame {
 
         switch (move.getMoveType()) {
             case Normal:
+            case Capture:
                 // Add Player Piece to Destination
                 playerBoards[from.getPieceType()] |= (1L << to.getIndex());
                 // Remove Enemy Piece on Destination (noop if not needed)
