@@ -25,8 +25,8 @@ public class BishopMoveGenerator implements IGenerator {
         long cursor = 1L << index;
         long northEastCursor = cursor << 9;
         long northWestCursor = cursor << 7;
-        long southEastCursor = cursor >> 7;
-        long southWestCursor = cursor >> 9;
+        long southEastCursor = cursor >>> 7;
+        long southWestCursor = cursor >>> 9;
         // Max amount of positions to check for each direction
         int maxSouth = index / 8;
         int maxNorth = 8 - maxSouth - 1;
@@ -36,6 +36,7 @@ public class BishopMoveGenerator implements IGenerator {
         int maxNorthWest = Math.min(maxNorth, maxWest);
         int maxSouthEast = Math.min(maxSouth, maxEast);
         int maxSouthWest = Math.min(maxSouth, maxWest);
+        //System.out.println(index + " bisphop max south west "+maxSouthWest+ " south east "+maxSouthEast);
 
         for (int i = 0; i < 8; i++) {
             // NORTH EAST
@@ -59,36 +60,39 @@ public class BishopMoveGenerator implements IGenerator {
                     maxNorthWest = i;
                 } else {
                     currentMoves |= northWestCursor;
-                    maxNorthWest <<= 7;
+                    northWestCursor <<= 7;
                 }
             }
             // SOUTH EAST
             if (i < maxSouthEast) {
                 if ((southEastCursor & mergedEnemyPieces) != 0) {
+                    //System.out.println("** bishop[se] enemy "+i);
                     currentMoves |= southEastCursor;
                     maxSouthEast = i;
                 } else if ((southEastCursor & mergedPlayerPieces) != 0) {
+                    //System.out.println("** bishop[se] player "+i);
                     maxSouthEast = i;
                 } else {
+                    //System.out.println("** bishop[se] empty "+i);
                     currentMoves |= southEastCursor;
-                    maxSouthEast >>= 7;
+                    southEastCursor >>>= 7;
                 }
             }
             // SOUTH WEST
             if (i < maxSouthWest) {
-                int idx = index - (i+1)*7;
                 if ((southWestCursor & mergedEnemyPieces) != 0) {
-                    currentMoves |= southEastCursor;
+                    currentMoves |= southWestCursor;
                     maxSouthWest = i;
                 } else if ((southWestCursor & mergedPlayerPieces) != 0) {
                     maxSouthWest = i;
                 } else {
-                    currentMoves |= southEastCursor;
-                    maxSouthWest >>= 9;
+                    currentMoves |= southWestCursor;
+                    southWestCursor >>>= 9;
                 }
             }
         }
 
+        //System.out.println("BISHOP moves: "+currentMoves);
         return currentMoves;
     }
 }

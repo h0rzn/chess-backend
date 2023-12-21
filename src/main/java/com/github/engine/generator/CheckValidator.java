@@ -50,7 +50,6 @@ public class CheckValidator {
 
         // generate enemy moves
         Generator generator = new Generator(enemyColor, gameBoard);
-        System.out.println("[INCHECK] generator for enemy: "+enemyColor);
         for (int enemyPiece = 0; enemyPiece < 6; enemyPiece++) {
             // skip empty piece boards
             if (enemyPieces[enemyPiece] == 0) {
