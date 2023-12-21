@@ -9,14 +9,10 @@ import com.github.engine.models.CheckInfo;
 import com.github.engine.models.CheckResolveInfo;
 import com.github.engine.models.MoveInfo;
 import com.github.engine.move.Move;
-import com.github.engine.move.MoveType;
 import com.github.engine.move.Position;
 import com.github.engine.utils.FenParser;
 import com.github.engine.utils.FenSerializer;
 import lombok.Getter;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static com.github.engine.move.MoveType.*;
 
@@ -80,10 +76,8 @@ public class Game extends GameBoard implements IGame {
                     info.setFailMessage("cannot make normal move: currently in promotion mode");
                     return info;
                 }
-                System.out.println("NORMAL MOVE");
                 return moveNormal(action.getMove());
             case Promotion:
-                System.out.println("PROMOTION MOVE");
                 return movePromotion(action);
         }
         return null;
@@ -95,8 +89,6 @@ public class Game extends GameBoard implements IGame {
     // and continues to work if the promotion state is resolved by
     // successfully calling the promotion method.
     public MoveInfo moveNormal(Move move) {
-        System.out.println("MOVE NORMAL: "+getLastMoveFen());
-
         MoveInfo info = new MoveInfo();
         info.setPlayerColor(getActiveColor());
 
