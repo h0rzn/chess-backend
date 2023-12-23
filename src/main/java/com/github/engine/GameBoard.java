@@ -19,10 +19,56 @@ public abstract class GameBoard {
     private long unmovedPieces;
 
     public void loadPieceScenario(long[] setWhite, long[] setBlack) {
+        // reset board
+        clearBoards();
+
         this.setWhite = setWhite;
         this.setBlack = setBlack;
         long[] merged = mergeAllPlayerBoards(0, setWhite, setBlack);
         this.unmovedPieces = merged[0] | merged[1];
+    }
+
+    // load default setup
+    public void loadDefault() {
+        // generate starting positions
+        // PAWNS 0
+        long pawnsW = 0b11111111 << 8;
+        this.setWhite[0] = this.setWhite[0] | pawnsW;
+        this.setBlack[0] = this.setBlack[0] | pawnsW << 40;
+
+        // KNIGHTS 1
+        long knightsW = 0b01000010;
+        this.setWhite[1] = this.setWhite[1] | knightsW;
+        this.setBlack[1] = this.setBlack[1] | knightsW << 56;
+
+        // BISHOPS 2
+        long bishopsW = 0b00100100;
+        this.setWhite[2] = this.setWhite[2] | bishopsW;
+        this.setBlack[2] = this.setBlack[2] | bishopsW << 56;
+
+        // ROOKS 3
+        long rooksW = 0b10000001;
+        this.setWhite[3] = this.setWhite[3] | rooksW;
+        this.setBlack[3] = this.setBlack[3] | rooksW << 56;
+
+        // QUEENS 4 0b0001000
+        long queensW = 0b0001000;
+        this.setWhite[4] = this.setWhite[4] | queensW;
+        this.setBlack[4] = this.setBlack[4] | (queensW << 56);
+
+        // KINGS 5
+        long kingsW = 0b00010000;
+        this.setWhite[5] = this.setWhite[5] | kingsW;
+        this.setBlack[5] = this.setBlack[5] | (kingsW << 56);
+
+        // unmoved pieces on default squares
+        this.unmovedPieces = 0xffff00000000ffffL;
+    }
+
+    public void clearBoards() {
+        setSetBlack(new long[6]);
+        setSetWhite(new long[6]);
+        unmovedPieces = 0;
     }
 
     // Merges whitePieces and blackPieces respectively
@@ -113,45 +159,13 @@ public abstract class GameBoard {
         this.unmovedPieces &= ~(1L << square);
     }
 
+    // Constructor for default game setup
     public GameBoard() {
         this.setWhite = new long[6];
         this.setBlack = new long[6];
-
-        // generate starting positions
-        // PAWNS 0
-        long pawnsW = 0b11111111 << 8;
-        this.setWhite[0] = this.setWhite[0] | pawnsW;
-        this.setBlack[0] = this.setBlack[0] | pawnsW << 40;
-
-        // KNIGHTS 1
-        long knightsW = 0b01000010;
-        this.setWhite[1] = this.setWhite[1] | knightsW;
-        this.setBlack[1] = this.setBlack[1] | knightsW << 56;
-
-        // BISHOPS 2
-        long bishopsW = 0b00100100;
-        this.setWhite[2] = this.setWhite[2] | bishopsW;
-        this.setBlack[2] = this.setBlack[2] | bishopsW << 56;
-
-        // ROOKS 3
-        long rooksW = 0b10000001;
-        this.setWhite[3] = this.setWhite[3] | rooksW;
-        this.setBlack[3] = this.setBlack[3] | rooksW << 56;
-
-        // QUEENS 4 0b0001000
-        long queensW = 0b0001000;
-        this.setWhite[4] = this.setWhite[4] | queensW;
-        this.setBlack[4] = this.setBlack[4] | (queensW << 56);
-
-        // KINGS 5
-        long kingsW = 0b00010000;
-        this.setWhite[5] = this.setWhite[5] | kingsW;
-        this.setBlack[5] = this.setBlack[5] | (kingsW << 56);
-
-        // unmoved pieces on default squares
-        this.unmovedPieces = 0xffff00000000ffffL;
     }
 
+    // Constructor for manually setting board constellation
     public GameBoard(long[] setWhite, long[] setBlack) {
         loadPieceScenario(setWhite, setBlack);
     }

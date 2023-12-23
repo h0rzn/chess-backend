@@ -46,15 +46,16 @@ public class GameService {
     }
 
     public Game createDebugGame(String fenString) throws Exception {
-        Game game = new Game();
-        game.loadFEN(fenString);
+        Game game = new Game(fenString);
+        System.out.println("[GAMESERVICE] created new debug game with fen: "+fenString);
+
         gameStorageDebug = game;
         return gameStorageDebug;
     }
 
     public Game loadPosition(String fenString) throws Exception {
         if(gameStorageDebug != null){
-            gameStorageDebug.loadFEN(fenString);
+            gameStorageDebug.load(fenString);
             return gameStorageDebug;
         }
         return null;

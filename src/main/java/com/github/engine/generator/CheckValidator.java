@@ -70,7 +70,6 @@ public class CheckValidator {
                 // if there is no match we still add the move gen to the enemy covers
                 // the get a map of all enemy reachable squares
                 if ((enemyPieceMoves & kingBoard) != 0) {
-                    System.out.println("e "+enemyPiece+ " attacks king; moves: "+enemyPieceMoves);
                     attackRoutes |= enemyPieceMoves;
                     attackBoards[enemyPiece] |= enemyPieceMoves;
                 } else {

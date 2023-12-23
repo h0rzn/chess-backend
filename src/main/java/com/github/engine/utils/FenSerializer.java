@@ -169,6 +169,12 @@ public class FenSerializer {
         long[] setWhite = game.getSetWhite();
         long[] setBlack = game.getSetBlack();
 
+        long mergedBoth = 0;
+        for (int i = 0; i < 6; i++) {
+            mergedBoth |= setWhite[i] | setBlack[i];
+        }
+        System.out.println("SERIALIZE ALL: merged both: "+mergedBoth);
+
         StringBuilder fenString = new StringBuilder();
 
         StringBuilder fen = new StringBuilder();

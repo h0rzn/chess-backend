@@ -33,34 +33,26 @@ public class LobbyWSController {
 
     @MessageMapping("/debug/newgame")
     public void receiveMessage(GameDebugModel message) {
-        System.out.println("test");
-            GameDebugModel gameDebugModel = message;
+        System.out.println("[LOBBY-WS::newGame] with fen: '"+message.getFen()+"'");
+        String fen = message.getFen();
+        try {
+            if (fen.isEmpty()) {
+                gameService.createDebugGame();
 
-            String fenString = gameDebugModel.getFen();
-            if(Objects.equals(fenString, "")){
-                System.out.println("NullFen");
-                try {
-                    gameService.createDebugGame();
-                    messagingTemplate.convertAndSend("/topic/debug/game/", "done");
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    messagingTemplate.convertAndSend("/topic/debug/game/", "error");
-                }
+            } else {
+                gameService.createDebugGame(fen);
             }
-//        if(message instanceof MoveDebugModel){
-//            MoveDebugModel moveDebugModel = (MoveDebugModel) message;
-//
-//            String moveString = moveDebugModel.getMove();
-//
-//            Move move = new Move(moveString);
-//            return gameService.makeMove(move);
-//        }
+            messagingTemplate.convertAndSend("/topic/debug/game/", "done");
+        } catch (Exception e) {
+            System.out.println("[LOBBY-WS::createGame] ERROR: "+e);
+            messagingTemplate.convertAndSend("/topic/debug/game/", "error");
+        }
     }
 
     @MessageMapping("/debug/move")
     public void receiveMove(MoveDebugModel message){
         MoveDebugModel moveDebugModel = message;
-        System.out.println("Move: " + message.getMove());
+        System.out.println("[LOBBY-WS::receiveMove][" + message.getId() + "]"+message.getId()+  " move: " + message.getMove());
 
         String moveString = moveDebugModel.getMove();
 
@@ -84,7 +76,7 @@ public class LobbyWSController {
 
         String fenString = gameDebugModel.getFen();
         System.out.println("FenString: " + fenString);
-        gameService.getGameStorageDebug().loadFEN(fenString);
+        gameService.getGameStorageDebug().load(fenString);
         LoadFenResponseModel responseModel = new LoadFenResponseModel(message.getId(), gameService.gameStorageDebug.getLastMoveFen());
         messagingTemplate.convertAndSend("/topic/debug/fen/", responseModel);
     }

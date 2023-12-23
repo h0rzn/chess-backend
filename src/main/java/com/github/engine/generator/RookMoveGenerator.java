@@ -116,8 +116,6 @@ public class RookMoveGenerator implements IGenerator {
 
          */
 
-        System.out.println("ROOK c: "+position.getColor()+" moves: "+currentMoves);
-
         return currentMoves;
     }
 }

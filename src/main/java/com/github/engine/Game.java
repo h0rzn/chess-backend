@@ -54,14 +54,50 @@ public class Game extends GameBoard implements IGame {
         this.lastMoveFen = serializer.serializeAll();
     }
 
+    public Game(String fen) throws Exception {
+        load(fen);
+    }
+
+    // initialize game with default settings (default piece positions, ...)
+    public void load() {
+        loadDefault();
+    }
+
+    // load game with fen string
+    public void load(String fen) throws Exception {
+        // reset game before we load fen
+        reset();
+
+        FenParser parser = new FenParser();
+        parser.parse(fen);
+
+        loadPieceScenario(parser.getSetWhite(), parser.getSetBlack());
+        activeColor = parser.getActiveColor();
+        lastMoveFen = new FenSerializer(this).serializeAll();
+    }
+
+
     // load a game with FEN input
     public void loadFEN(String fenString) throws Exception {
+        // reset game before we load fen
+        reset();
+
         FenParser parser = new FenParser();
         parser.parse(fenString);
 
         loadPieceScenario(parser.getSetWhite(), parser.getSetBlack());
         activeColor = parser.getActiveColor();
         lastMoveFen = new FenSerializer(this).serializeAll();
+    }
+
+    // fully reset game
+    public void reset() {
+        gameState = GameState.UNKOWN;
+        // reset color to 0 (white); updated color should be set by loadFen
+        activeColor = 0;
+        lastMoveFen = "";
+        // clear boards from GameBoard
+        clearBoards();
     }
 
     // execute a user action by calling
@@ -218,12 +254,16 @@ public class Game extends GameBoard implements IGame {
             }
         }
 
+        System.out.println("\n--- Returning Move ---");
+        System.out.println("--- OLD FEN "+lastMoveFen);
+
         FenSerializer serializer = new FenSerializer(this);
         //String fen = serializer.serialize(move, lastMoveFen);
         String fen = serializer.serializeAll();
         info.setStateFEN(fen);
         info.pushLog("++ move is legal and synced ++");
         info.setMove(move);
+        System.out.println("--- NEW FEN "+lastMoveFen);
 
         return info;
     }
