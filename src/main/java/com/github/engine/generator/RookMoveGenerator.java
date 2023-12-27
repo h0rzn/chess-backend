@@ -88,7 +88,7 @@ public class RookMoveGenerator implements IGenerator {
                 }
             }
         }
-
+        System.out.println("ROOK MOVEGEN: "+currentMoves+" mergedE: "+mergedEnemyPieces);
 
         // we don't care which side of the board the king is on
         long kingPosPotentials = (1 << 4) | (1L << 60);

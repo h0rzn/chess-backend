@@ -112,6 +112,7 @@ public class CheckValidator {
             enemyPieces = gameBoard.getSetWhite();
             enemyColor = 0;
         }
+        System.out.println("resolve chec: playerColor "+playerColor+ " enemyColor "+enemyColor);
 
         long[] attack2Defend = new long[6];
         long[] block2Defend = new long[6];

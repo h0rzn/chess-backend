@@ -24,8 +24,11 @@ public class MoveInfo {
     @Setter
     @Getter
     private Move move;
-    @Getter
     @Setter
+    @Getter
+    private List<String> captures;
+    @Setter
+    @Getter
     private String stateFEN;
     @Setter
     @Getter

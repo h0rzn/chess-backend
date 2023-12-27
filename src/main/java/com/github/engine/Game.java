@@ -9,6 +9,7 @@ import com.github.engine.models.CheckInfo;
 import com.github.engine.models.CheckResolveInfo;
 import com.github.engine.models.MoveInfo;
 import com.github.engine.move.Move;
+import com.github.engine.move.MoveType;
 import com.github.engine.move.Position;
 import com.github.engine.utils.FenParser;
 import com.github.engine.utils.FenSerializer;
@@ -225,7 +226,7 @@ public class Game extends GameBoard implements IGame {
                 info.pushLog("legal promotion: next move should set promote piece");
                 break;
             case Castle:
-                if (isCastleLegal(move.getFrom())) {
+                if (isCastleLegal(move)) {
                     info.pushLog("legal castle");
                 } else {
                     return info.WithFailure("illegal castle", move);
@@ -241,13 +242,12 @@ public class Game extends GameBoard implements IGame {
         // POST MOVE
         // check if legal move ends the game by placing enemy in checkmate
         //
+        System.out.println("=== POST MOVE ===");
         CheckValidator enemyCheckValidator = new CheckValidator(this);
-        int enemyColor = 1;
-        if (getActiveColor() == 1) {
-            enemyColor = 0;
-        }
+        int enemyColor = getActiveColor() == 0 ? 1 : 0;
         CheckInfo enemyCheckInfo = enemyCheckValidator.inCheck(enemyColor);
         if (enemyCheckInfo.isCheck()) {
+            info.pushLog("move puts enemy in check");
             CheckResolveInfo resolveInfo = enemyCheckValidator.isCheckResolvable(enemyColor, enemyCheckInfo.attackBoards());
             if (!resolveInfo.resolvable()) {
                 info.pushLog("-- game ends: enemy in checkmate --");
@@ -257,14 +257,13 @@ public class Game extends GameBoard implements IGame {
         System.out.println("\n--- Returning Move ---");
         System.out.println("--- OLD FEN "+lastMoveFen);
 
-        FenSerializer serializer = new FenSerializer(this);
-        //String fen = serializer.serialize(move, lastMoveFen);
-        String fen = serializer.serializeAll();
+        String fen = FenSerializer.serializeGameboard(this);
         info.setStateFEN(fen);
+        info.setCaptures(getCaptures());
+        lastMoveFen = fen;
         info.pushLog("++ move is legal and synced ++");
         info.setMove(move);
         System.out.println("--- NEW FEN "+lastMoveFen);
-
         return info;
     }
 
@@ -320,10 +319,8 @@ public class Game extends GameBoard implements IGame {
             move.setMoveType(Promotion);
         }
         // Castling
-        if (move.getTo().getPieceType() == 5) {
-            if (isCastleLegal(move.getFrom())) {
-                move.setMoveType(Castle);
-            }
+        if (move.getFrom().getPieceType() == 3 && move.getTo().getPieceType() == 5) {
+            move.setMoveType(Castle);
         }
         // could be other move types if none of these cases match
 
@@ -331,8 +328,8 @@ public class Game extends GameBoard implements IGame {
     }
 
     // check if potential castle is legal
-    public boolean isCastleLegal(Position from) {
-        long castleRange = switch (from.getIndex()) {
+    public boolean isCastleLegal(Move move) {
+        long castleRange = switch (move.getFrom().getIndex()) {
             case 0 -> 0xeL;
             case 7 -> 0x60L;
             case 56 -> 0xe00000000000000L;
@@ -423,12 +420,12 @@ public class Game extends GameBoard implements IGame {
 
         // Remove Player Piece
         playerBoards[from.getPieceType()] &= ~(1L << from.getIndex());
-
         // Maybe Position should also include PieceType
 
         switch (move.getMoveType()) {
-            case Normal:
             case Capture:
+                addCapture(move);
+            case Normal:
                 // Add Player Piece to Destination
                 playerBoards[from.getPieceType()] |= (1L << to.getIndex());
                 // Remove Enemy Piece on Destination (noop if not needed)

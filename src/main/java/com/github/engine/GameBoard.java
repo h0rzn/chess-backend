@@ -1,7 +1,13 @@
 package com.github.engine;
 
+import com.github.engine.move.Move;
+import com.github.engine.utils.FenSerializer;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 // GameBoard class represents the chess field
 // SetWhite & SetBlack contain sets of bitboards
@@ -17,6 +23,8 @@ public abstract class GameBoard {
     private long[] setBlack;
     @Getter
     private long unmovedPieces;
+    @Getter
+    private List<String> captures;
 
     public void loadPieceScenario(long[] setWhite, long[] setBlack) {
         // reset board
@@ -69,6 +77,16 @@ public abstract class GameBoard {
         setSetBlack(new long[6]);
         setSetWhite(new long[6]);
         unmovedPieces = 0;
+        captures.clear();
+    }
+
+    public void addCapture(Move move) {
+        int capturedPiece = move.getTo().getPieceType();
+        if (move.getTo().getColor() == 1) {
+            capturedPiece += 6;
+        }
+        captures.add(FenSerializer.tokenByPieceType(capturedPiece));
+        System.out.println("captures"+captures);
     }
 
     // Merges whitePieces and blackPieces respectively
@@ -163,11 +181,13 @@ public abstract class GameBoard {
     public GameBoard() {
         this.setWhite = new long[6];
         this.setBlack = new long[6];
+        this.captures = new ArrayList<>();
     }
 
     // Constructor for manually setting board constellation
     public GameBoard(long[] setWhite, long[] setBlack) {
         loadPieceScenario(setWhite, setBlack);
+        this.captures = new ArrayList<>();
     }
 
 }
