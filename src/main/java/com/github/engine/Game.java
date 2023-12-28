@@ -15,6 +15,7 @@ import com.github.engine.utils.FenParser;
 import com.github.engine.utils.FenSerializer;
 import lombok.Getter;
 
+import javax.swing.text.Style;
 import java.util.Arrays;
 
 import static com.github.engine.move.MoveType.*;
@@ -168,6 +169,8 @@ public class Game extends GameBoard implements IGame {
         long legalMoves = generator.generate(from, false);
         long moveToBoard = (1L << to.getIndex());
 
+        System.out.println("--> move to: "+moveToBoard+" legals: "+legalMoves);
+
         if ((legalMoves&moveToBoard) == 0) {
             return info.WithFailure("destination square is not reachable (not in move gen)", move);
         }
@@ -200,6 +203,7 @@ public class Game extends GameBoard implements IGame {
                 info.pushLog("legal promotion: next move should set promote piece");
                 break;
             case Castle:
+                System.out.println("CASTLE DETECED");
                 if (isCastleLegal(move)) {
                     info.pushLog("legal castle");
                 } else {
@@ -283,8 +287,6 @@ public class Game extends GameBoard implements IGame {
             }
         }
 
-        System.out.println("DOUBLE? " + Math.abs(move.getTo().getIndex()-move.getFrom().getIndex()));
-
         // to square is empty -> set piece type to type of
         // piece making the move so sync works with the same board
         // and not -1
@@ -310,6 +312,7 @@ public class Game extends GameBoard implements IGame {
 
         // Castling
         if (move.getFrom().getPieceType() == 3 && move.getTo().getPieceType() == 5) {
+            System.out.println("POTENTIAL CASTLE DETECTED");
             move.setMoveType(Castle);
             return move;
         }

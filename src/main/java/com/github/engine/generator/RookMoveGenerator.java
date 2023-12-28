@@ -84,42 +84,23 @@ public class RookMoveGenerator implements IGenerator {
                 if ((westCursor & mergedEnemyPieces) != 0) {
                     currentMoves |= westCursor;
                     maxWest = i;
-                } else if ((southCursor & mergedPlayerPieces) != 0) {
+                } else if ((westCursor & mergedPlayerPieces) != 0) {
                     currentMoves |= westCursor;
                     maxWest = i;
                 } else {
                     currentMoves |= westCursor;
-                    westCursor >>= 1;
+                    westCursor >>>= 1;
                 }
             }
         }
 
-        // we don't care which side of the board the king is on
-        long kingPosPotentials = (1 << 4) | (1L << 60);
-        // no match of potential king position and own pieces (unmoved pieces)
-        if ((kingPosPotentials&unmovedPieces) == 0) {
-            return currentMoves;
+        System.out.println("ROOK MOVE GEN "+currentMoves);
+        boolean rookUnmoved = ((1L << rookIndex) & unmovedPieces) != 0;
+        long kingBoard = (position.getColor() == 0) ? 16 : 0x1000000000000000L;
+        boolean kingUnmoved = (kingBoard & unmovedPieces) != 0;
+        if (rookUnmoved && kingUnmoved) {
+            currentMoves |= kingBoard;
         }
-        /*
-        long rookBoard = (1L << rookIndex);
-        if ((rookBoard&unmovedPieces) != 0) {
-            currentMoves |= 0x10;
-        }
-         */
-
-        /*
-        // this should only catch our king
-        if ((unmovedPieces&kingPosPotentials) == 0) {
-            return currentMoves;
-        }
-        // just check if the rook has been moved and we are done
-        long rookBoard = (1L << rookIndex);
-        if ((rookBoard&unmovedPieces) != 0) {
-            currentMoves |= 0x10;
-        }
-
-         */
-
         return currentMoves;
     }
 }

@@ -52,7 +52,7 @@ public class Generator {
         //System.out.println("--- GENERATOR: without covers, move gen bef: "+generatedMoves);
         long[] playerPieces = getPlayerColor() == 0 ? gameBoard.getSetWhite() : gameBoard.getSetBlack();
         for (int playerPiece = 0; playerPiece < 6; playerPiece++) {
-            if (position.getPieceType() == playerPiece) {
+            if (position.getPieceType() == playerPiece || position.getPieceType() == 3) {
                 continue;
             }
             generatedMoves &= ~playerPieces[playerPiece];
