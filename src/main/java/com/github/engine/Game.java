@@ -179,50 +179,18 @@ public class Game extends GameBoard implements IGame {
 
         // Checkmate: Player
         CheckValidator playerCheckValidator = new CheckValidator(this);
-        CheckInfo playerCheckInfo = playerCheckValidator.inCheck(getActiveColor());
-
-        if (playerCheckInfo.isCheck()) {
-            info.pushLog("player in check: "+playerCheckInfo);
-            // check if the king move is legal based on
-            // given king escapes
-            if (from.getPieceType() == 5) {
-                // king escapes does not contain wanted move --> illegal in check move
-                if ((moveToBoard&playerCheckInfo.kingEscapes()) == 0) {
-                    return info.WithFailure("illegal in check move for king", move);
-                }
-            } else {
-                // resolve by player pieces
-                CheckResolveInfo resolveInfo = playerCheckValidator.isCheckResolvable(getActiveColor(), playerCheckInfo.attackBoards(), playerCheckInfo.enemyMoveCovered());
-                if (resolveInfo.resolvable()) {
-                    // check if move is legal attack to defend move
-                    // or legal block to defend move
-                    boolean moveResolvesCheck = false;
-                    for (int playerPiece = 0; playerPiece < 6; playerPiece++) {
-                        long[] a2d = resolveInfo.attack2Defend();
-                        long[] b2d = resolveInfo.block2Defend();
-
-                        if ((a2d[playerPiece]&moveToBoard) != 0) {
-                            info.pushLog("legal resolve move[a2d]");
-                            moveResolvesCheck = true;
-                            break;
-                        } else if ((b2d[playerPiece]&moveToBoard) != 0) {
-                            info.pushLog("legal resolve move[b2d]");
-                            moveResolvesCheck = true;
-                            break;
-                        }
-                    }
-                    // move does not resolve check --> illegal
-                    if (!moveResolvesCheck) {
-                        return info.WithFailure("illegal in check move", move);
-                    }
-                }
-            }
-        } else if (from.getPieceType() == 5){
-            // even though the players king is currently not in check
-            // we have to validate that this move would not put him in a check situation
-            if ((moveToBoard& playerCheckInfo.enemyMoveCovered()) != 0) {
-                return info.WithFailure("illegal non-check move: move puts king in check", move);
-            }
+        CheckStatus checkStatus = playerCheckValidator.analyzeCheckWithResolve(getActiveColor(), move);
+        switch (checkStatus) {
+            case NoCheck:
+                info.pushLog("player: no check");
+                break;
+            case MoveResolvesCheck:
+                info.pushLog("player: check but move resolves");
+                break;
+            case Unkown:
+                info.pushLog("player check analysis error");
+            default:
+                info.pushLog("player check: "+String.valueOf(checkStatus));
         }
 
         // handle specials
@@ -258,26 +226,9 @@ public class Game extends GameBoard implements IGame {
         // check if legal move ends the game by placing enemy in checkmate
         // syncMoves flipped colors!
         // ignore post move verification on promotion, because has not finished move
-        if (move.getMoveType() != Promotion) {
-            System.out.println("=== POST MOVE ===");
-            CheckValidator enemyCheckValidator = new CheckValidator(this);
-            CheckInfo enemyCheckInfo = enemyCheckValidator.inCheck(getActiveColor());
-            System.out.println("enemy check info for ["+getActiveColor()+"] "+
-                    "attackBoards "+ Arrays.toString(enemyCheckInfo.attackBoards()) +
-                    " eCovers " + enemyCheckInfo.enemyMoveCovered() +
-                    " kingEscapes " + enemyCheckInfo.kingEscapes()
-            );
-            if (enemyCheckInfo.isCheck()) {
-                info.pushLog("move puts enemy in check");
-                CheckResolveInfo resolveInfo = enemyCheckValidator.isCheckResolvable(getActiveColor(), enemyCheckInfo.attackBoards(), enemyCheckInfo.enemyMoveCovered());
-                if (!resolveInfo.resolvable()) {
-                    info.pushLog("-- game ends: enemy in checkmate --");
-                }
-                System.out.println("enemy resolve info: "+resolveInfo.resolvable()+
-                        " a2d's "+Arrays.toString(resolveInfo.attack2Defend())+
-                        " b2d's "+Arrays.toString(resolveInfo.block2Defend()));
-            }
-            System.out.println("=== POST END  ===");
+        CheckStatus checkStatusEnemy = playerCheckValidator.analyzeCheck(getActiveColor(), move);
+        if (checkStatusEnemy != CheckStatus.NoCheck) {
+            info.pushLog("-- game ends: enemy in checkmate --");
         }
 
 

@@ -1,9 +1,12 @@
 package com.github.engine.generator;
 
 import com.github.engine.Bitboard;
+import com.github.engine.CheckStatus;
 import com.github.engine.GameBoard;
 import com.github.engine.models.CheckInfo;
 import com.github.engine.models.CheckResolveInfo;
+import com.github.engine.move.Move;
+import com.github.engine.move.MoveType;
 import com.github.engine.move.Position;
 import lombok.Setter;
 
@@ -19,9 +22,77 @@ public class CheckValidator {
     @Setter
     private GameBoard gameBoard;
 
+    public CheckStatus analyzeCheck(int playerColor, Move move) {
+        long moveToBoard = (1L << move.getTo().getIndex());
+        CheckInfo checkInfo = inCheck(playerColor);
+        if (checkInfo == null) {
+            return CheckStatus.Unkown;
+        }
+
+        if (!checkInfo.isCheck()) {
+            if (move.getFrom().getPieceType() == 5) {
+                if ((moveToBoard& checkInfo.enemyMoveCovered()) != 0) {
+                    // even though the players king is currently not in check
+                    // we have to validate that this move would not put him in a check situation
+
+                    // king attempts to move to piece that would put him in check
+                    return CheckStatus.KingMoveToNextCheck;
+                }
+            }
+            return CheckStatus.NoCheck;
+        }
+        return CheckStatus.Check;
+    }
+
+    public CheckStatus analyzeCheckWithResolve(int playerColor, Move move) {
+        long moveToBoard = (1L << move.getTo().getIndex());
+        CheckInfo checkInfo = inCheck(playerColor);
+        if (checkInfo == null) {
+            return CheckStatus.Unkown;
+        }
+
+        if (!checkInfo.isCheck()) {
+            // no check
+            return CheckStatus.NoCheck;
+        } else if (move.getFrom().getPieceType() == 5) {
+            if ((moveToBoard& checkInfo.enemyMoveCovered()) != 0) {
+                // even though the players king is currently not in check
+                // we have to validate that this move would not put him in a check situation
+
+                // king attempts to move to piece that would put him in check
+                return CheckStatus.KingMoveToNextCheck;
+            }
+        }
+        if (move.getFrom().getPieceType() == 5) {
+            // king escapes does not contain wanted move --> illegal in check move
+            if ((moveToBoard & checkInfo.kingEscapes()) == 0) {
+                // illegal in check move for king
+                return CheckStatus.KingIllegalInCheckMove;
+            }
+        } else {
+            CheckResolveInfo resolveInfo = isCheckResolvable(playerColor, checkInfo);
+            if (!resolveInfo.resolvable()) {
+                // check but not resolvable
+                return CheckStatus.Checkmate;
+            }
+
+            // look up move is legal resolve move
+            long[] a2d = resolveInfo.attack2Defend();
+            long[] b2d = resolveInfo.block2Defend();
+            for (int playerPiece = 0; playerPiece < 6; playerPiece++) {
+                if ((a2d[playerPiece]&moveToBoard) != 0) {
+                    return CheckStatus.MoveResolvesCheck;
+                } else if ((b2d[playerPiece]&moveToBoard) != 0) {
+                    return CheckStatus.MoveResolvesCheck;
+                }
+            }
+        }
+        return CheckStatus.IllegalInCheckMove;
+    }
+
     // validate if the given player is in a check situation
     // CheckInfo returns additional information
-    public CheckInfo inCheck(int playerColor) {
+    private CheckInfo inCheck(int playerColor) {
         long[] playerPieces;
         long[] enemyPieces;
         int enemyColor;
@@ -103,7 +174,10 @@ public class CheckValidator {
         return new CheckInfo(kingInCheck, kingEscapes,attackBoards, enemyCovers);
     }
 
-    public CheckResolveInfo isCheckResolvable(int playerColor, long[] attackBoards, long enemyCovers) {
+    private CheckResolveInfo isCheckResolvable(int playerColor, CheckInfo checkInfo) {
+        long[] attackBoards = checkInfo.attackBoards();
+        long enemyCovers = checkInfo.enemyMoveCovered();
+
         long[] playerPieces;
         long[] enemyPieces;
         int enemyColor;
