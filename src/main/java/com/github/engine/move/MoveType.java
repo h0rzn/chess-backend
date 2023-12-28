@@ -5,5 +5,6 @@ public enum MoveType {
     Normal,
     Capture,
     Castle,
-    Promotion
+    Promotion,
+    PawnDouble
 }

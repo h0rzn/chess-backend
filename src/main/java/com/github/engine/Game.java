@@ -238,6 +238,15 @@ public class Game extends GameBoard implements IGame {
                     return info.WithFailure("illegal castle", move);
                 }
                 break;
+            case PawnDouble:
+                System.out.println("PAWN DOUBLE!!!");
+                if (getActiveColor() == 0 && !isDoublePawnedWhite()) {
+                    setDoublePawnedWhite(true);
+                } else if (getActiveColor() == 1 && !isDoublePawnedBlack()) {
+                    setDoublePawnedBlack(true);
+                } else {
+                    return info.WithFailure("no double pawn move left", move);
+                }
         }
 
         // sync move with gameBoard
@@ -323,12 +332,19 @@ public class Game extends GameBoard implements IGame {
             }
         }
 
+        System.out.println("DOUBLE? " + Math.abs(move.getTo().getIndex()-move.getFrom().getIndex()));
+
         // to square is empty -> set piece type to type of
         // piece making the move so sync works with the same board
         // and not -1
         if (move.getTo().noPiece()) {
             move.getTo().setPieceType(move.getFrom().getPieceType());
-            move.setMoveType(Normal);
+        }
+
+        // PawnDouble
+        if (Math.abs(move.getTo().getIndex()-move.getFrom().getIndex()) == 16) {
+            move.setMoveType(PawnDouble);
+            return move;
         }
 
         // Promotion
@@ -338,15 +354,17 @@ public class Game extends GameBoard implements IGame {
             } else if ((activeColor == 1 &&  move.getTo().getIndex() <= 7)) {
                 move.setMoveType(Promotion);
             }
+            return move;
         }
-
 
         // Castling
         if (move.getFrom().getPieceType() == 3 && move.getTo().getPieceType() == 5) {
             move.setMoveType(Castle);
+            return move;
         }
-        // could be other move types if none of these cases match
 
+
+        move.setMoveType(Normal);
         return move;
     }
 

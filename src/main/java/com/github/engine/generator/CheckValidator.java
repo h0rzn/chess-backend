@@ -22,7 +22,6 @@ public class CheckValidator {
     // validate if the given player is in a check situation
     // CheckInfo returns additional information
     public CheckInfo inCheck(int playerColor) {
-        System.out.println(">>> inCheck color: "+playerColor);
         long[] playerPieces;
         long[] enemyPieces;
         int enemyColor;
@@ -63,9 +62,8 @@ public class CheckValidator {
 
             // iterate over each square (=each Piece) and run move gen
             for (Integer occupiedSquare : enemyPieceSquares) {
-                Position enemyPosition = new Position(occupiedSquare, enemyPiece);
+                Position enemyPosition = new Position(occupiedSquare, enemyPiece, enemyColor);
                 long enemyPieceMoves = generator.generate(enemyPosition, true);
-                System.out.println(enemyPiece+ " [moves]:: "+enemyPieceMoves);
 
                 // if enemy player move generation includes the players king square
                 // add that move generation to the combined attackRoutes and

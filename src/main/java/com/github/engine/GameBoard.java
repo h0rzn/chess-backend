@@ -25,6 +25,13 @@ public abstract class GameBoard {
     private long unmovedPieces;
     @Getter
     private List<String> captures;
+    // if either color has used its double pawn yet
+    @Setter
+    @Getter
+    private boolean doublePawnedWhite;
+    @Setter
+    @Getter
+    private boolean doublePawnedBlack;
 
     public void loadPieceScenario(long[] setWhite, long[] setBlack) {
         // reset board
@@ -78,6 +85,8 @@ public abstract class GameBoard {
         setSetWhite(new long[6]);
         unmovedPieces = 0;
         captures.clear();
+        this.doublePawnedWhite = false;
+        this.doublePawnedBlack = false;
     }
 
     public void addCapture(Move move) {
@@ -182,12 +191,16 @@ public abstract class GameBoard {
         this.setWhite = new long[6];
         this.setBlack = new long[6];
         this.captures = new ArrayList<>();
+        this.doublePawnedWhite = false;
+        this.doublePawnedBlack = false;
     }
 
     // Constructor for manually setting board constellation
     public GameBoard(long[] setWhite, long[] setBlack) {
         loadPieceScenario(setWhite, setBlack);
         this.captures = new ArrayList<>();
+        this.doublePawnedWhite = false;
+        this.doublePawnedBlack = false;
     }
 
 }

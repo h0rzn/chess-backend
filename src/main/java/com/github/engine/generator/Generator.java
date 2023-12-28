@@ -33,6 +33,7 @@ public class Generator {
     // to the respective Piece Move Generation which
     // is sourced by the pieceType given in Position
     public long generate(Position position, boolean withCovers){
+        //System.out.println(":::: GENERATE called color "+position.getColor()+" index "+position.getIndex()+ " :::");
         IGenerator pieceMoveGenerator = switch (SinglePiece.fromNumber(position.getPieceType())){
             case Pawn -> new PawnMoveGenerator(playerColor, gameBoard);
             case Knight -> new KnightMoveGenerator(playerColor, gameBoard);
@@ -48,7 +49,7 @@ public class Generator {
             return generatedMoves;
         }
 
-        System.out.println("--- GENERATOR: without covers, move gen bef: "+generatedMoves);
+        //System.out.println("--- GENERATOR: without covers, move gen bef: "+generatedMoves);
         long[] playerPieces = getPlayerColor() == 0 ? gameBoard.getSetWhite() : gameBoard.getSetBlack();
         for (int playerPiece = 0; playerPiece < 6; playerPiece++) {
             if (position.getPieceType() == playerPiece) {
@@ -56,7 +57,7 @@ public class Generator {
             }
             generatedMoves &= ~playerPieces[playerPiece];
         }
-        System.out.println("--- GENERATOR: without covers, move gen aft: "+generatedMoves);
+        //System.out.println("--- GENERATOR: without covers, move gen aft: "+generatedMoves);
         return generatedMoves;
     }
 
