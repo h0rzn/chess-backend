@@ -15,6 +15,8 @@ import com.github.engine.utils.FenParser;
 import com.github.engine.utils.FenSerializer;
 import lombok.Getter;
 
+import java.util.Arrays;
+
 import static com.github.engine.move.MoveType.*;
 
 // Game is the high level class to be interacted with.
@@ -116,8 +118,12 @@ public class Game extends GameBoard implements IGame {
                 return moveNormal(action.getMove());
             case Promotion:
                 return movePromotion(action);
+            default:
+                MoveInfo info = new MoveInfo();
+                info.setLegal(false);
+                info.setFailMessage("unkown action type: "+action.getType());
+                return info;
         }
-        return null;
     }
 
     // makeMove is the main interaction method of this engine
@@ -159,7 +165,7 @@ public class Game extends GameBoard implements IGame {
 
         // is destination square reachable
         Generator generator = new Generator(getActiveColor(), this);
-        long legalMoves = generator.generate(from);
+        long legalMoves = generator.generate(from, false);
         long moveToBoard = (1L << to.getIndex());
 
         if ((legalMoves&moveToBoard) == 0) {
@@ -186,7 +192,7 @@ public class Game extends GameBoard implements IGame {
                 }
             } else {
                 // resolve by player pieces
-                CheckResolveInfo resolveInfo = playerCheckValidator.isCheckResolvable(getActiveColor(), playerCheckInfo.attackBoards());
+                CheckResolveInfo resolveInfo = playerCheckValidator.isCheckResolvable(getActiveColor(), playerCheckInfo.attackBoards(), playerCheckInfo.enemyMoveCovered());
                 if (resolveInfo.resolvable()) {
                     // check if move is legal attack to defend move
                     // or legal block to defend move
@@ -241,18 +247,31 @@ public class Game extends GameBoard implements IGame {
         //
         // POST MOVE
         // check if legal move ends the game by placing enemy in checkmate
-        //
-        System.out.println("=== POST MOVE ===");
-        CheckValidator enemyCheckValidator = new CheckValidator(this);
-        int enemyColor = getActiveColor() == 0 ? 1 : 0;
-        CheckInfo enemyCheckInfo = enemyCheckValidator.inCheck(enemyColor);
-        if (enemyCheckInfo.isCheck()) {
-            info.pushLog("move puts enemy in check");
-            CheckResolveInfo resolveInfo = enemyCheckValidator.isCheckResolvable(enemyColor, enemyCheckInfo.attackBoards());
-            if (!resolveInfo.resolvable()) {
-                info.pushLog("-- game ends: enemy in checkmate --");
+        // syncMoves flipped colors!
+        // ignore post move verification on promotion, because has not finished move
+        if (move.getMoveType() != Promotion) {
+            System.out.println("=== POST MOVE ===");
+            CheckValidator enemyCheckValidator = new CheckValidator(this);
+            CheckInfo enemyCheckInfo = enemyCheckValidator.inCheck(getActiveColor());
+            System.out.println("enemy check info for ["+getActiveColor()+"] "+
+                    "attackBoards "+ Arrays.toString(enemyCheckInfo.attackBoards()) +
+                    " eCovers " + enemyCheckInfo.enemyMoveCovered() +
+                    " kingEscapes " + enemyCheckInfo.kingEscapes()
+            );
+            if (enemyCheckInfo.isCheck()) {
+                info.pushLog("move puts enemy in check");
+                CheckResolveInfo resolveInfo = enemyCheckValidator.isCheckResolvable(getActiveColor(), enemyCheckInfo.attackBoards(), enemyCheckInfo.enemyMoveCovered());
+                if (!resolveInfo.resolvable()) {
+                    info.pushLog("-- game ends: enemy in checkmate --");
+                }
+                System.out.println("enemy resolve info: "+resolveInfo.resolvable()+
+                        " a2d's "+Arrays.toString(resolveInfo.attack2Defend())+
+                        " b2d's "+Arrays.toString(resolveInfo.block2Defend()));
             }
+            System.out.println("=== POST END  ===");
         }
+
+
 
         System.out.println("\n--- Returning Move ---");
         System.out.println("--- OLD FEN "+lastMoveFen);
@@ -313,11 +332,15 @@ public class Game extends GameBoard implements IGame {
         }
 
         // Promotion
-        if ((activeColor == 0 && move.getTo().getIndex() >= 56)) {
-            move.setMoveType(Promotion);
-        } else if ((activeColor == 1 &&  move.getTo().getIndex() <= 7)) {
-            move.setMoveType(Promotion);
+        if (move.getFrom().getPieceType() == 0) {
+            if ((activeColor == 0 && move.getTo().getIndex() >= 56)) {
+                move.setMoveType(Promotion);
+            } else if ((activeColor == 1 &&  move.getTo().getIndex() <= 7)) {
+                move.setMoveType(Promotion);
+            }
         }
+
+
         // Castling
         if (move.getFrom().getPieceType() == 3 && move.getTo().getPieceType() == 5) {
             move.setMoveType(Castle);

@@ -36,7 +36,6 @@ public class BishopMoveGenerator implements IGenerator {
         int maxNorthWest = Math.min(maxNorth, maxWest);
         int maxSouthEast = Math.min(maxSouth, maxEast);
         int maxSouthWest = Math.min(maxSouth, maxWest);
-        //System.out.println(index + " bisphop max south west "+maxSouthWest+ " south east "+maxSouthEast);
 
         for (int i = 0; i < 8; i++) {
             // NORTH EAST

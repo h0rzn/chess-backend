@@ -26,7 +26,7 @@ public class KnightMoveGenerator implements IGenerator {
         spots |= (pos << 15) & Bitboard.NOT_H_FILE; // Springe 2 runter, 1 links
         spots |= (pos << 10) & Bitboard.NOT_AB_FILE; // Springe 1 runter, 2 rechts
         spots |= (pos << 6) & Bitboard.NOT_GH_FILE;
-        spots &= ~mergedPlayerPieces;
+        // spots &= ~mergedPlayerPieces;
 
         return spots;
     }

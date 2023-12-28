@@ -9,6 +9,8 @@ import lombok.Setter;
 
 import javax.imageio.plugins.tiff.BaselineTIFFTagSet;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 // CheckValidator contains methods to inspect a potential
@@ -20,6 +22,7 @@ public class CheckValidator {
     // validate if the given player is in a check situation
     // CheckInfo returns additional information
     public CheckInfo inCheck(int playerColor) {
+        System.out.println(">>> inCheck color: "+playerColor);
         long[] playerPieces;
         long[] enemyPieces;
         int enemyColor;
@@ -61,8 +64,8 @@ public class CheckValidator {
             // iterate over each square (=each Piece) and run move gen
             for (Integer occupiedSquare : enemyPieceSquares) {
                 Position enemyPosition = new Position(occupiedSquare, enemyPiece);
-                long enemyPieceMoves = generator.generate(enemyPosition);
-                //System.out.println(enemyPiece+ " :: "+enemyPieceMoves);
+                long enemyPieceMoves = generator.generate(enemyPosition, true);
+                System.out.println(enemyPiece+ " [moves]:: "+enemyPieceMoves);
 
                 // if enemy player move generation includes the players king square
                 // add that move generation to the combined attackRoutes and
@@ -72,21 +75,24 @@ public class CheckValidator {
                 if ((enemyPieceMoves & kingBoard) != 0) {
                     attackRoutes |= enemyPieceMoves;
                     attackBoards[enemyPiece] |= enemyPieceMoves;
-                } else {
-                    enemyCovers |= enemyPieceMoves;
                 }
+                enemyCovers |= enemyPieceMoves;
             }
         }
 
         // if any of the enemies attack routes match our kings position,
         // then the players king is in check
         boolean kingInCheck = (attackRoutes & kingBoard) != 0;
+        System.out.println("KING BOARD    "+kingBoard);
+        System.out.println("ATTACK ROUTES "+attackRoutes);
+        System.out.println("ATTACK BOARDS "+Arrays.toString(attackBoards));
 
         // kingEscapes stores all valid moves for king that resolve
         // a **potential** check situation
         Position playerKingPosition = new Position(kingSquare);
         playerKingPosition.setPieceType(5);
-        long kingMoves = generator.generate(playerKingPosition);
+        generator.setPlayerColor(playerColor);
+        long kingMoves = generator.generate(playerKingPosition, true);
         kingMoves &= ~enemyPieces[5];
 
         // cant escape to enemy occupied squares
@@ -99,7 +105,7 @@ public class CheckValidator {
         return new CheckInfo(kingInCheck, kingEscapes,attackBoards, enemyCovers);
     }
 
-    public CheckResolveInfo isCheckResolvable(int playerColor, long[] attackBoards) {
+    public CheckResolveInfo isCheckResolvable(int playerColor, long[] attackBoards, long enemyCovers) {
         long[] playerPieces;
         long[] enemyPieces;
         int enemyColor;
@@ -112,7 +118,9 @@ public class CheckValidator {
             enemyPieces = gameBoard.getSetWhite();
             enemyColor = 0;
         }
-        System.out.println("resolve chec: playerColor "+playerColor+ " enemyColor "+enemyColor);
+
+        System.out.println("+++");
+        System.out.println("resolve check: playerColor "+playerColor+ " enemyColor "+enemyColor+ "enemy covered "+enemyCovers);
 
         long[] attack2Defend = new long[6];
         long[] block2Defend = new long[6];
@@ -124,12 +132,12 @@ public class CheckValidator {
         int playerKingColumn = playerKingSquare % 8;
         long[] playerMoves = generator.generateAll();
 
-        generator.setPlayerColor(enemyColor);
         for (int attackPiece = 0; attackPiece < 6; attackPiece++) {
             // filter out non-attacks
             if (attackBoards[attackPiece] == 0) {
                 continue;
             }
+            System.out.println("# RESOLVE # handle attack of "+attackPiece + " -> "+attackBoards[attackPiece]);
 
             // check resolve actions for each player piece
             for (int playerPiece = 0; playerPiece < 6; playerPiece++) {
@@ -138,7 +146,17 @@ public class CheckValidator {
                 // ATTACK 2 DEFEND
                 //
                 for (Integer pieceSquare : pieceSquares) {
+                    System.out.println("# A2D check for "+playerPiece+" on "+pieceSquare);
                     if ((playerMoves[playerPiece] & enemyPieces[attackPiece]) != 0) {
+
+                        // player king cannot a2d enemy piece that is covered
+                        if (playerPiece == 5) {
+                            if ((playerMoves[5] & enemyCovers) != 0) {
+                                continue;
+                            }
+                        }
+
+                        System.out.println("# A2D register; playerMoves "+playerMoves[playerPiece]+" enemyPiece "+enemyPieces[attackPiece]);
                         // store piece position in piece group board
                         // TODO check if we should store attacked enemy piece in bitboard as well
                         attack2Defend[playerPiece] |= (1L << pieceSquare);
@@ -182,10 +200,29 @@ public class CheckValidator {
         generator.setPlayerColor(enemyColor);
         long[] enemyMoves = generator.generateAll();
         long enemyMovesCombined = 0;
+        long enemySelfCovers = 0;
         for (long enemyMoveBoard : enemyMoves) {
             enemyMovesCombined |= enemyMoveBoard;
+            long n = playerMoves[5] & enemyMoveBoard;
+            System.out.println(">> "+enemyMoveBoard+ " " + n);
         }
+
+        /*
+        for (int i = 0; i < 6; i++) {
+            enemySelfCovers |= (enemyMoves[i] & ene)
+        }
+
+         */
+
         attack2Defend[5] &= ~enemyMovesCombined;
+
+        System.out.println("resolve a2d: " + Arrays.toString(attack2Defend));
+        System.out.println("resolve b2d: " + Arrays.toString(block2Defend));
+        System.out.println("incheck king moves: "+playerMoves[5]);
+        System.out.println("enemy self covers: "+enemySelfCovers);
+
+        // long n = playerMoves[5] &~ 1
+
 
         return new CheckResolveInfo(a2dResolvable||b2dResolvable, attack2Defend, block2Defend);
     }

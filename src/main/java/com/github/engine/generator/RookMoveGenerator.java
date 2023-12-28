@@ -42,6 +42,7 @@ public class RookMoveGenerator implements IGenerator {
                     currentMoves |= northCursor;
                     maxNorth = i;
                 } else if ((northCursor & mergedPlayerPieces) != 0) {
+                    currentMoves |= northCursor;
                     maxNorth = i;
                 } else {
                     currentMoves |= northCursor;
@@ -55,6 +56,7 @@ public class RookMoveGenerator implements IGenerator {
                     currentMoves |= southCursor;
                     maxSouth = i;
                 } else if ((southCursor & mergedPlayerPieces) != 0) {
+                    currentMoves |= southCursor;
                     maxSouth = i;
                 } else {
                     currentMoves |= southCursor;
@@ -67,8 +69,10 @@ public class RookMoveGenerator implements IGenerator {
                 if ((eastCursor & mergedEnemyPieces) != 0) {
                     currentMoves |= eastCursor;
                     maxEast = i;
-                } else if ((southCursor & mergedPlayerPieces) != 0) {
+                } else if ((eastCursor & mergedPlayerPieces) != 0) {
+                    currentMoves |= eastCursor;
                     maxEast = i;
+                    long m = ((eastCursor & mergedPlayerPieces));
                 } else {
                     currentMoves |= eastCursor;
                     eastCursor <<= 1;
@@ -81,6 +85,7 @@ public class RookMoveGenerator implements IGenerator {
                     currentMoves |= westCursor;
                     maxWest = i;
                 } else if ((southCursor & mergedPlayerPieces) != 0) {
+                    currentMoves |= westCursor;
                     maxWest = i;
                 } else {
                     currentMoves |= westCursor;
@@ -88,7 +93,6 @@ public class RookMoveGenerator implements IGenerator {
                 }
             }
         }
-        System.out.println("ROOK MOVEGEN: "+currentMoves+" mergedE: "+mergedEnemyPieces);
 
         // we don't care which side of the board the king is on
         long kingPosPotentials = (1 << 4) | (1L << 60);

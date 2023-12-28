@@ -52,6 +52,7 @@ public class QueenMoveGenerator implements IGenerator {
                     currentMoves |= northCursor;
                     maxNorth = i;
                 } else if ((northCursor & mergedPlayerPieces) != 0) {
+                    currentMoves |= northCursor;
                     maxNorth = i;
                 } else {
                     currentMoves |= northCursor;
@@ -65,6 +66,7 @@ public class QueenMoveGenerator implements IGenerator {
                     currentMoves |= southCursor;
                     maxSouth = i;
                 } else if ((southCursor & mergedPlayerPieces) != 0) {
+                    currentMoves |= southCursor;
                     maxSouth = i;
                 } else {
                     currentMoves |= southCursor;
@@ -78,6 +80,7 @@ public class QueenMoveGenerator implements IGenerator {
                     currentMoves |= eastCursor;
                     maxEast = i;
                 } else if ((southCursor & mergedPlayerPieces) != 0) {
+                    currentMoves |= eastCursor;
                     maxEast = i;
                 } else {
                     currentMoves |= eastCursor;
@@ -91,6 +94,7 @@ public class QueenMoveGenerator implements IGenerator {
                     currentMoves |= westCursor;
                     maxWest = i;
                 } else if ((southCursor & mergedPlayerPieces) != 0) {
+                    currentMoves |= westCursor;
                     maxWest = i;
                 } else {
                     currentMoves |= westCursor;
@@ -104,6 +108,7 @@ public class QueenMoveGenerator implements IGenerator {
                     currentMoves |= northEastCursor;
                     maxNorthEast = i;
                 } else if ((northEastCursor & mergedPlayerPieces) != 0) {
+                    currentMoves |= northEastCursor;
                     maxNorthEast = i;
                 } else {
                     currentMoves |= northEastCursor;
@@ -117,6 +122,7 @@ public class QueenMoveGenerator implements IGenerator {
                     currentMoves |= northWestCursor;
                     maxNorthWest = i;
                 } else if ((northWestCursor & mergedPlayerPieces) != 0) {
+                    currentMoves |= northWestCursor;
                     maxNorthWest = i;
                 } else {
                     currentMoves |= northWestCursor;
@@ -130,6 +136,7 @@ public class QueenMoveGenerator implements IGenerator {
                     currentMoves |= southEastCursor;
                     maxSouthEast = i;
                 } else if ((southEastCursor & mergedPlayerPieces) != 0) {
+                    currentMoves |= southEastCursor;
                     maxSouthEast = i;
                 } else {
                     currentMoves |= southEastCursor;
@@ -143,6 +150,7 @@ public class QueenMoveGenerator implements IGenerator {
                     currentMoves |= southWestCursor;
                     maxSouthWest = i;
                 } else if ((southWestCursor & mergedPlayerPieces) != 0) {
+                    currentMoves |= southWestCursor;
                     maxSouthWest = i;
                 } else {
                     currentMoves |= southWestCursor;
@@ -150,7 +158,6 @@ public class QueenMoveGenerator implements IGenerator {
                 }
             }
         }
-
         return currentMoves;
     }
 

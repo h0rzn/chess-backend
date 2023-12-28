@@ -22,14 +22,15 @@ public class PawnMoveGenerator implements IGenerator {
     // special behaviour: attack only on forward-left-dia and forward-right-dia,
     // double square move on default position (only once -> should be handled by move method)
     // not implement: en passant; promotion handled by move method
+    // DANGER: attacks are generally included for check verification
     @Override
     public long generate(Position position) {
         long pos = 1L << position.getIndex();
         long attacks;
-        long forward;
         long currentMoves = 0;
+        long forward = (playerColor == 0) ? pos << 8 : pos >>> 8;
+
         if (playerColor == 0) {
-            forward = (pos << 8);
             if ((forward & mergedEnemyPieces) == 0) {
                 currentMoves |= forward;
             }
@@ -40,7 +41,6 @@ public class PawnMoveGenerator implements IGenerator {
             attacks = (pos << 9) & Bitboard.NOT_A_FILE;
             attacks |= (pos << 7) & Bitboard.NOT_H_FILE;
         } else {
-            forward = (pos >> 8);
             if ((forward & mergedEnemyPieces) == 0) {
                 currentMoves |= forward;
             }
@@ -48,12 +48,16 @@ public class PawnMoveGenerator implements IGenerator {
             if (position.getIndex() >= 48 && position.getIndex() <= 55) {
                 currentMoves |= (pos >> 16);
             }
-            attacks = (pos >> 9) & Bitboard.NOT_H_FILE;
-            attacks |= (pos >> 7) & Bitboard.NOT_A_FILE;
+            attacks = (pos >>> 9) & Bitboard.NOT_H_FILE;
+            attacks |= (pos >>> 7) & Bitboard.NOT_A_FILE;
         }
 
-        currentMoves |= attacks & mergedEnemyPieces;
-        currentMoves &= ~mergedPlayerPieces;
+        // Use this instead if attacks should only be included if
+        // attack square is occupied by enemy
+        // currentMoves |= attacks & mergedEnemyPieces;
+        currentMoves |= attacks;
+
+        // currentMoves &= ~mergedPlayerPieces;
         return currentMoves;
     }
 }

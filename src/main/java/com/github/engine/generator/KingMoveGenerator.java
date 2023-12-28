@@ -33,6 +33,7 @@ public class KingMoveGenerator implements IGenerator {
         // west dia
         currentMoves |= ((pos << 7) | (pos >> 9) & Bitboard.NOT_H_FILE);
 
-        return currentMoves &~ mergedPlayerPieces;
+        return currentMoves;
+        // return currentMoves &~ mergedPlayerPieces;
     }
 }

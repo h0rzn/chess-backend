@@ -3,6 +3,7 @@ package com.github.engine.generator;
 import com.github.engine.Bitboard;
 import com.github.engine.GameBoard;
 import com.github.engine.SinglePiece;
+import com.github.engine.interfaces.IGenerator;
 import com.github.engine.move.Position;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,35 +32,32 @@ public class Generator {
     // Distributes the Position information and color
     // to the respective Piece Move Generation which
     // is sourced by the pieceType given in Position
-    public long generate(Position position){
-        SinglePiece piece = SinglePiece.fromNumber(position.getPieceType());
-        switch (piece){
-            case Pawn -> {
-                PawnMoveGenerator pawnMove = new PawnMoveGenerator(playerColor, gameBoard);
-                return pawnMove.generate(position);
-            }
-            case Knight -> {
-                KnightMoveGenerator knightMove = new KnightMoveGenerator(playerColor, gameBoard);
-                return knightMove.generate(position);
-            }
-            case King -> {
-                KingMoveGenerator kingMove = new KingMoveGenerator(playerColor, gameBoard);
-                return kingMove.generate(position);
-            }
-            case Queen -> {
-                QueenMoveGenerator queenMove = new QueenMoveGenerator(playerColor, gameBoard);
-                return queenMove.generate(position);
-            }
-            case Bishop -> {
-                BishopMoveGenerator bishopMove = new BishopMoveGenerator(playerColor, gameBoard);
-                return bishopMove.generate(position);
-            }
-            case Rook -> {
-                RookMoveGenerator rookMove = new RookMoveGenerator(playerColor, gameBoard);
-                return rookMove.generate(position);
-            }
+    public long generate(Position position, boolean withCovers){
+        IGenerator pieceMoveGenerator = switch (SinglePiece.fromNumber(position.getPieceType())){
+            case Pawn -> new PawnMoveGenerator(playerColor, gameBoard);
+            case Knight -> new KnightMoveGenerator(playerColor, gameBoard);
+            case King -> new KingMoveGenerator(playerColor, gameBoard);
+            case Queen -> new QueenMoveGenerator(playerColor, gameBoard);
+            case Bishop -> new BishopMoveGenerator(playerColor, gameBoard);
+            case Rook -> new RookMoveGenerator(playerColor, gameBoard);
+        };
+
+
+        long generatedMoves = pieceMoveGenerator.generate(position);
+        if (withCovers) {
+            return generatedMoves;
         }
-        return 0;
+
+        System.out.println("--- GENERATOR: without covers, move gen bef: "+generatedMoves);
+        long[] playerPieces = getPlayerColor() == 0 ? gameBoard.getSetWhite() : gameBoard.getSetBlack();
+        for (int playerPiece = 0; playerPiece < 6; playerPiece++) {
+            if (position.getPieceType() == playerPiece) {
+                continue;
+            }
+            generatedMoves &= ~playerPieces[playerPiece];
+        }
+        System.out.println("--- GENERATOR: without covers, move gen aft: "+generatedMoves);
+        return generatedMoves;
     }
 
     // move generation for each piece of each piece set of
@@ -79,7 +77,7 @@ public class Generator {
         for (int pieceType = 0; pieceType < 6; pieceType++) {
             for (Integer square : Bitboard.bitscanMulti(playerPieces[pieceType])) {
                 Position position = new Position(square, pieceType);
-                generated[pieceType] |= generate(position);
+                generated[pieceType] |= generate(position, false);
             }
         }
         return generated;
