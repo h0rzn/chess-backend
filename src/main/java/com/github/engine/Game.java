@@ -1,22 +1,17 @@
 package com.github.engine;
 
 import com.github.GameState;
-import com.github.engine.generator.CheckValidator;
+import com.github.engine.check.CheckStatus;
+import com.github.engine.check.CheckValidator;
 import com.github.engine.generator.Generator;
 import com.github.engine.interfaces.IGame;
 import com.github.engine.interfaces.IUserAction;
-import com.github.engine.models.CheckInfo;
-import com.github.engine.models.CheckResolveInfo;
 import com.github.engine.models.MoveInfo;
 import com.github.engine.move.Move;
-import com.github.engine.move.MoveType;
 import com.github.engine.move.Position;
 import com.github.engine.utils.FenParser;
 import com.github.engine.utils.FenSerializer;
 import lombok.Getter;
-
-import javax.swing.text.Style;
-import java.util.Arrays;
 
 import static com.github.engine.move.MoveType.*;
 
@@ -175,11 +170,6 @@ public class Game extends GameBoard implements IGame {
             return info.WithFailure("destination square is not reachable (not in move gen)", move);
         }
 
-        // is destination square occupied by enemy? --> CAPTURE
-        if (move.getTo().getColor() != getActiveColor()) {
-            move.setMoveType(Capture);
-        }
-
         // Checkmate: Player
         CheckValidator playerCheckValidator = new CheckValidator(this);
         CheckStatus checkStatus = playerCheckValidator.analyzeCheckWithResolve(getActiveColor(), move);
@@ -193,7 +183,7 @@ public class Game extends GameBoard implements IGame {
             case Unkown:
                 info.pushLog("player check analysis error");
             default:
-                info.pushLog("player check: "+String.valueOf(checkStatus));
+                info.pushLog("unknown player check: "+String.valueOf(checkStatus));
         }
 
         // handle specials
@@ -203,7 +193,7 @@ public class Game extends GameBoard implements IGame {
                 info.pushLog("legal promotion: next move should set promote piece");
                 break;
             case Castle:
-                System.out.println("CASTLE DETECED");
+                System.out.println("CASTLE DETECTED");
                 if (isCastleLegal(move)) {
                     info.pushLog("legal castle");
                 } else {
@@ -211,7 +201,6 @@ public class Game extends GameBoard implements IGame {
                 }
                 break;
             case PawnDouble:
-                System.out.println("PAWN DOUBLE!!!");
                 if (getActiveColor() == 0 && !isDoublePawnedWhite()) {
                     setDoublePawnedWhite(true);
                 } else if (getActiveColor() == 1 && !isDoublePawnedBlack()) {
@@ -280,10 +269,11 @@ public class Game extends GameBoard implements IGame {
                 move.getTo().setPieceType(i);
                 move.getTo().setColor(getActiveColor());
             }
-            // destination could be enemy square
+            // destination is enemy square
             if ((enemyPieces[i] & toBoard) != 0) {
                 move.getTo().setPieceType(i);
                 move.getTo().setColor(enemyColor);
+                move.setMoveType(Capture);
             }
         }
 

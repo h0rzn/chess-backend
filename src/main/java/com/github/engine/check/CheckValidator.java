@@ -1,19 +1,17 @@
-package com.github.engine.generator;
+package com.github.engine.check;
 
 import com.github.engine.Bitboard;
-import com.github.engine.CheckStatus;
+import com.github.engine.check.CheckStatus;
 import com.github.engine.GameBoard;
+import com.github.engine.generator.Generator;
 import com.github.engine.models.CheckInfo;
 import com.github.engine.models.CheckResolveInfo;
 import com.github.engine.move.Move;
-import com.github.engine.move.MoveType;
 import com.github.engine.move.Position;
 import lombok.Setter;
 
-import javax.imageio.plugins.tiff.BaselineTIFFTagSet;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 
 // CheckValidator contains methods to inspect a potential

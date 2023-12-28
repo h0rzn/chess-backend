@@ -15,16 +15,12 @@ import lombok.Setter;
 // The generator instance can be reused for the enemy,
 // by updating the playerColor with setPlayerColor
 public class Generator {
-    private long[] boardWhite;
-    private long[] boardBlack;
-    private GameBoard gameBoard;
+    private final GameBoard gameBoard;
     @Getter
     @Setter
     private int playerColor;
 
     public Generator(int playerColor, GameBoard gameBoard){
-        this.boardWhite = gameBoard.getSetWhite();
-        this.boardBlack = gameBoard.getSetBlack();
         this.gameBoard = gameBoard;
         this.playerColor = playerColor;
     }
@@ -42,7 +38,6 @@ public class Generator {
             case Bishop -> new BishopMoveGenerator(playerColor, gameBoard);
             case Rook -> new RookMoveGenerator(playerColor, gameBoard);
         };
-
 
         long generatedMoves = pieceMoveGenerator.generate(position);
         if (withCovers) {
@@ -67,13 +62,7 @@ public class Generator {
     // of each piece in that group combined
     public long[] generateAll() {
         long[] generated = new long[6];
-
-        long[] playerPieces;
-        if (playerColor == 0) {
-            playerPieces = gameBoard.getSetWhite();
-        } else {
-            playerPieces = gameBoard.getSetBlack();
-        }
+        long[] playerPieces = (playerColor == 0) ? gameBoard.getSetWhite() : gameBoard.getSetBlack();
 
         for (int pieceType = 0; pieceType < 6; pieceType++) {
             for (Integer square : Bitboard.bitscanMulti(playerPieces[pieceType])) {
@@ -82,6 +71,5 @@ public class Generator {
             }
         }
         return generated;
-
     }
 }

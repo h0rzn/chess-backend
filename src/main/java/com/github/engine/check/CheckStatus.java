@@ -1,4 +1,4 @@
-package com.github.engine;
+package com.github.engine.check;
 
 public enum CheckStatus {
     Unkown,
