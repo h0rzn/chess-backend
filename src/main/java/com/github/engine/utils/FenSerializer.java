@@ -1,308 +1,136 @@
 package com.github.engine.utils;
-
 import com.github.engine.Game;
-import com.github.engine.GameBoard;
 import com.github.engine.move.Move;
 
-import java.util.ArrayList;
-import java.util.List;
 
 public class FenSerializer {
-    private final Game game;
+    // serialize the full board with positions and active color
+    public static String serialize(Game game) {
+        // counter for empty squares in a row
+        int empty = 0;
 
-    // serializes relevant rows from move and returns
-    // list of serialized rows [fromRow, toRow]
-    private List<String> serializeUpdated(Move move) {
-        int from = move.getFrom().getIndex();
-        int to = move.getTo().getIndex();
-        // get first index in that row
-        int fromStart = from - (from % 8);
-        int toStart = to - (to % 8);
+        StringBuilder fen = new StringBuilder();
+        // index for current cursor: starts top left of board (= index 56)
+        int curIdx = 56;
+        while (curIdx > -8) {
+            // tokenize the square the cursor points to
+            String squareToken = FenSerializer.tokenizeSquare(game, curIdx);
+            if (squareToken.equals("?")) {
+                // empty square
+                empty++;
+            } else {
+                if (empty > 0) {
+                    // square not empty so prefix number for empty squares and reset counter
+                    fen.append(empty);
+                    empty = 0;
+                }
+                fen.append(squareToken);
+            }
 
-        long[] setWhite = game.getSetWhite();
-        long[] setBlack = game.getSetBlack();
 
-        StringBuilder fenFrom = new StringBuilder();
-        StringBuilder fenTo = new StringBuilder();
+            // preparation for next row
+            if (curIdx % 8 == 7) {
+                curIdx -= 15; // wrap to first square of next line
+                if (empty > 0) {
+                    fen.append(empty);
+                    empty = 0;
+                }
+                // skip row delimiter for last row
+                if (curIdx != -8) {
+                    fen.append("/");
+                }
+            } else {
+                curIdx++; // push cursor on square to the right (++direction)
+            }
+        }
 
-        //System.out.println("[serialize updated] from "+from+" to "+to+ " fromStart "+fromStart+" toStart "+toStart);
+        // add other groups
+        String colorToken = game.getActiveColor() == 0 ? "w" : "b";
+        fen.append(" ").append(colorToken);
+        // placeholders
+        fen.append(" - - 1 1");
 
-        long cursorFrom = (1L << fromStart);
-        long cursorTo = (1L << toStart);
+        return fen.toString();
+    }
+
+    public static String serializeUpdate(Game game, Move move) {
+        int startFrom = move.getFrom().getIndex() / 8;
+        int startTo = move.getTo().getIndex() / 8;
+
+        int c = 8;
         int emptyFrom = 0;
         int emptyTo = 0;
-        for (int i = 0; i < 8; i++) {
-            // System.out.println("[[[ from "+cursorFrom+" to "+cursorTo);
-            int pieceFrom = -1;
-            int pieceTo = -1;
-
-            boolean fromFound = false;
-            boolean toFound = false;
-
-            // iterative over each piece type
-            for (int p = 0; p < 6; p++) {
-                //
-                // FROM
-                //
-                if (!fromFound) {
-                    if ((setWhite[p]&cursorFrom) != 0) {
-                        //System.out.println("[FROM] MATCH W "+p+ " on "+i+ " cursor: "+i+ " --> "+cursorFrom);
-                        pieceFrom = p;
-                        fromFound = true;
-                    }
-                    if ((setBlack[p]&cursorFrom) != 0) {
-                        //System.out.println("[FROM] MATCH W "+p+ " on "+i+ " cursor: "+i+ " --> "+cursorFrom);
-                        pieceFrom = p+6;
-                        fromFound = true;
-                    }
-                }
-
-                //
-                // TO
-                //
-
-                if (!toFound) {
-                    if ((setWhite[p]&cursorTo) != 0) {
-                        //System.out.println("[TO] MATCH W "+p+ " on "+i+ " cursor: "+i+ " --> "+cursorTo);
-                        pieceTo = p;
-                        toFound = true;
-                    }
-                    if ((setBlack[p]&cursorTo) != 0) {
-                        //System.out.println("[TO] MATCH W "+p+ " on "+i+ " cursor: "+i+ " --> "+cursorTo);
-                        pieceTo = p+6;
-                        toFound = true;
-                    }
-                }
-
-
-
-                // stop looking with piece groups if we found from & to
-                if (fromFound && toFound) {
-                    break;
-                }
-            }
-            //System.out.println("## FROM "+(fromStart+i)+ " TO "+(toStart+i)+ " i :: "+i+ " --> "+(i+fromStart));
-            //System.out.println("|--> from piece: "+pieceFrom);
-            // move both cursors one square further
-            cursorFrom <<= 1;
-            cursorTo <<= 1;
-
-            //
-            // FROM
-            //
-            if (pieceFrom > -1) {
-                if (emptyFrom > 0) {
-                    fenFrom.append(emptyFrom);
-                    emptyFrom = 0;
-                    // System.out.println("-- FROM: write empty "+i);
-                }
-                fenFrom.append(tokenByPieceType(pieceFrom));
-            } else {
+        int idxFrom = move.getFrom().getIndex() - (move.getFrom().getIndex() % 8);
+        int idxTo = move.getTo().getIndex() - (move.getTo().getIndex() % 8);
+        StringBuilder fromRow = new StringBuilder();
+        StringBuilder toRow = new StringBuilder();
+        do {
+            String pieceTokenFrom = FenSerializer.tokenizeSquare(game, idxFrom);
+            if (pieceTokenFrom.equals("?")) {
+                // empty square
                 emptyFrom++;
-                // System.out.println("++ emptyFrom");
+            } else {
+                if (emptyFrom> 0) {
+                    // square not empty so prefix number for empty squares and reset counter
+                    fromRow.append(emptyFrom);
+                    emptyFrom = 0;
+                }
+                fromRow.append(pieceTokenFrom);
             }
 
-
-            //
-            // TO
-            //
-
-            if (pieceTo > -1) {
-                if (emptyTo > 0) {
-                    fenTo.append(emptyTo);
-                    emptyTo = 0;
-                    //System.out.println("-- TO: write empty "+i);
-                }
-                fenTo.append(tokenByPieceType(pieceTo));
-            } else {
+            String pieceTokenTo = FenSerializer.tokenizeSquare(game, idxTo);
+            if (pieceTokenTo.equals("?")) {
+                // empty square
                 emptyTo++;
-                //System.out.println("++ emptyTo");
+            } else {
+                if (emptyTo> 0) {
+                    // square not empty so prefix number for empty squares and reset counter
+                    toRow.append(emptyTo);
+                    emptyTo = 0;
+                }
+                toRow.append(pieceTokenTo);
             }
 
-            // fill empty squares with empty square amount number
-            if (i == 7) {
-                if (emptyFrom > 0) {
-                    // rSystem.out.println("FROM: filling empty: "+emptyFrom);
-                    fenFrom.append(emptyFrom);
-                }
-                if (emptyTo > 0) {
-                    //System.out.println("TO: filling empty: "+emptyTo);
-                    fenTo.append(emptyTo);
-                }
-            }
+
+            c--;
+            idxFrom++;
+            idxTo++;
+        } while (c > 0);
+
+        if (emptyFrom > 0) {
+            fromRow.append(emptyFrom);
+        }
+        if (emptyTo > 0) {
+            toRow.append(emptyTo);
         }
 
-        //System.out.println("FROM: "+fenFrom.toString());
-        //System.out.println("TO  : "+fenTo.toString());
+        String[] lastFenGroups = game.getLastMoveFen().split(" ", 2);
+        String[] fenRows = lastFenGroups[0].split("/");
 
-        List<String> result = new ArrayList<>();
-        result.add(fenFrom.toString());
-        result.add(fenTo.toString());
-        return result;
+        fenRows[( 7 -startFrom )] = fromRow.toString();
+        fenRows[( 7 -startTo )] = toRow.toString();
+        lastFenGroups[0] = String.join("/", fenRows);
+
+        return String.join(" ", lastFenGroups);
     }
 
-    // just serialize changed rows and embed updated rows
-    // into given fen string
-    public String serialize(Move move, String oldFen) {
-        List<String> updates = serializeUpdated(move);
-        String fromRowUpdated = updates.get(0);
-        String toRowUpdated = updates.get(1);
+    public static String tokenizeSquare(Game game, int square) {
+        long cursor = (1L << square);
 
-        String[] fenGroups = oldFen.split(" ");
-        String placementGroup = fenGroups[0];
-        String[] rows = placementGroup.split("/");
-
-        // serialization directions are inverted
-        int fromRow = 7 - (move.getFrom().getIndex() / 8);
-        int toRow = 7 - (move.getTo().getIndex() / 8);
-
-        rows[fromRow] = fromRowUpdated;
-        rows[toRow] = toRowUpdated;
-        fenGroups[0] = String.join("/", rows);
-
-        return String.join(" ", fenGroups);
-    }
-
-    public static String serializeGameboard(Game game) {
-        int empty = 0;
-
-        long[] setWhite = game.getSetWhite();
-        long[] setBlack = game.getSetBlack();
-
-        long mergedBoth = 0;
-        for (int i = 0; i < 6; i++) {
-            mergedBoth |= setWhite[i] | setBlack[i];
-        }
-        System.out.println("SERIALIZE ALL: merged both: "+mergedBoth);
-
-        StringBuilder fenString = new StringBuilder();
-
-        StringBuilder fen = new StringBuilder();
-        int curIdx = 56;
-        while (curIdx > -8) {
-            long currentCursor = (1L << curIdx);
-            int piece = -1;
-            for (int p = 0; p < 6; p++) {
-                if ((setWhite[p]&currentCursor) != 0) {
-                    piece = p;
-                }
-                if ((setBlack[p]&currentCursor) != 0) {
-                    piece = p+6;
-                }
-                // exit from piece type search
-                if (piece > -1) {
-                    break;
-                }
+        int piece = -1;
+        // search for piece type occupying this square
+        for (int p = 0; p < 6; p++) {
+            if ((game.getSetWhite()[p]&cursor) != 0) {
+                piece = p;
+                break;
             }
-
-            if (piece > -1) {
-                // leading empty square
-                if (empty > 0) {
-                    fen.append(empty);
-                    empty = 0;
-                }
-                String token = tokenByPieceType(piece);
-                fen.append(token);
-            } else {
-                empty++;
-            }
-
-            // preparation for next row
-            if (curIdx % 8 == 7) {
-                curIdx -= 15; // wrap to first square of next line
-                if (empty > 0) {
-                    fen.append(empty);
-                    empty = 0;
-                }
-                // skip row delimiter for last row
-                if (curIdx != -8) {
-                    fen.append("/");
-
-                }
-            } else {
-                curIdx++; // push cursor on square to the right (++direction)
+            if ((game.getSetBlack()[p]&cursor) != 0) {
+                piece = p+6;
+                break;
             }
         }
 
-        // add other groups
-        String colorToken = game.getActiveColor() == 0 ? "w" : "b";
-        fen.append(" ").append(colorToken);
-        // placeholders
-        fen.append(" - - 1 1");
-
-        return fen.toString();
-
-    }
-
-    // serialize full board
-    public String serializeAll() {
-        int empty = 0;
-
-        long[] setWhite = game.getSetWhite();
-        long[] setBlack = game.getSetBlack();
-
-        long mergedBoth = 0;
-        for (int i = 0; i < 6; i++) {
-            mergedBoth |= setWhite[i] | setBlack[i];
-        }
-        System.out.println("SERIALIZE ALL: merged both: "+mergedBoth);
-
-        StringBuilder fenString = new StringBuilder();
-
-        StringBuilder fen = new StringBuilder();
-        int curIdx = 56;
-        while (curIdx > -8) {
-            long currentCursor = (1L << curIdx);
-            int piece = -1;
-            for (int p = 0; p < 6; p++) {
-                if ((setWhite[p]&currentCursor) != 0) {
-                    piece = p;
-                }
-                if ((setBlack[p]&currentCursor) != 0) {
-                    piece = p+6;
-                }
-                // exit from piece type search
-                if (piece > -1) {
-                    break;
-                }
-            }
-
-            if (piece > -1) {
-                // leading empty square
-                if (empty > 0) {
-                    fen.append(empty);
-                    empty = 0;
-                }
-                String token = tokenByPieceType(piece);
-                fen.append(token);
-            } else {
-                empty++;
-            }
-
-            // preparation for next row
-            if (curIdx % 8 == 7) {
-                curIdx -= 15; // wrap to first square of next line
-                if (empty > 0) {
-                    fen.append(empty);
-                    empty = 0;
-                }
-                // skip row delimiter for last row
-                if (curIdx != -8) {
-                    fen.append("/");
-
-                }
-            } else {
-                curIdx++; // push cursor on square to the right (++direction)
-            }
-        }
-
-        // add other groups
-        String colorToken = game.getActiveColor() == 0 ? "w" : "b";
-        fen.append(" ").append(colorToken);
-        // placeholders
-        fen.append(" - - 1 1");
-
-        return fen.toString();
+        return tokenByPieceType(piece);
     }
 
     public static String tokenByPieceType(int pieceType) {
@@ -322,10 +150,5 @@ public class FenSerializer {
             default -> "?";
         };
         return pieceToken;
-    }
-
-
-    public FenSerializer(Game game) {
-        this.game = game;
     }
 }

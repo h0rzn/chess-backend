@@ -12,6 +12,7 @@ import com.github.engine.move.Position;
 import com.github.engine.utils.FenParser;
 import com.github.engine.utils.FenSerializer;
 import lombok.Getter;
+import lombok.Setter;
 
 import static com.github.engine.move.MoveType.*;
 
@@ -42,15 +43,13 @@ public class Game extends GameBoard implements IGame {
 
     public Game(){
         super();
-        FenSerializer serializer = new FenSerializer(this);
-        this.lastMoveFen = serializer.serializeAll();
+        this.lastMoveFen = FenSerializer.serialize(this);
     }
 
     // Create game with given board scenario
     public Game(long[] setWhite, long[] setBlack) {
         super(setWhite, setBlack);
-        FenSerializer serializer = new FenSerializer(this);
-        this.lastMoveFen = serializer.serializeAll();
+        this.lastMoveFen = FenSerializer.serialize(this);
     }
 
     public Game(String fen) throws Exception {
@@ -72,7 +71,7 @@ public class Game extends GameBoard implements IGame {
 
         loadPieceScenario(parser.getSetWhite(), parser.getSetBlack());
         activeColor = parser.getActiveColor();
-        lastMoveFen = new FenSerializer(this).serializeAll();
+        this.lastMoveFen = FenSerializer.serialize(this);
     }
 
 
@@ -86,7 +85,7 @@ public class Game extends GameBoard implements IGame {
 
         loadPieceScenario(parser.getSetWhite(), parser.getSetBlack());
         activeColor = parser.getActiveColor();
-        lastMoveFen = new FenSerializer(this).serializeAll();
+        this.lastMoveFen = FenSerializer.serialize(this);
     }
 
     // fully reset game
@@ -228,8 +227,7 @@ public class Game extends GameBoard implements IGame {
 
         System.out.println("\n--- Returning Move ---");
         System.out.println("--- OLD FEN "+lastMoveFen);
-
-        String fen = FenSerializer.serializeGameboard(this);
+        String fen = FenSerializer.serializeUpdate(this, move);
         info.setStateFEN(fen);
         info.setCaptures(getCaptures());
         lastMoveFen = fen;
@@ -410,11 +408,12 @@ public class Game extends GameBoard implements IGame {
         switch (move.getMoveType()) {
             case Capture:
                 addCapture(move);
+                // Remove Enemy Piece on Destination
+                enemyBoards[to.getPieceType()] &= ~(1L << to.getIndex());
+            case PawnDouble:
             case Normal:
                 // Add Player Piece to Destination
                 playerBoards[from.getPieceType()] |= (1L << to.getIndex());
-                // Remove Enemy Piece on Destination (noop if not needed)
-                enemyBoards[to.getPieceType()] &= ~(1L << to.getIndex());
                 break;
             case Castle:
                 // Remove Player Piece on Castling Destination
