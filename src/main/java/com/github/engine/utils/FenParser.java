@@ -1,14 +1,8 @@
 package com.github.engine.utils;
 
-import com.github.engine.Bitboard;
-import com.github.engine.Game;
-import com.github.engine.GameBoard;
-import com.github.engine.models.Board;
-import com.github.engine.move.Move;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,9 +24,9 @@ public class FenParser {
     @Getter
     private String description;
     @Getter
-    private long[] setWhite;
+    private final long[] setWhite;
     @Getter
-    private long[] setBlack;
+    private final long[] setBlack;
     @Getter
     private int activeColor;
     @Getter
@@ -163,18 +157,6 @@ public class FenParser {
         } else {
             throw new Exception("full move clock group: must be >= 0, have: "+fullMoveClock);
         }
-    }
-
-    public Board getResult() {
-         return new Board(
-                 name,
-                 description,
-                 setWhite,
-                 setBlack,
-                 activeColor,
-                 halfMoveClock,
-                 fullMoveClock
-        );
     }
 
     public void log(String line) {
