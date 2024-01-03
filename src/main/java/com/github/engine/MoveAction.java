@@ -29,8 +29,8 @@ public class MoveAction implements IUserAction {
     }
 
     // Constructor for Promotion Move
-    public MoveAction(int promoteTo) {
+    public MoveAction(String move, int promoteTo) {
         this.promoteToPiece = promoteTo;
-        this.move = new Move(MoveType.Promotion);
+        this.move = new Move(move, MoveType.Promotion);
     }
 }
