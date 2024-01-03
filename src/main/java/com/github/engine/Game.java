@@ -105,11 +105,14 @@ public class Game extends GameBoard implements IGame {
         switch (action.getType()) {
             case Normal:
                 // Abort if Promotion as awaited
+                /*
                 if (gameState == GameState.PROMOTION_BLACK || gameState == GameState.PROMOTION_WHITE) {
                     MoveInfo info = new MoveInfo();
                     info.setFailMessage("cannot make normal move: currently in promotion mode");
                     return info;
                 }
+
+                 */
                 return moveNormal(action.getMove());
             case Promotion:
                 return movePromotion(action);
@@ -169,8 +172,9 @@ public class Game extends GameBoard implements IGame {
             return info.WithFailure("destination square is not reachable (not in move gen)", move);
         }
 
-        // Checkmate: Player
         CheckValidator playerCheckValidator = new CheckValidator(this);
+
+        // Checkmate: Player
         CheckStatus checkStatus = playerCheckValidator.analyzeCheckWithResolve(getActiveColor(), move);
         switch (checkStatus) {
             case NoCheck:
@@ -181,16 +185,20 @@ public class Game extends GameBoard implements IGame {
                 break;
             case Unkown:
                 info.pushLog("player check analysis error");
+                break;
             default:
                 info.pushLog("unknown player check: "+String.valueOf(checkStatus));
         }
 
         // handle specials
         switch (move.getMoveType()) {
+            /*
             case Promotion:
                 gameState = activeColor == 0 ? GameState.PROMOTION_WHITE : GameState.PROMOTION_BLACK;
                 info.pushLog("legal promotion: next move should set promote piece");
                 break;
+
+             */
             case Castle:
                 System.out.println("CASTLE DETECTED");
                 if (isCastleLegal(move)) {
@@ -209,21 +217,15 @@ public class Game extends GameBoard implements IGame {
                 }
         }
 
-        // sync move with gameBoard
-        info.setLegal(true);
-        syncMove(move);
-
         //
         // POST MOVE
         // check if legal move ends the game by placing enemy in checkmate
-        // syncMoves flipped colors!
         // ignore post move verification on promotion, because has not finished move
-        CheckStatus checkStatusEnemy = playerCheckValidator.analyzeCheck(getActiveColor(), move);
+        int enemyColor = (getActiveColor() == 0) ? 1 : 0;
+        CheckStatus checkStatusEnemy = playerCheckValidator.analyzeCheck(enemyColor, move);
         if (checkStatusEnemy != CheckStatus.NoCheck) {
             info.pushLog("-- game ends: enemy in checkmate --");
         }
-
-
 
         System.out.println("\n--- Returning Move ---");
         System.out.println("--- OLD FEN "+lastMoveFen);
@@ -234,6 +236,11 @@ public class Game extends GameBoard implements IGame {
         info.pushLog("++ move is legal and synced ++");
         info.setMove(move);
         System.out.println("--- NEW FEN "+lastMoveFen);
+
+        // sync move with gameBoard
+        info.setLegal(true);
+        syncMove(move);
+
         return info;
     }
 
@@ -429,9 +436,11 @@ public class Game extends GameBoard implements IGame {
 
         // Skip activeColor change when Promotion
         // because we wait for Promotion call before switching sides
+        /*
         if (move.getMoveType() == Promotion) {
             return;
         }
+        */
 
         // update unmoved bitboard (noop if bit is already 0)
         markMovedPiece(move.getFrom().getIndex());
