@@ -63,7 +63,7 @@ public class LobbyWSController {
             messagingTemplate.convertAndSend("/topic/debug/move/", responseModel);
             return;
         }
-        MoveInfo execute = gameService.makeMove(moveDebugModel.getPromoteTo());
+        MoveInfo execute = gameService.makeMove(moveDebugModel.getMove(), moveDebugModel.getPromoteTo());
         MoveInfoResponseModel responseModel = new MoveInfoResponseModel(message.getId(), execute);
         messagingTemplate.convertAndSend("/topic/debug/move/", responseModel);
 

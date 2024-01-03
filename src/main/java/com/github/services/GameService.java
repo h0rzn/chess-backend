@@ -70,8 +70,8 @@ public class GameService {
         return gameStorageDebug.execute(moveAction);
     }
 
-    public MoveInfo makeMove(Integer promoteTo){
-        MoveAction moveAction = new MoveAction(promoteTo);
+    public MoveInfo makeMove(String move, Integer promoteTo){
+        MoveAction moveAction = new MoveAction(move, promoteTo);
         return gameStorageDebug.execute(moveAction);
     }
 }
