@@ -34,7 +34,9 @@ public class Move {
         this.moveType = MoveType.Normal;
     }
 
-    public Move(MoveType moveType) {
+    public Move(String move, MoveType moveType) {
+        this(move);
         this.moveType = moveType;
     }
+
 }
