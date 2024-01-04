@@ -30,7 +30,12 @@ public class MoveAction implements IUserAction {
 
     // Constructor for Promotion Move
     public MoveAction(String move, int promoteTo) {
-        this.promoteToPiece = promoteTo;
-        this.move = new Move(move, MoveType.Promotion);
+        if (promoteTo > -1) {
+            this.promoteToPiece = promoteTo;
+            this.move = new Move(move, MoveType.Promotion);
+        } else {
+            this.move = new Move(move, MoveType.Normal);
+        }
     }
+
 }

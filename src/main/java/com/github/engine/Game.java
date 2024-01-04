@@ -13,7 +13,6 @@ import com.github.engine.move.Position;
 import com.github.engine.utils.FenParser;
 import com.github.engine.utils.FenSerializer;
 import lombok.Getter;
-import org.springframework.data.repository.kotlin.CoroutineCrudRepository;
 
 import static com.github.engine.move.MoveType.*;
 
@@ -104,24 +103,20 @@ public class Game extends GameBoard implements IGame {
     // the corresponding move method depending
     // on the move type
     public MoveInfo execute(IUserAction action) {
-        switch (inferMoveType(action)) {
+        switch (action.getMove().getMoveType()) {
             case Normal:
+                System.out.println("[GAME] executing move of type <NORMAL>");
                 return moveNormal(action.getMove());
             case Promotion:
+                System.out.println("[GAME] executing move of type <PROMOTION>");
                 return movePromotion(action);
             default:
+                System.out.println("[GAME] received move of type <UNKNOWN>");
                 MoveInfo info = new MoveInfo();
                 info.setLegal(false);
                 info.setFailMessage("unknown action type: "+action.getType());
                 return info;
         }
-    }
-
-    public MoveType inferMoveType(IUserAction action) {
-        if (action.promoteTo() > -1 || action.getMove().getMoveType() == Promotion) {
-            return Promotion;
-        }
-        return Normal;
     }
 
     // makeMove is the main interaction method of this engine

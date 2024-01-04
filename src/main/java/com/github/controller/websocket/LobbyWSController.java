@@ -7,11 +7,8 @@ import com.github.model.debug.*;
 import com.github.services.GameService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
-
-import java.util.Objects;
 
 @Controller
 public class LobbyWSController {
@@ -51,22 +48,10 @@ public class LobbyWSController {
 
     @MessageMapping("/debug/move")
     public void receiveMove(MoveDebugModel message){
-        MoveDebugModel moveDebugModel = message;
-        System.out.println("[LOBBY-WS::receiveMove][" + message.getId() + "]"+message.getId()+  " move: " + message.getMove());
-
-        String moveString = moveDebugModel.getMove();
-
-        if(moveDebugModel.getPromoteTo() == -1){
-            Move move = new Move(moveString);
-            MoveInfo execute = gameService.makeMove(move);
-            MoveInfoResponseModel responseModel = new MoveInfoResponseModel(message.getId(), execute);
-            messagingTemplate.convertAndSend("/topic/debug/move/", responseModel);
-            return;
-        }
-        MoveInfo execute = gameService.makeMove(moveDebugModel.getMove(), moveDebugModel.getPromoteTo());
-        MoveInfoResponseModel responseModel = new MoveInfoResponseModel(message.getId(), execute);
+        System.out.println("[LOBBY-WS::receiveMove][" + message.getId() + "]"+  " move: " + message.getMove()+ "promoteTo "+message.getPromoteTo());
+        MoveInfo moveResult = gameService.makeMove(message);
+        MoveInfoResponseModel responseModel = new MoveInfoResponseModel(message.getId(), moveResult);
         messagingTemplate.convertAndSend("/topic/debug/move/", responseModel);
-
     }
 
     @MessageMapping("/debug/loadfen")
@@ -76,8 +61,8 @@ public class LobbyWSController {
 
         String fenString = gameDebugModel.getFen();
         System.out.println("FenString: " + fenString);
-        gameService.getGameStorageDebug().load(fenString);
-        LoadFenResponseModel responseModel = new LoadFenResponseModel(message.getId(), gameService.gameStorageDebug.getLastMoveFen());
+        gameService.getGame().load(fenString);
+        LoadFenResponseModel responseModel = new LoadFenResponseModel(message.getId(), gameService.game.getLastMoveFen());
         messagingTemplate.convertAndSend("/topic/debug/fen/", responseModel);
     }
 }

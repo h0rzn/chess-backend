@@ -7,18 +7,18 @@ import com.github.engine.move.Move;
 import com.github.exceptions.GameNotFoundException;
 import com.github.entity.GameEntity;
 import com.github.model.GameModel;
+import com.github.model.debug.MoveDebugModel;
 import com.github.repository.RedisGameRepository;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class GameService {
     @Getter
-    public Game gameStorageDebug;
+    public Game game;
 
     private final RedisGameRepository redisGameRepository;
 
@@ -41,7 +41,7 @@ public class GameService {
 
     public Game createDebugGame(){
         Game game = new Game();
-        gameStorageDebug = game;
+        this.game = game;
         return game;
     }
 
@@ -49,29 +49,25 @@ public class GameService {
         Game game = new Game(fenString);
         System.out.println("[GAMESERVICE] created new debug game with fen: "+fenString);
 
-        gameStorageDebug = game;
-        return gameStorageDebug;
+        this.game = game;
+        return this.game;
     }
 
     public Game loadPosition(String fenString) throws Exception {
-        if(gameStorageDebug != null){
-            gameStorageDebug.load(fenString);
-            return gameStorageDebug;
+        if(game != null){
+            game.load(fenString);
+            return game;
         }
         return null;
     }
 
     public Game getDebugGame(){
-        return gameStorageDebug;
+        return game;
     }
 
-    public MoveInfo makeMove(Move move){
-        MoveAction moveAction = new MoveAction(move);
-        return gameStorageDebug.execute(moveAction);
+    public MoveInfo makeMove(MoveDebugModel moveModel) {
+        MoveAction moveAction = new MoveAction(moveModel.getMove(), moveModel.getPromoteTo());
+        return game.execute(moveAction);
     }
 
-    public MoveInfo makeMove(String move, Integer promoteTo){
-        MoveAction moveAction = new MoveAction(move, promoteTo);
-        return gameStorageDebug.execute(moveAction);
-    }
 }

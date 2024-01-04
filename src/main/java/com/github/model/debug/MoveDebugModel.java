@@ -12,5 +12,4 @@ public class MoveDebugModel{
     private Integer id;
     private String move;
     private Integer promoteTo;
-
 }
