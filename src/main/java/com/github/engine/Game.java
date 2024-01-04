@@ -8,11 +8,12 @@ import com.github.engine.interfaces.IGame;
 import com.github.engine.interfaces.IUserAction;
 import com.github.engine.models.MoveInfo;
 import com.github.engine.move.Move;
+import com.github.engine.move.MoveType;
 import com.github.engine.move.Position;
 import com.github.engine.utils.FenParser;
 import com.github.engine.utils.FenSerializer;
 import lombok.Getter;
-import lombok.Setter;
+import org.springframework.data.repository.kotlin.CoroutineCrudRepository;
 
 import static com.github.engine.move.MoveType.*;
 
@@ -40,6 +41,7 @@ public class Game extends GameBoard implements IGame {
     private int activeColor;
     @Getter
     private String lastMoveFen;
+    private Move lastMove;
 
     public Game(){
         super();
@@ -102,26 +104,24 @@ public class Game extends GameBoard implements IGame {
     // the corresponding move method depending
     // on the move type
     public MoveInfo execute(IUserAction action) {
-        switch (action.getType()) {
+        switch (inferMoveType(action)) {
             case Normal:
-                // Abort if Promotion as awaited
-                /*
-                if (gameState == GameState.PROMOTION_BLACK || gameState == GameState.PROMOTION_WHITE) {
-                    MoveInfo info = new MoveInfo();
-                    info.setFailMessage("cannot make normal move: currently in promotion mode");
-                    return info;
-                }
-
-                 */
                 return moveNormal(action.getMove());
             case Promotion:
                 return movePromotion(action);
             default:
                 MoveInfo info = new MoveInfo();
                 info.setLegal(false);
-                info.setFailMessage("unkown action type: "+action.getType());
+                info.setFailMessage("unknown action type: "+action.getType());
                 return info;
         }
+    }
+
+    public MoveType inferMoveType(IUserAction action) {
+        if (action.promoteTo() > -1 || action.getMove().getMoveType() == Promotion) {
+            return Promotion;
+        }
+        return Normal;
     }
 
     // makeMove is the main interaction method of this engine
@@ -190,15 +190,8 @@ public class Game extends GameBoard implements IGame {
                 info.pushLog("unknown player check: "+String.valueOf(checkStatus));
         }
 
-        // handle specials
+        // handle specials except Promotion
         switch (move.getMoveType()) {
-            /*
-            case Promotion:
-                gameState = activeColor == 0 ? GameState.PROMOTION_WHITE : GameState.PROMOTION_BLACK;
-                info.pushLog("legal promotion: next move should set promote piece");
-                break;
-
-             */
             case Castle:
                 System.out.println("CASTLE DETECTED");
                 if (isCastleLegal(move)) {
@@ -229,19 +222,11 @@ public class Game extends GameBoard implements IGame {
 
         System.out.println("\n--- Returning Move ---");
         System.out.println("--- OLD FEN "+lastMoveFen);
-        String fen = FenSerializer.serializeUpdate(this, move);
-        info.setStateFEN(fen);
-        info.setCaptures(getCaptures());
-        lastMoveFen = fen;
         info.pushLog("++ move is legal and synced ++");
-        info.setMove(move);
+        String updatedFen = syncMove(move);
         System.out.println("--- NEW FEN "+lastMoveFen);
 
-        // sync move with gameBoard
-        info.setLegal(true);
-        syncMove(move);
-
-        return info;
+        return info.WithSuccess(move, updatedFen, getCaptures());
     }
 
     // extend move
@@ -289,19 +274,26 @@ public class Game extends GameBoard implements IGame {
             move.getTo().setPieceType(move.getFrom().getPieceType());
         }
 
+        // Promotion
+        int fromSquare = move.getFrom().getIndex();
+        int toSquare = move.getTo().getIndex();
+        if (move.getFrom().getPieceType() == 0) {
+            if (getActiveColor() == 0) {
+                if ((fromSquare >= 48 && fromSquare <= 55) && toSquare >= 56) {
+                    move.setMoveType(Promotion);
+                    return move;
+                }
+            } else {
+                if ((fromSquare > 48 && fromSquare <= 55) && toSquare >= 56) {
+                    move.setMoveType(Promotion);
+                    return move;
+                }
+            }
+        }
+
         // PawnDouble
         if (Math.abs(move.getTo().getIndex()-move.getFrom().getIndex()) == 16) {
             move.setMoveType(PawnDouble);
-            return move;
-        }
-
-        // Promotion
-        if (move.getFrom().getPieceType() == 0) {
-            if ((activeColor == 0 && move.getTo().getIndex() >= 56)) {
-                move.setMoveType(Promotion);
-            } else if ((activeColor == 1 &&  move.getTo().getIndex() <= 7)) {
-                move.setMoveType(Promotion);
-            }
             return move;
         }
 
@@ -359,42 +351,45 @@ public class Game extends GameBoard implements IGame {
     public MoveInfo movePromotion(IUserAction action) {
         MoveInfo info = new MoveInfo();
         Move move = action.getMove();
-        // check if we can promote
-        if (!(gameState == GameState.PROMOTION_WHITE || gameState == GameState.PROMOTION_BLACK)) {
-            info.setFailMessage("not in promotion mode");
-            return info;
+
+        // TODO check if move values are set
+
+        // extend move?
+        move = extendMove(move);
+        if (move.getMoveType() != Promotion) {
+            return info.WithFailure("extending move did not detect promotion type", move);
         }
 
+        // check if square is legally reachable (move generation)
+        Generator generator = new Generator(getActiveColor(), this);
+        long legalMoves = generator.generate(move.getFrom(), false);
+        long moveToBoard = (1L << move.getTo().getIndex());
+        if ((legalMoves&moveToBoard) == 0) {
+            return info.WithFailure("promotion: destination square is not reachable (not in move gen)", move);
+        }
+
+        // check if promote to piece is legal
         int promoteTo = action.promoteTo();
-        if (promoteTo > 0 && promoteTo < 5) {
-            // update bitboards
-            if (activeColor == 0) {
-                long[] pieces = getSetWhite();
-                pieces[0] &= ~(1L << move.getFrom().getIndex());
-
-                pieces[action.promoteTo()] |= (1L << move.getFrom().getIndex());
-                setSetWhite(pieces);
-            } else {
-                long[] pieces = getSetBlack();
-                pieces[0] &= ~(1L << move.getFrom().getIndex());
-
-                pieces[action.promoteTo()] |= (1L << move.getFrom().getIndex());
-                setSetBlack(pieces);
-            }
-            info.pushLog("promoting "+action.promoteTo()+ " of player "+activeColor);
-            return info;
+        if (!(promoteTo > 0 && promoteTo < 5)) {
+            return info.WithFailure("promotion: illegal promote to piece "+promoteTo, move);
         }
 
+        // manually set toPiece to promotion piece
+        move.getTo().setPieceType(promoteTo);
 
-        info.Fail("illegal piece to promote to");
-        return info;
+        // sync move with gameBoard
+        String updatedFen = syncMove(move);
+        System.out.println("-- NEW FEN "+updatedFen);
+        info.pushLog("++ promotion move is legal and synced ++");
+
+        return info.WithSuccess(move, updatedFen, getCaptures());
     }
 
     // syncMove takes a move and syncs it with the game instance
     // even though distinguish between different move types,
     // this method does not implement game logic and expects
     // the given move to be legal
-    private void syncMove(Move move) {
+    private String syncMove(Move move) {
         Position from = move.getFrom();
         Position to = move.getTo();
 
@@ -429,18 +424,16 @@ public class Game extends GameBoard implements IGame {
                 playerBoards[from.getPieceType()] |= (1L << to.getIndex());
                 playerBoards[to.getPieceType()] |= (1L << from.getIndex());
                 break;
+            case Promotion:
+                // remove pawn piece
+                playerBoards[from.getPieceType()] &= ~(1L << from.getIndex());
+                // promote piece
+                playerBoards[to.getPieceType()] |= (1L << to.getIndex());
+                break;
             default:
                 // explicitly catch 'Unkown' case?
                 // should probably return early here -> maybe return false?
         }
-
-        // Skip activeColor change when Promotion
-        // because we wait for Promotion call before switching sides
-        /*
-        if (move.getMoveType() == Promotion) {
-            return;
-        }
-        */
 
         // update unmoved bitboard (noop if bit is already 0)
         markMovedPiece(move.getFrom().getIndex());
@@ -448,6 +441,8 @@ public class Game extends GameBoard implements IGame {
         // reassign of bitboards needed?
         // Update color
         this.activeColor = getActiveColor() == 0 ? 1 : 0;
+
+        return FenSerializer.serializeUpdate(this, move);
     }
 
 }
