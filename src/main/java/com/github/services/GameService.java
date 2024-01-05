@@ -8,6 +8,7 @@ import com.github.entity.LobbyEntity;
 import com.github.exceptions.GameNotFoundException;
 import com.github.entity.GameEntity;
 import com.github.model.GameModel;
+import com.github.model.debug.GameMoveModel;
 import com.github.model.debug.MoveDebugModel;
 import com.github.repository.RedisGameRepository;
 import lombok.Getter;
@@ -28,14 +29,19 @@ public class GameService {
         this.redisGameRepository = redisGameRepository;
     }
 
-    public GameEntity createGame(GameModel gameModel){
+    public GameEntity createGame(GameModel gameModel) throws Exception {
         Game game = new Game();
+        game.loadFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
         return redisGameRepository.save(new GameEntity(game, gameModel.getLobbyId().toString(), gameModel.getLobbyId(), gameModel.getPlayer1(), gameModel.getPlayer2()));
     }
 
     public Optional<GameEntity> getGameOptional(String id) {
         return redisGameRepository.findById(id);
 
+    }
+
+    public GameEntity getGameEntity(String id){
+        return redisGameRepository.findById(id).get();
     }
 
     public Game getGame(String id) throws GameNotFoundException {
@@ -79,6 +85,16 @@ public class GameService {
     public MoveInfo makeMove(MoveDebugModel moveModel) {
         MoveAction moveAction = new MoveAction(moveModel.getMove(), moveModel.getPromoteTo());
         return game.execute(moveAction);
+    }
+
+    public MoveInfo makeGameMove(GameMoveModel moveModel) throws GameNotFoundException {
+        GameEntity gameEntity = getGameEntity(moveModel.getGameId());
+        Game game1 = gameEntity.getGame();
+        System.out.println("Active Color: " + game1.getActiveColor());
+        MoveAction moveAction = new MoveAction(moveModel.getMove(), moveModel.getPromoteTo());
+        MoveInfo result = game1.execute(moveAction);
+        redisGameRepository.save(gameEntity);
+        return result;
     }
 
 }

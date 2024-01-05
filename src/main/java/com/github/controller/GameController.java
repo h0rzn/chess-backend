@@ -31,7 +31,7 @@ public class GameController {
     }
 
     @PostMapping("/game")
-    public ResponseEntity<GameEntity> createGame(@RequestBody GameModel gameModel) {
+    public ResponseEntity<GameEntity> createGame(@RequestBody GameModel gameModel) throws Exception {
         GameEntity gameEntity = gameService.createGame(gameModel);
         System.out.println("GameLobby: " + gameEntity.getLobbyId());
         messagingTemplate.convertAndSend("/topic/lobby/" + gameEntity.getLobbyId(), "Joined");

@@ -11,6 +11,7 @@ import lombok.Setter;
 public class MoveInfoResponseModel extends ResponseModel{
     private MoveInfo moveInfo;
 
+
     public MoveInfoResponseModel(Integer id, MoveInfo moveInfo) {
         super(id);
         this.moveInfo = moveInfo;

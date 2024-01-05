@@ -220,7 +220,7 @@ public class Game extends GameBoard implements IGame {
         info.pushLog("++ move is legal and synced ++");
         String updatedFen = syncMove(move);
         System.out.println("--- NEW FEN "+lastMoveFen);
-
+        lastMoveFen = updatedFen;
         return info.WithSuccess(move, updatedFen, getCaptures());
     }
 
