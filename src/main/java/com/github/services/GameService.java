@@ -4,6 +4,7 @@ import com.github.engine.Game;
 import com.github.engine.MoveAction;
 import com.github.engine.models.MoveInfo;
 import com.github.engine.move.Move;
+import com.github.entity.LobbyEntity;
 import com.github.exceptions.GameNotFoundException;
 import com.github.entity.GameEntity;
 import com.github.model.GameModel;
@@ -32,12 +33,22 @@ public class GameService {
         return redisGameRepository.save(new GameEntity(game, gameModel.getLobbyId().toString(), gameModel.getLobbyId(), gameModel.getPlayer1(), gameModel.getPlayer2()));
     }
 
-    public Game getGame(String UUID) throws GameNotFoundException {
-        if(UUID.isEmpty()){
-            return null;
-        }
-        return Optional.of(redisGameRepository.findById(UUID).get()).map(GameEntity::getGame).orElseThrow(GameNotFoundException::new);
+    public Optional<GameEntity> getGameOptional(String id) {
+        return redisGameRepository.findById(id);
+
     }
+
+    public Game getGame(String id) throws GameNotFoundException {
+        if (id == null) {
+            throw new IllegalArgumentException("id cannot be null");
+        }
+
+        return Optional.ofNullable(redisGameRepository.findById(id))
+                .map(gameEntity -> gameEntity.get().getGame())
+                .orElseThrow(GameNotFoundException::new);
+    }
+
+
 
     public Game createDebugGame(){
         Game game = new Game();

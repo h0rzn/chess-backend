@@ -8,10 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @RestController
 public class GameController {
@@ -25,9 +24,10 @@ public class GameController {
         this.messagingTemplate = messagingTemplate;
     }
 
-    @GetMapping("/game")
-    public String game() {
-        return null;
+    @GetMapping("/game/{id}")
+    public ResponseEntity<GameEntity> getGameByID(@PathVariable("id") String id){
+        Optional<GameEntity> game = gameService.getGameOptional(id);
+        return game.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping("/game")
