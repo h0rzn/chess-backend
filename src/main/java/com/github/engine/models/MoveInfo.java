@@ -51,6 +51,14 @@ public class MoveInfo {
         return this;
     }
 
+    public MoveInfo WithSuccess(Move move, String updatedFen, List<String> captures) {
+        this.legal = true;
+        this.stateFEN = updatedFen;
+        this.captures = captures;
+
+        return this;
+    }
+
     @Override
     public String toString() {
         return "MoveInfo{" +
