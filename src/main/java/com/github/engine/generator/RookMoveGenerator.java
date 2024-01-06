@@ -94,7 +94,6 @@ public class RookMoveGenerator implements IGenerator {
             }
         }
 
-        System.out.println("ROOK MOVE GEN "+currentMoves);
         boolean rookUnmoved = ((1L << rookIndex) & unmovedPieces) != 0;
         long kingBoard = (position.getColor() == 0) ? 16 : 0x1000000000000000L;
         boolean kingUnmoved = (kingBoard & unmovedPieces) != 0;

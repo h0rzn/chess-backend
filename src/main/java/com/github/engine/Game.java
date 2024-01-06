@@ -211,15 +211,19 @@ public class Game extends GameBoard implements IGame {
         // ignore post move verification on promotion, because has not finished move
         int enemyColor = (getActiveColor() == 0) ? 1 : 0;
         CheckStatus checkStatusEnemy = playerCheckValidator.analyzeCheck(enemyColor, move);
-        if (checkStatusEnemy != CheckStatus.NoCheck) {
+        if (checkStatusEnemy == CheckStatus.Checkmate) {
             info.pushLog("-- game ends: enemy in checkmate --");
+        } else if (checkStatusEnemy == CheckStatus.Check) {
+            info.pushLog("enemy: in check");
+        } else {
+            info.pushLog("enemy: no check");
         }
 
         System.out.println("\n--- Returning Move ---");
         System.out.println("--- OLD FEN "+lastMoveFen);
         info.pushLog("++ move is legal and synced ++");
         String updatedFen = syncMove(move);
-        System.out.println("--- NEW FEN "+lastMoveFen);
+        System.out.println("--- NEW FEN "+updatedFen);
         lastMoveFen = updatedFen;
         return info.WithSuccess(move, updatedFen, getCaptures());
     }

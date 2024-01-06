@@ -104,12 +104,14 @@ public class FenSerializer {
             toRow.append(emptyTo);
         }
 
-        String[] lastFenGroups = game.getLastMoveFen().split(" ", 2);
+        String[] lastFenGroups = game.getLastMoveFen().split(" ", 3);
         String[] fenRows = lastFenGroups[0].split("/");
 
         fenRows[( 7 -startFrom )] = fromRow.toString();
         fenRows[( 7 -startTo )] = toRow.toString();
         lastFenGroups[0] = String.join("/", fenRows);
+
+        lastFenGroups[1] = (game.getActiveColor() == 0 ? "w" : "b");
 
         return String.join(" ", lastFenGroups);
     }

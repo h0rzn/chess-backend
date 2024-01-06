@@ -53,6 +53,7 @@ public class MoveInfo {
 
     public MoveInfo WithSuccess(Move move, String updatedFen, List<String> captures) {
         this.legal = true;
+        this.move = move;
         this.stateFEN = updatedFen;
         this.captures = captures;
 

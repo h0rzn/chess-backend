@@ -150,9 +150,11 @@ public class CheckValidator {
         // if any of the enemies attack routes match our kings position,
         // then the players king is in check
         boolean kingInCheck = (attackRoutes & kingBoard) != 0;
+        /*
         System.out.println("KING BOARD    "+kingBoard);
         System.out.println("ATTACK ROUTES "+attackRoutes);
         System.out.println("ATTACK BOARDS "+Arrays.toString(attackBoards));
+        */
 
         // kingEscapes stores all valid moves for king that resolve
         // a **potential** check situation
