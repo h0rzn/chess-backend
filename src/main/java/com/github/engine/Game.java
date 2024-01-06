@@ -8,7 +8,6 @@ import com.github.engine.interfaces.IGame;
 import com.github.engine.interfaces.IUserAction;
 import com.github.engine.models.MoveInfo;
 import com.github.engine.move.Move;
-import com.github.engine.move.MoveType;
 import com.github.engine.move.Position;
 import com.github.engine.utils.FenParser;
 import com.github.engine.utils.FenSerializer;
@@ -266,17 +265,17 @@ public class Game extends GameBoard implements IGame {
             }
         }
 
-        // to square is empty -> set piece type to type of
-        // piece making the move so sync works with the same board
-        // and not -1
         if (move.getTo().noPiece()) {
+            // Normal
+            // to square is empty -> set piece type to type of
+            // piece making the move so sync works with the same board
+            // and not -1
             move.getTo().setPieceType(move.getFrom().getPieceType());
-        }
-
-        // Promotion
-        int fromSquare = move.getFrom().getIndex();
-        int toSquare = move.getTo().getIndex();
-        if (move.getFrom().getPieceType() == 0) {
+            move.setMoveType(Normal);
+        } else if (move.getFrom().getPieceType() == 0) {
+            // Promotion
+            int fromSquare = move.getFrom().getIndex();
+            int toSquare = move.getTo().getIndex();
             if (getActiveColor() == 0) {
                 if ((fromSquare >= 48 && fromSquare <= 55) && toSquare >= 56) {
                     move.setMoveType(Promotion);
@@ -288,23 +287,16 @@ public class Game extends GameBoard implements IGame {
                     return move;
                 }
             }
-        }
-
-        // PawnDouble
-        if (Math.abs(move.getTo().getIndex()-move.getFrom().getIndex()) == 16) {
+        } else if (Math.abs(move.getTo().getIndex()-move.getFrom().getIndex()) == 16) {
+            // PawnDouble
             move.setMoveType(PawnDouble);
             return move;
-        }
-
-        // Castling
-        if (move.getFrom().getPieceType() == 3 && move.getTo().getPieceType() == 5) {
-            System.out.println("POTENTIAL CASTLE DETECTED");
+        } else if (move.getFrom().getPieceType() == 3 && move.getTo().getPieceType() == 5) {
+            // Castling
             move.setMoveType(Castle);
             return move;
         }
 
-
-        move.setMoveType(Normal);
         return move;
     }
 
