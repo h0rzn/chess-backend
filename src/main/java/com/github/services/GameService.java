@@ -1,5 +1,6 @@
 package com.github.services;
 
+import com.github.Chess;
 import com.github.engine.Game;
 import com.github.engine.MoveAction;
 import com.github.engine.models.MoveInfo;
@@ -10,7 +11,9 @@ import com.github.entity.GameEntity;
 import com.github.model.GameModel;
 import com.github.model.debug.GameMoveModel;
 import com.github.model.debug.MoveDebugModel;
+import com.github.model.debug.ResponseModelRecord;
 import com.github.repository.RedisGameRepository;
+import com.github.utils.ChessClock;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -48,7 +51,17 @@ public class GameService {
             blackPlayerId = gameModel.getPlayer1();
         }
 
-        return redisGameRepository.save(new GameEntity(game, gameModel.getLobbyId().toString(), gameModel.getLobbyId(), gameModel.getPlayer1(), gameModel.getPlayer2(), whitePlayerId, blackPlayerId));
+        ChessClock chessClock = new ChessClock(300000);
+        chessClock.startClock(0);
+
+        return redisGameRepository.save(new GameEntity(game,
+                                    gameModel.getLobbyId().toString(),
+                                        gameModel.getLobbyId(),
+                                        gameModel.getPlayer1(),
+                                        gameModel.getPlayer2(),
+                                        whitePlayerId,
+                                        blackPlayerId,
+                                        chessClock));
     }
 
     public Optional<GameEntity> getGameOptional(String id) {
@@ -103,7 +116,7 @@ public class GameService {
         return game.execute(moveAction);
     }
 
-    public MoveInfo makeGameMove(GameMoveModel moveModel) throws GameNotFoundException {
+    public ResponseModelRecord makeGameMove(GameMoveModel moveModel) throws GameNotFoundException {
         GameEntity gameEntity = getGameEntity(moveModel.getGameId());
         Game game1 = gameEntity.getGame();
 
@@ -119,12 +132,13 @@ public class GameService {
         if(playerColor != game1.getActiveColor()){
             MoveInfo result = game1.execute(moveAction);
             result.setLegal(false);
-            return result;
+            return new ResponseModelRecord(result, 0, 0);
         }
 
         MoveInfo result = game1.execute(moveAction);
+        gameEntity.getChessClock().setActivePlayer(gameEntity.getChessClock().getActivePlayer() == 0 ? 1 : 0);
         redisGameRepository.save(gameEntity);
-        return result;
+        return new ResponseModelRecord(result, gameEntity.getChessClock().getWhiteTimeLeft(), gameEntity.getChessClock().getBlackTimeLeft());
     }
 
 }

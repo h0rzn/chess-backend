@@ -1,6 +1,7 @@
 package com.github.entity;
 
 import com.github.engine.Game;
+import com.github.utils.ChessClock;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.data.annotation.Id;
@@ -32,6 +33,9 @@ public class GameEntity {
 
     @Getter
     private UUID blackPlayerId;
+
+    @Getter
+    private ChessClock chessClock;
 
 
 

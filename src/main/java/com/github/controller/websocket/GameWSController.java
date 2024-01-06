@@ -26,8 +26,8 @@ public class GameWSController {
     @MessageMapping("/game/move")
     public void receiveMove(GameMoveModel message) throws GameNotFoundException {
         System.out.println("[Game-WS::receiveMove][" + message.getId() + "]"+  " move: " + message.getMove()+ "promoteTo "+message.getPromoteTo());
-        MoveInfo moveResult = gameService.makeGameMove(message);
-        GameMoveResponseModel responseModel = new GameMoveResponseModel(message.getId(),moveResult, message.getGameId(), message.getPlayerId());
+        ResponseModelRecord moveResult = gameService.makeGameMove(message);
+        GameMoveResponseModel responseModel = new GameMoveResponseModel(message.getId(),moveResult.moveInfo(), message.getGameId(), message.getPlayerId(), moveResult.whiteTimeLeft(), moveResult.blackTimeLeft());
         messagingTemplate.convertAndSend("/topic/game/move/", responseModel);
 
     }
