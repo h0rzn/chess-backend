@@ -27,6 +27,12 @@ public class GameEntity {
     @Getter
     private UUID player2;
 
+    @Getter
+    private UUID whitePlayerId;
+
+    @Getter
+    private UUID blackPlayerId;
+
 
 
 }

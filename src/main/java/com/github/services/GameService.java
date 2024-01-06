@@ -15,7 +15,11 @@ import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Random;
+import java.util.UUID;
 
 @Service
 public class GameService {
@@ -32,7 +36,19 @@ public class GameService {
     public GameEntity createGame(GameModel gameModel) throws Exception {
         Game game = new Game();
         game.loadFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-        return redisGameRepository.save(new GameEntity(game, gameModel.getLobbyId().toString(), gameModel.getLobbyId(), gameModel.getPlayer1(), gameModel.getPlayer2()));
+
+        Random random = new SecureRandom();
+        UUID whitePlayerId;
+        UUID blackPlayerId;
+        if (random.nextBoolean()) {
+            whitePlayerId = gameModel.getPlayer1();
+            blackPlayerId = gameModel.getPlayer2();
+        } else {
+            whitePlayerId = gameModel.getPlayer2();
+            blackPlayerId = gameModel.getPlayer1();
+        }
+
+        return redisGameRepository.save(new GameEntity(game, gameModel.getLobbyId().toString(), gameModel.getLobbyId(), gameModel.getPlayer1(), gameModel.getPlayer2(), whitePlayerId, blackPlayerId));
     }
 
     public Optional<GameEntity> getGameOptional(String id) {
@@ -90,8 +106,22 @@ public class GameService {
     public MoveInfo makeGameMove(GameMoveModel moveModel) throws GameNotFoundException {
         GameEntity gameEntity = getGameEntity(moveModel.getGameId());
         Game game1 = gameEntity.getGame();
+
+        String playerID = moveModel.getPlayerId();
+        int playerColor = Objects.equals(playerID, gameEntity.getWhitePlayerId().toString()) ? 0 : 1;
+        System.out.println("PlayerID: " + playerID);
+        System.out.println("PlayerID gameentity: " + gameEntity.getWhitePlayerId());
+        System.out.println("Player has color: " + playerColor);
+
         System.out.println("Active Color: " + game1.getActiveColor());
         MoveAction moveAction = new MoveAction(moveModel.getMove(), moveModel.getPromoteTo());
+
+        if(playerColor != game1.getActiveColor()){
+            MoveInfo result = game1.execute(moveAction);
+            result.setLegal(false);
+            return result;
+        }
+
         MoveInfo result = game1.execute(moveAction);
         redisGameRepository.save(gameEntity);
         return result;
