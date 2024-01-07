@@ -232,9 +232,7 @@ public class Game extends GameBoard implements IGame {
         }
         System.out.println("+ enemy check: "+checkStatusEnemy);
 
-
         System.out.println("+ cur FEN: "+lastMoveFen);
-        info.pushLog("++ move is legal and synced ++");
         String updatedFen = syncMove(move);
         System.out.println("+ new FEN: "+updatedFen);
         lastMoveFen = updatedFen;
@@ -364,6 +362,7 @@ public class Game extends GameBoard implements IGame {
         if (move.getMoveType() != Promotion) {
             return info.WithFailure("extending move did not detect promotion type", move);
         }
+        System.out.println("+ extended move: "+move);
 
         // check if square is legally reachable (move generation)
         Generator generator = new Generator(getActiveColor(), this);
@@ -372,6 +371,7 @@ public class Game extends GameBoard implements IGame {
         if ((legalMoves&moveToBoard) == 0) {
             return info.WithFailure("promotion: destination square is not reachable (not in move gen)", move);
         }
+        System.out.println("+ move gen: destination<"+moveToBoard+"> legals<"+legalMoves+">");
 
         // check if promote to piece is legal
         int promoteTo = action.promoteTo();
@@ -383,9 +383,9 @@ public class Game extends GameBoard implements IGame {
         move.getTo().setPieceType(promoteTo);
 
         // sync move with gameBoard
+        System.out.println("+ cur FEN "+lastMoveFen);
         String updatedFen = syncMove(move);
-        System.out.println("-- NEW FEN "+updatedFen);
-        info.pushLog("++ promotion move is legal and synced ++");
+        System.out.println("+ new FEN "+updatedFen);
 
         return info.WithSuccess(move, updatedFen, getCaptures());
     }

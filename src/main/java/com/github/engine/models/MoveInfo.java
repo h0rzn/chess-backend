@@ -56,6 +56,7 @@ public class MoveInfo {
         this.move = move;
         this.stateFEN = updatedFen;
         this.captures = captures;
+        this.pushLog("++ move is legal and synced ++");
 
         return this;
     }
