@@ -1,6 +1,6 @@
 package com.github.engine.models;
 
-import com.github.GameState;
+import com.github.engine.GameState;
 import com.github.engine.move.Move;
 import lombok.Getter;
 import lombok.Setter;
@@ -61,6 +61,13 @@ public class MoveInfo {
         return this;
     }
 
+    public MoveInfo WithGameOver(GameState state) {
+        this.gameState = state;
+        this.legal = false;
+        this.pushLog("cannot make move: game is over: "+state);
+        return this;
+    }
+
     @Override
     public String toString() {
         return "MoveInfo{" +
@@ -75,7 +82,7 @@ public class MoveInfo {
     }
 
     public MoveInfo() {
-        this.gameState = GameState.UNKOWN;
+        this.gameState = GameState.DEFAULT;
         this.log = new ArrayList<String>();
     }
 }
