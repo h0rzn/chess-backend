@@ -23,6 +23,14 @@ public class Position {
         return pieceType == -1;
     }
 
+    @Override
+    public String toString() {
+        return "Position{" +
+                "index=" + index +
+                ", pieceType=" + pieceType +
+                ", color=" + color +
+                '}';
+    }
 
     public Position(String position) {
         if (position.length() != 2) {

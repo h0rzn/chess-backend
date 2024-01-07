@@ -20,77 +20,9 @@ public class CheckValidator {
     @Setter
     private GameBoard gameBoard;
 
-    public CheckStatus analyzeCheck(int playerColor, Move move) {
-        long moveToBoard = (1L << move.getTo().getIndex());
-        CheckInfo checkInfo = inCheck(playerColor);
-        if (checkInfo == null) {
-            return CheckStatus.Unkown;
-        }
-
-        if (!checkInfo.isCheck()) {
-            if (move.getFrom().getPieceType() == 5) {
-                if ((moveToBoard& checkInfo.enemyMoveCovered()) != 0) {
-                    // even though the players king is currently not in check
-                    // we have to validate that this move would not put him in a check situation
-
-                    // king attempts to move to piece that would put him in check
-                    return CheckStatus.KingMoveToNextCheck;
-                }
-            }
-            return CheckStatus.NoCheck;
-        }
-        return CheckStatus.Check;
-    }
-
-    public CheckStatus analyzeCheckWithResolve(int playerColor, Move move) {
-        long moveToBoard = (1L << move.getTo().getIndex());
-        CheckInfo checkInfo = inCheck(playerColor);
-        if (checkInfo == null) {
-            return CheckStatus.Unkown;
-        }
-
-        if (!checkInfo.isCheck()) {
-            // no check
-            return CheckStatus.NoCheck;
-        } else if (move.getFrom().getPieceType() == 5) {
-            if ((moveToBoard& checkInfo.enemyMoveCovered()) != 0) {
-                // even though the players king is currently not in check
-                // we have to validate that this move would not put him in a check situation
-
-                // king attempts to move to piece that would put him in check
-                return CheckStatus.KingMoveToNextCheck;
-            }
-        }
-        if (move.getFrom().getPieceType() == 5) {
-            // king escapes does not contain wanted move --> illegal in check move
-            if ((moveToBoard & checkInfo.kingEscapes()) == 0) {
-                // illegal in check move for king
-                return CheckStatus.KingIllegalInCheckMove;
-            }
-        } else {
-            CheckResolveInfo resolveInfo = isCheckResolvable(playerColor, checkInfo);
-            if (!resolveInfo.resolvable()) {
-                // check but not resolvable
-                return CheckStatus.Checkmate;
-            }
-
-            // look up move is legal resolve move
-            long[] a2d = resolveInfo.attack2Defend();
-            long[] b2d = resolveInfo.block2Defend();
-            for (int playerPiece = 0; playerPiece < 6; playerPiece++) {
-                if ((a2d[playerPiece]&moveToBoard) != 0) {
-                    return CheckStatus.MoveResolvesCheck;
-                } else if ((b2d[playerPiece]&moveToBoard) != 0) {
-                    return CheckStatus.MoveResolvesCheck;
-                }
-            }
-        }
-        return CheckStatus.IllegalInCheckMove;
-    }
-
     // validate if the given player is in a check situation
     // CheckInfo returns additional information
-    private CheckInfo inCheck(int playerColor) {
+    public CheckInfo inCheck(int playerColor) {
         long[] playerPieces;
         long[] enemyPieces;
         int enemyColor;
@@ -174,7 +106,7 @@ public class CheckValidator {
         return new CheckInfo(kingInCheck, kingEscapes,attackBoards, enemyCovers);
     }
 
-    private CheckResolveInfo isCheckResolvable(int playerColor, CheckInfo checkInfo) {
+    public CheckResolveInfo isCheckResolvable(int playerColor, CheckInfo checkInfo) {
         long[] attackBoards = checkInfo.attackBoards();
         long enemyCovers = checkInfo.enemyMoveCovered();
 

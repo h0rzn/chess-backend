@@ -1,11 +1,11 @@
 package com.github.engine;
 
-import com.github.GameState;
-import com.github.engine.check.CheckStatus;
 import com.github.engine.check.CheckValidator;
 import com.github.engine.generator.Generator;
 import com.github.engine.interfaces.IGame;
 import com.github.engine.interfaces.IUserAction;
+import com.github.engine.models.CheckInfo;
+import com.github.engine.models.CheckResolveInfo;
 import com.github.engine.models.MoveInfo;
 import com.github.engine.move.Move;
 import com.github.engine.move.Position;
@@ -90,7 +90,7 @@ public class Game extends GameBoard implements IGame {
 
     // fully reset game
     public void reset() {
-        gameState = GameState.UNKOWN;
+        gameState = GameState.DEFAULT;
         // reset color to 0 (white); updated color should be set by loadFen
         activeColor = 0;
         lastMoveFen = "";
@@ -102,20 +102,36 @@ public class Game extends GameBoard implements IGame {
     // the corresponding move method depending
     // on the move type
     public MoveInfo execute(IUserAction action) {
+        MoveInfo info = new MoveInfo();
+        if (isGameOver()) {
+            return info.WithGameOver(gameState);
+        }
+
         switch (action.getMove().getMoveType()) {
             case Normal:
-                System.out.println("[GAME] executing move of type <NORMAL>");
-                return moveNormal(action.getMove());
+                System.out.println("\n[ENGINE] executing move: <NORMAL>");
+                info = moveNormal(action.getMove());
+                System.out.println("[ENGINE] move executed\n");
+                break;
             case Promotion:
-                System.out.println("[GAME] executing move of type <PROMOTION>");
-                return movePromotion(action);
+                System.out.println("\n[ENGINE] executing move: <PROMOTION>");
+                info = movePromotion(action);
+                System.out.println("[ENGINE] move executed\n");
+                break;
             default:
-                System.out.println("[GAME] received move of type <UNKNOWN>");
-                MoveInfo info = new MoveInfo();
+                System.out.println("\n[ENGINE] received move of type <UNKNOWN>");
+                info = new MoveInfo();
                 info.setLegal(false);
                 info.setFailMessage("unknown action type: "+action.getType());
-                return info;
+                System.out.println("[ENGINE] denied unknown move\n");
+                break;
         }
+
+        return info;
+    }
+
+    private boolean isGameOver() {
+        return gameState == GameState.END_WHITE_IN_CHECKMATE || gameState == GameState.END_BLACK_IN_CHECKMATE;
     }
 
     // makeMove is the main interaction method of this engine
@@ -143,6 +159,7 @@ public class Game extends GameBoard implements IGame {
 
         // extend move
         move = extendMove(move);
+        System.out.println("+ extended move: "+move.toString());
 
         // the selected piece could not be found -> illegal move
         if (from.noPiece()) {
@@ -160,34 +177,57 @@ public class Game extends GameBoard implements IGame {
         long legalMoves = generator.generate(from, false);
         long moveToBoard = (1L << to.getIndex());
 
-        System.out.println("--> move to: "+moveToBoard+" legals: "+legalMoves);
+        System.out.println("+ move gen: destination<"+moveToBoard+"> legals<"+legalMoves+">");
 
         if ((legalMoves&moveToBoard) == 0) {
             return info.WithFailure("destination square is not reachable (not in move gen)", move);
         }
 
-        CheckValidator playerCheckValidator = new CheckValidator(this);
-
         // Checkmate: Player
-        CheckStatus checkStatus = playerCheckValidator.analyzeCheckWithResolve(getActiveColor(), move);
-        switch (checkStatus) {
-            case NoCheck:
-                info.pushLog("player: no check");
-                break;
-            case MoveResolvesCheck:
-                info.pushLog("player: check but move resolves");
-                break;
-            case Unkown:
-                info.pushLog("player check analysis error");
-                break;
-            default:
-                info.pushLog("unknown player check: "+String.valueOf(checkStatus));
+        CheckValidator playerCheckValidator = new CheckValidator(this);
+        CheckInfo playerCheckInfo = playerCheckValidator.inCheck(getActiveColor());
+        if (playerCheckInfo.isCheck()) {
+            System.out.println("+ player check: "+playerCheckInfo);
+            info.pushLog("enemy: in check");
+            CheckResolveInfo playerResolveInfo = playerCheckValidator.isCheckResolvable(getActiveColor(), playerCheckInfo);
+            if (playerResolveInfo.resolvable()) {
+                // look up if move is legal resolve move
+                long[] a2d = playerResolveInfo.attack2Defend();
+                long[] b2d = playerResolveInfo.block2Defend();
+                boolean isLegalResolveMove = false;
+                for (int playerPiece = 0; playerPiece < 6; playerPiece++) {
+                    if ((a2d[playerPiece]&moveToBoard) != 0) {
+                        info.pushLog("check: legal a2d resolve move");
+                        isLegalResolveMove = true;
+                        break;
+                    } else if ((b2d[playerPiece]&moveToBoard) != 0) {
+                        info.pushLog("check: legal b2d resolve move");
+                        isLegalResolveMove = true;
+                        break;
+                    }
+                }
+
+                if (!isLegalResolveMove) {
+                    return info.WithFailure("illegal in check move", move);
+                }
+
+            }
+        } else { // No Check: Player
+            if (move.getFrom().getPieceType() == 5) {
+                // king escapes does not contain wanted move --> illegal in check move
+                // remove enemy covered squares from king escape squares
+                long kingLegalMoves = playerCheckInfo.kingEscapes() &~ playerCheckInfo.enemyMoveCovered();
+                if ((moveToBoard & kingLegalMoves) == 0) {
+                    // illegal in check move for king
+                    return info.WithFailure("king: illegal in check move", move);
+                }
+            }
         }
 
         // handle specials except Promotion
         switch (move.getMoveType()) {
             case Castle:
-                System.out.println("CASTLE DETECTED");
+                System.out.println("+ specials: handling <CASTLE>");
                 if (isCastleLegal(move)) {
                     info.pushLog("legal castle");
                 } else {
@@ -202,29 +242,32 @@ public class Game extends GameBoard implements IGame {
                 } else {
                     return info.WithFailure("no double pawn move left", move);
                 }
+                System.out.println("+ specials: handling <DOUBLEPAWN>");
         }
 
         //
         // POST MOVE
         // check if legal move ends the game by placing enemy in checkmate
         // ignore post move verification on promotion, because has not finished move
-        int enemyColor = (getActiveColor() == 0) ? 1 : 0;
-        CheckStatus checkStatusEnemy = playerCheckValidator.analyzeCheck(enemyColor, move);
-        if (checkStatusEnemy == CheckStatus.Checkmate) {
-            info.pushLog("-- game ends: enemy in checkmate --");
-        } else if (checkStatusEnemy == CheckStatus.Check) {
+        System.out.println("+ cur FEN: "+lastMoveFen);
+        syncMove(move);
+        System.out.println("+ new FEN: "+lastMoveFen);
+
+        // syncMove flips active player color
+        CheckInfo enemyCheckInfo = playerCheckValidator.inCheck(getActiveColor());
+        if (enemyCheckInfo.isCheck()) {
+            System.out.println("+ enemy check: "+enemyCheckInfo);
             info.pushLog("enemy: in check");
-        } else {
-            info.pushLog("enemy: no check");
+            CheckResolveInfo enemyResolveInfo = playerCheckValidator.isCheckResolvable(getActiveColor(), enemyCheckInfo);
+            if (!enemyResolveInfo.resolvable()) {
+                // update gameState
+                this.gameState = (getActiveColor() == 0) ? GameState.END_WHITE_IN_CHECKMATE : GameState.END_BLACK_IN_CHECKMATE;
+                info.pushLog("-- game ends: enemy in checkmate ("+this.gameState+") --");
+            }
         }
 
-        System.out.println("\n--- Returning Move ---");
-        System.out.println("--- OLD FEN "+lastMoveFen);
-        info.pushLog("++ move is legal and synced ++");
-        String updatedFen = syncMove(move);
-        System.out.println("--- NEW FEN "+updatedFen);
-        lastMoveFen = updatedFen;
-        return info.WithSuccess(move, updatedFen, getCaptures());
+
+        return info.WithSuccess(move, lastMoveFen, getCaptures());
     }
 
     // extend move
@@ -350,6 +393,7 @@ public class Game extends GameBoard implements IGame {
         if (move.getMoveType() != Promotion) {
             return info.WithFailure("extending move did not detect promotion type", move);
         }
+        System.out.println("+ extended move: "+move);
 
         // check if square is legally reachable (move generation)
         Generator generator = new Generator(getActiveColor(), this);
@@ -358,6 +402,7 @@ public class Game extends GameBoard implements IGame {
         if ((legalMoves&moveToBoard) == 0) {
             return info.WithFailure("promotion: destination square is not reachable (not in move gen)", move);
         }
+        System.out.println("+ move gen: destination<"+moveToBoard+"> legals<"+legalMoves+">");
 
         // check if promote to piece is legal
         int promoteTo = action.promoteTo();
@@ -369,18 +414,18 @@ public class Game extends GameBoard implements IGame {
         move.getTo().setPieceType(promoteTo);
 
         // sync move with gameBoard
-        String updatedFen = syncMove(move);
-        System.out.println("-- NEW FEN "+updatedFen);
-        info.pushLog("++ promotion move is legal and synced ++");
+        System.out.println("+ cur FEN "+lastMoveFen);
+        syncMove(move);
+        System.out.println("+ new FEN "+lastMoveFen);
 
-        return info.WithSuccess(move, updatedFen, getCaptures());
+        return info.WithSuccess(move, lastMoveFen, getCaptures());
     }
 
     // syncMove takes a move and syncs it with the game instance
     // even though distinguish between different move types,
     // this method does not implement game logic and expects
     // the given move to be legal
-    private String syncMove(Move move) {
+    private void syncMove(Move move) {
         Position from = move.getFrom();
         Position to = move.getTo();
 
@@ -429,11 +474,10 @@ public class Game extends GameBoard implements IGame {
         // update unmoved bitboard (noop if bit is already 0)
         markMovedPiece(move.getFrom().getIndex());
 
-        // reassign of bitboards needed?
         // Update color
         this.activeColor = getActiveColor() == 0 ? 1 : 0;
 
-        return FenSerializer.serializeUpdate(this, move);
+        this.lastMoveFen = FenSerializer.serializeUpdate(this, move);
     }
 
 }

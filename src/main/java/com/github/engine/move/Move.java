@@ -14,6 +14,15 @@ public class Move {
     @Setter
     private MoveType moveType;
 
+    @Override
+    public String toString() {
+        return "Move{" +
+                "from=" + from.toString() +
+                ", to=" + to.toString() +
+                ", moveType=" + moveType +
+                '}';
+    }
+
     public Move(int from, int to) {
         this.from = new Position(from);
         this.to = new Position(to);

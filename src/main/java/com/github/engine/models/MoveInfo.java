@@ -1,6 +1,6 @@
 package com.github.engine.models;
 
-import com.github.GameState;
+import com.github.engine.GameState;
 import com.github.engine.move.Move;
 import lombok.Getter;
 import lombok.Setter;
@@ -56,7 +56,15 @@ public class MoveInfo {
         this.move = move;
         this.stateFEN = updatedFen;
         this.captures = captures;
+        this.pushLog("++ move is legal and synced ++");
 
+        return this;
+    }
+
+    public MoveInfo WithGameOver(GameState state) {
+        this.gameState = state;
+        this.legal = false;
+        this.pushLog("cannot make move: game is over: "+state);
         return this;
     }
 
@@ -66,7 +74,7 @@ public class MoveInfo {
                 "legal=" + legal +
                 ", playerColor=" + playerColor +
                 ", gameState=" + gameState +
-                ", move=" + move +
+                ", move=" + move.toString() +
                 ", stateFEN='" + stateFEN + '\'' +
                 ", failMessage='" + failMessage + '\'' +
                 ", log=" + log +
@@ -74,7 +82,7 @@ public class MoveInfo {
     }
 
     public MoveInfo() {
-        this.gameState = GameState.UNKOWN;
+        this.gameState = GameState.DEFAULT;
         this.log = new ArrayList<String>();
     }
 }
