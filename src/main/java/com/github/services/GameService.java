@@ -12,6 +12,7 @@ import com.github.model.GameModel;
 import com.github.model.debug.GameMoveModel;
 import com.github.model.debug.MoveDebugModel;
 import com.github.model.debug.ResponseModelRecord;
+import com.github.repository.HistoryRepository;
 import com.github.repository.RedisGameRepository;
 import com.github.utils.ChessClock;
 import lombok.Getter;
@@ -30,10 +31,12 @@ public class GameService {
     public Game game;
 
     private final RedisGameRepository redisGameRepository;
+    private final HistoryService historyService;
 
     @Autowired
-    public GameService(RedisGameRepository redisGameRepository) {
+    public GameService(RedisGameRepository redisGameRepository, HistoryService historyService) {
         this.redisGameRepository = redisGameRepository;
+        this.historyService = historyService;
     }
 
     public GameEntity createGame(GameModel gameModel) throws Exception {
@@ -53,15 +56,17 @@ public class GameService {
 
         ChessClock chessClock = new ChessClock(300000);
         chessClock.startClock(0);
+        GameEntity gameEntity = redisGameRepository.save(new GameEntity(game,
+                gameModel.getLobbyId().toString(),
+                gameModel.getLobbyId(),
+                gameModel.getPlayer1(),
+                gameModel.getPlayer2(),
+                whitePlayerId,
+                blackPlayerId,
+                chessClock));
 
-        return redisGameRepository.save(new GameEntity(game,
-                                    gameModel.getLobbyId().toString(),
-                                        gameModel.getLobbyId(),
-                                        gameModel.getPlayer1(),
-                                        gameModel.getPlayer2(),
-                                        whitePlayerId,
-                                        blackPlayerId,
-                                        chessClock));
+        historyService.createHistory(gameEntity.getId());
+        return gameEntity;
     }
 
     public Optional<GameEntity> getGameOptional(String id) {
@@ -136,7 +141,10 @@ public class GameService {
         }
 
         MoveInfo result = game1.execute(moveAction);
-        gameEntity.getChessClock().setActivePlayer(gameEntity.getChessClock().getActivePlayer() == 0 ? 1 : 0);
+        if(result.isLegal()){
+            historyService.addMoveToHistory(gameEntity.getId(), result);
+            gameEntity.getChessClock().setActivePlayer(gameEntity.getChessClock().getActivePlayer() == 0 ? 1 : 0);
+        }
         redisGameRepository.save(gameEntity);
         return new ResponseModelRecord(result, gameEntity.getChessClock().getWhiteTimeLeft(), gameEntity.getChessClock().getBlackTimeLeft());
     }
