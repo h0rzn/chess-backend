@@ -23,6 +23,12 @@ public class CheckValidator {
     public CheckStatus analyzeCheck(int playerColor, Move move) {
         long moveToBoard = (1L << move.getTo().getIndex());
         CheckInfo checkInfo = inCheck(playerColor);
+        /*
+        System.out.println("+++ checkinfo: "+checkInfo);
+        for (long attackBoard : checkInfo.attackBoards()) {
+            System.out.println("+++ "+attackBoard);
+        }
+         */
         if (checkInfo == null) {
             return CheckStatus.Unkown;
         }

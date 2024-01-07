@@ -66,7 +66,7 @@ public class MoveInfo {
                 "legal=" + legal +
                 ", playerColor=" + playerColor +
                 ", gameState=" + gameState +
-                ", move=" + move +
+                ", move=" + move.toString() +
                 ", stateFEN='" + stateFEN + '\'' +
                 ", failMessage='" + failMessage + '\'' +
                 ", log=" + log +

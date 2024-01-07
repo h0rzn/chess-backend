@@ -6,6 +6,7 @@ import com.github.engine.check.CheckValidator;
 import com.github.engine.generator.Generator;
 import com.github.engine.interfaces.IGame;
 import com.github.engine.interfaces.IUserAction;
+import com.github.engine.models.CheckInfo;
 import com.github.engine.models.MoveInfo;
 import com.github.engine.move.Move;
 import com.github.engine.move.Position;
@@ -102,20 +103,28 @@ public class Game extends GameBoard implements IGame {
     // the corresponding move method depending
     // on the move type
     public MoveInfo execute(IUserAction action) {
+        MoveInfo info;
         switch (action.getMove().getMoveType()) {
             case Normal:
-                System.out.println("[GAME] executing move of type <NORMAL>");
-                return moveNormal(action.getMove());
+                System.out.println("\n[ENGINE] executing move: <NORMAL>");
+                info = moveNormal(action.getMove());
+                System.out.println("[ENGINE] move executed\n");
+                break;
             case Promotion:
-                System.out.println("[GAME] executing move of type <PROMOTION>");
-                return movePromotion(action);
+                System.out.println("\n[ENGINE] executing move: <PROMOTION>");
+                info = movePromotion(action);
+                System.out.println("[ENGINE] move executed\n");
+                break;
             default:
-                System.out.println("[GAME] received move of type <UNKNOWN>");
-                MoveInfo info = new MoveInfo();
+                System.out.println("\n[ENGINE] received move of type <UNKNOWN>");
+                info = new MoveInfo();
                 info.setLegal(false);
                 info.setFailMessage("unknown action type: "+action.getType());
-                return info;
+                System.out.println("[ENGINE] denied unknown move\n");
+                break;
         }
+
+        return info;
     }
 
     // makeMove is the main interaction method of this engine
@@ -143,6 +152,7 @@ public class Game extends GameBoard implements IGame {
 
         // extend move
         move = extendMove(move);
+        System.out.println("+ extended move: "+move.toString());
 
         // the selected piece could not be found -> illegal move
         if (from.noPiece()) {
@@ -160,7 +170,7 @@ public class Game extends GameBoard implements IGame {
         long legalMoves = generator.generate(from, false);
         long moveToBoard = (1L << to.getIndex());
 
-        System.out.println("--> move to: "+moveToBoard+" legals: "+legalMoves);
+        System.out.println("+ move gen: destination<"+moveToBoard+"> legals<"+legalMoves+">");
 
         if ((legalMoves&moveToBoard) == 0) {
             return info.WithFailure("destination square is not reachable (not in move gen)", move);
@@ -184,10 +194,12 @@ public class Game extends GameBoard implements IGame {
                 info.pushLog("unknown player check: "+String.valueOf(checkStatus));
         }
 
+        System.out.println("+ player check: "+checkStatus);
+
         // handle specials except Promotion
         switch (move.getMoveType()) {
             case Castle:
-                System.out.println("CASTLE DETECTED");
+                System.out.println("+ specials: handling <CASTLE>");
                 if (isCastleLegal(move)) {
                     info.pushLog("legal castle");
                 } else {
@@ -202,6 +214,7 @@ public class Game extends GameBoard implements IGame {
                 } else {
                     return info.WithFailure("no double pawn move left", move);
                 }
+                System.out.println("+ specials: handling <DOUBLEPAWN>");
         }
 
         //
@@ -215,14 +228,15 @@ public class Game extends GameBoard implements IGame {
         } else if (checkStatusEnemy == CheckStatus.Check) {
             info.pushLog("enemy: in check");
         } else {
-            info.pushLog("enemy: no check");
+            info.pushLog("enemy: no check "+checkStatusEnemy);
         }
+        System.out.println("+ enemy check: "+checkStatusEnemy);
 
-        System.out.println("\n--- Returning Move ---");
-        System.out.println("--- OLD FEN "+lastMoveFen);
+
+        System.out.println("+ cur FEN: "+lastMoveFen);
         info.pushLog("++ move is legal and synced ++");
         String updatedFen = syncMove(move);
-        System.out.println("--- NEW FEN "+updatedFen);
+        System.out.println("+ new FEN: "+updatedFen);
         lastMoveFen = updatedFen;
         return info.WithSuccess(move, updatedFen, getCaptures());
     }
