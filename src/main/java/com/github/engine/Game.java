@@ -228,7 +228,7 @@ public class Game extends GameBoard implements IGame {
         switch (move.getMoveType()) {
             case Castle:
                 System.out.println("+ specials: handling <CASTLE>");
-                if (isCastleLegal(move)) {
+                if (isCastleLegal(move) && !playerCheckInfo.isCheck()) {
                     info.pushLog("legal castle");
                 } else {
                     return info.WithFailure("illegal castle", move);
@@ -454,11 +454,12 @@ public class Game extends GameBoard implements IGame {
                 playerBoards[from.getPieceType()] |= (1L << to.getIndex());
                 break;
             case Castle:
-                // Remove Player Piece on Castling Destination
-                playerBoards[to.getPieceType()] &= ~(1L << to.getIndex());
-                // place as castled
-                playerBoards[from.getPieceType()] |= (1L << to.getIndex());
-                playerBoards[to.getPieceType()] |= (1L << from.getIndex());
+                playerBoards = syncCastle(move, playerBoards);
+                if (getActiveColor() == 0) {
+                    setSetWhite(playerBoards);
+                } else {
+                    setSetBlack(playerBoards);
+                }
                 break;
             case Promotion:
                 // remove pawn piece
@@ -478,6 +479,35 @@ public class Game extends GameBoard implements IGame {
         this.activeColor = getActiveColor() == 0 ? 1 : 0;
 
         this.lastMoveFen = FenSerializer.serializeUpdate(this, move);
+    }
+
+    public long[] syncCastle(Move move, long[] playerBoards) {
+        // rook has been removed from board
+
+        switch (move.getFrom().getIndex()) {
+            case 0: // White long castle
+                playerBoards[move.getFrom().getPieceType()] |= 0x8;
+                playerBoards[move.getTo().getPieceType()] &= ~(1L << move.getTo().getIndex());
+                playerBoards[move.getTo().getPieceType()] |= 0x4;
+                break;
+            case 7: // White short castle
+                playerBoards[move.getFrom().getPieceType()] |= 0x20;
+                playerBoards[move.getTo().getPieceType()] &= ~(1L << move.getTo().getIndex());
+                playerBoards[move.getTo().getPieceType()] |= 0x40;
+                break;
+            case 56: // Black long castle
+                playerBoards[move.getFrom().getPieceType()] |= 0x800000000000000L;
+                playerBoards[move.getTo().getPieceType()] &= ~(1L << move.getTo().getIndex());
+                playerBoards[move.getTo().getPieceType()] |= 0x400000000000000L;
+                break;
+            case 63: // Black short castle
+                playerBoards[move.getFrom().getPieceType()] |= 0x2000000000000000L;
+                playerBoards[move.getTo().getPieceType()] &= ~(1L << move.getTo().getIndex());
+                playerBoards[move.getTo().getPieceType()] |= 0x4000000000000000L;
+                break;
+            default:
+        }
+        return playerBoards;
     }
 
 }

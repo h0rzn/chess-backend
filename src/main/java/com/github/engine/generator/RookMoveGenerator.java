@@ -98,6 +98,8 @@ public class RookMoveGenerator implements IGenerator {
         long kingBoard = (position.getColor() == 0) ? 16 : 0x1000000000000000L;
         boolean kingUnmoved = (kingBoard & unmovedPieces) != 0;
         if (rookUnmoved && kingUnmoved) {
+            // set king position as legal move, the proper castling is handled
+            // by makeMove(...)
             currentMoves |= kingBoard;
         }
         return currentMoves;
