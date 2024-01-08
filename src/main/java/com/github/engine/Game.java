@@ -262,6 +262,7 @@ public class Game extends GameBoard implements IGame {
             if (!enemyResolveInfo.resolvable()) {
                 // update gameState
                 this.gameState = (getActiveColor() == 0) ? GameState.END_WHITE_IN_CHECKMATE : GameState.END_BLACK_IN_CHECKMATE;
+                info.setGameState(this.gameState);
                 info.pushLog("-- game ends: enemy in checkmate ("+this.gameState+") --");
             }
         }
