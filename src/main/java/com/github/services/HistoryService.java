@@ -5,6 +5,8 @@ import com.github.entity.HistoryEntity;
 import com.github.repository.HistoryRepository;
 import com.github.repository.RedisGameRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.ListOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -16,10 +18,24 @@ import java.util.Optional;
 public class HistoryService {
 
     private final HistoryRepository historyRepository;
+    private RedisTemplate<String, String> redisTemplate;
 
     @Autowired
-    public HistoryService(HistoryRepository redisHistoryRepository) {
+    public HistoryService(HistoryRepository redisHistoryRepository, RedisTemplate<String, String> redisTemplate) {
         this.historyRepository = redisHistoryRepository;
+        this.redisTemplate = redisTemplate;
+    }
+
+
+    public void addArrayToList(String key, String[] array) {
+        ListOperations<String, String> listOps = redisTemplate.opsForList();
+        for (String item : array) {
+            listOps.rightPush(key, item);
+        }
+    }
+
+    public void addAllArrayToList(String key, String[] array) {
+        redisTemplate.opsForList().rightPushAll(key, array);
     }
 
     public HistoryEntity createHistory(String gameId) {

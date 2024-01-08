@@ -64,8 +64,6 @@ public class GameService {
                 whitePlayerId,
                 blackPlayerId,
                 chessClock));
-
-        historyService.createHistory(gameEntity.getId());
         return gameEntity;
     }
 
@@ -142,7 +140,7 @@ public class GameService {
 
         MoveInfo result = game1.execute(moveAction);
         if(result.isLegal()){
-            historyService.addMoveToHistory(gameEntity.getId(), result);
+            //historyService.addMoveToHistory(gameEntity.getId(), result);
             gameEntity.getChessClock().setActivePlayer(gameEntity.getChessClock().getActivePlayer() == 0 ? 1 : 0);
         }
         redisGameRepository.save(gameEntity);

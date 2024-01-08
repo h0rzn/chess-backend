@@ -10,13 +10,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
-@RedisHash("Game")
+@RedisHash("History")
 @AllArgsConstructor
 public class HistoryEntity {
 
     @Getter
     @Id
-    private String gameID;
+    private String id;
 
    @Getter
    private ArrayList<HashMap<Date, MoveInfo>> moveHistory;
