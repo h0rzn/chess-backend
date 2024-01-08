@@ -35,7 +35,7 @@ public class GameWSController {
 
     @MessageMapping("/game/action")
     public void receiveAction(GameActionModel gameActionModel){
-        System.out.println("[Game-WS::receiveAction][" + gameActionModel.getId() + "]"+  " action: " + gameActionModel.getAction());
+        System.out.println("[Game-WS::receiveAction][" + gameActionModel.getId() + "]"+  " action: " + gameActionModel.getAction() + " player: " + gameActionModel.getPlayerId());
         if (gameActionModel.getAction().equals("resign")) {
             GameActionResponseModel gameActionResponseModel = new GameActionResponseModel(gameActionModel.getId(), gameActionModel.getGameId(), gameActionModel.getPlayerId(), gameActionModel.getAction());
             messagingTemplate.convertAndSend("/topic/game/action/", gameActionResponseModel);
