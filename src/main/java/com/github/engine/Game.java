@@ -134,7 +134,7 @@ public class Game extends GameBoard implements IGame {
         return gameState == GameState.END_WHITE_IN_CHECKMATE || gameState == GameState.END_BLACK_IN_CHECKMATE;
     }
 
-    // makeMove is the main interaction method of this engine
+    // makeDebugMove is the main interaction method of this engine
     // and expects a move where at least the indexes of from and to
     // are set. when the game is in promotion state this method is a noop
     // and continues to work if the promotion state is resolved by

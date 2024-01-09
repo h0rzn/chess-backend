@@ -1,9 +1,10 @@
 package com.github.model;
 
-import com.github.model.debug.ResponseModel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+/**
+ * Model for game actions response (surrender, draw)
+ */
 @Getter
 public class GameActionResponseModel extends ResponseModel {
     private String gameId;

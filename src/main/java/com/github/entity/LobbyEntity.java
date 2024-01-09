@@ -7,13 +7,16 @@ import org.springframework.data.redis.core.RedisHash;
 import java.util.Random;
 import java.util.UUID;
 
+/**
+ * Redis Entity for lobby
+ */
 @RedisHash("Lobby")
+@Getter
 public class LobbyEntity {
-    @Getter
+
     @Id
     private int id;
 
-    @Getter
     private UUID playerUUID;
 
     public LobbyEntity(){

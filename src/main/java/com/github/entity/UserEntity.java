@@ -7,21 +7,21 @@ import org.springframework.data.redis.core.RedisHash;
 
 import java.util.UUID;
 
+/**
+ * Redis Entity for user
+ */
 @RedisHash("User")
+@Getter
+@Setter
 public class UserEntity {
     @Id
-    @Getter
-    @Setter
     private UUID id;
 
-    @Getter
-    @Setter
     private String username;
 
     public UserEntity(String username) {
         this.id = UUID.randomUUID();
         this.username = username;
-
     }
 
     public UserEntity() {

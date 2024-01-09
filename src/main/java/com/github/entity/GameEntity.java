@@ -9,34 +9,29 @@ import org.springframework.data.redis.core.RedisHash;
 
 import java.util.UUID;
 
-
+/**
+ * Redis Entity for game
+ */
 @RedisHash("Game")
 @AllArgsConstructor
+@Getter
 public class GameEntity {
-    @Getter
+
     private final Game game;
 
-    @Getter
     @Id
     private String id;
 
-    @Getter
     private Integer lobbyId;
 
-    @Getter
     private UUID player1;
-    @Getter
+
     private UUID player2;
 
-    @Getter
     private UUID whitePlayerId;
 
-    @Getter
     private UUID blackPlayerId;
 
-    @Getter
     private ChessClock chessClock;
-
-
 
 }
