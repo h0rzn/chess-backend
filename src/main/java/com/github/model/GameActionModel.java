@@ -1,9 +1,11 @@
 package com.github.model;
 
-import com.github.model.debug.ResponseModel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+/**
+ * Model for game actions (surrender, draw)
+ */
 @Getter
 @AllArgsConstructor
 public class GameActionModel {

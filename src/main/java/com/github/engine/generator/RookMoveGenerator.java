@@ -99,7 +99,7 @@ public class RookMoveGenerator implements IGenerator {
         boolean kingUnmoved = (kingBoard & unmovedPieces) != 0;
         if (rookUnmoved && kingUnmoved) {
             // set king position as legal move, the proper castling is handled
-            // by makeMove(...)
+            // by makeDebugMove(...)
             currentMoves |= kingBoard;
         }
         return currentMoves;

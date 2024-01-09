@@ -1,14 +1,13 @@
 package com.github.model.debug;
 
 import com.github.engine.models.MoveInfo;
-import lombok.AllArgsConstructor;
+import com.github.model.ResponseModel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class MoveInfoResponseModel extends ResponseModel{
+public class MoveInfoResponseModel extends ResponseModel {
     private MoveInfo moveInfo;
 
 

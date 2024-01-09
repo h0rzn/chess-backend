@@ -1,30 +1,34 @@
 package com.github.controller.websocket;
 
-import com.github.engine.models.MoveInfo;
-import com.github.engine.move.Move;
-import com.github.entity.websocket.LobbyMessage;
 import com.github.exceptions.GameNotFoundException;
-import com.github.model.GameActionModel;
-import com.github.model.GameActionResponseModel;
-import com.github.model.debug.*;
+import com.github.model.*;
 import com.github.services.GameService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
+/**
+ * Websocket Controller for game
+ */
 @Controller
 public class GameWSController {
 
     private SimpMessagingTemplate messagingTemplate;
     private GameService gameService;
 
+    /**
+     * Constructor for GameWSController
+     */
     @Autowired
     public GameWSController(SimpMessagingTemplate messagingTemplate, GameService gameService) {
         this.messagingTemplate = messagingTemplate;
         this.gameService = gameService;
     }
 
+    /**
+     * Receives move message from client and sends it to the game service
+     */
     @MessageMapping("/game/move")
     public void receiveMove(GameMoveModel message) throws GameNotFoundException {
         System.out.println("[Game-WS::receiveMove][" + message.getId() + "]"+  " move: " + message.getMove()+ "promoteTo "+message.getPromoteTo());
@@ -33,6 +37,9 @@ public class GameWSController {
         messagingTemplate.convertAndSend("/topic/game/move/", responseModel);
     }
 
+    /**
+     * Receives action message from client and sends it to the game service
+     */
     @MessageMapping("/game/action")
     public void receiveAction(GameActionModel gameActionModel){
         System.out.println("[Game-WS::receiveAction][" + gameActionModel.getId() + "]"+  " action: " + gameActionModel.getAction() + " player: " + gameActionModel.getPlayerId());

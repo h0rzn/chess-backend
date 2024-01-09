@@ -1,12 +1,13 @@
-package com.github.model.debug;
+package com.github.model;
 
 import com.github.engine.models.MoveInfo;
+import com.github.model.ResponseModel;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class GameMoveResponseModel extends ResponseModel{
+public class GameMoveResponseModel extends ResponseModel {
     private MoveInfo moveInfo;
     private String gameId;
     private String playerId;

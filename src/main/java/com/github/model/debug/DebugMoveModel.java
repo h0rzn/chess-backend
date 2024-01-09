@@ -7,11 +7,8 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @Setter
-public class GameMoveModel{
+public class DebugMoveModel {
     private Integer id;
-    private String gameId;
-    private String playerId;
     private String move;
     private Integer promoteTo;
-
 }

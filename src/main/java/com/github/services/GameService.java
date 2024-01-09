@@ -1,18 +1,14 @@
 package com.github.services;
 
-import com.github.Chess;
 import com.github.engine.Game;
 import com.github.engine.MoveAction;
 import com.github.engine.models.MoveInfo;
-import com.github.engine.move.Move;
-import com.github.entity.LobbyEntity;
 import com.github.exceptions.GameNotFoundException;
 import com.github.entity.GameEntity;
 import com.github.model.GameModel;
-import com.github.model.debug.GameMoveModel;
-import com.github.model.debug.MoveDebugModel;
-import com.github.model.debug.ResponseModelRecord;
-import com.github.repository.HistoryRepository;
+import com.github.model.GameMoveModel;
+import com.github.model.debug.DebugMoveModel;
+import com.github.model.ResponseModelRecord;
 import com.github.repository.RedisGameRepository;
 import com.github.utils.ChessClock;
 import lombok.Getter;
@@ -25,27 +21,46 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 
+/**
+ * Service for managing games
+ */
 @Service
 public class GameService {
+
     @Getter
-    public Game game;
+    public Game gameDebug;
 
     private final RedisGameRepository redisGameRepository;
     private final HistoryService historyService;
 
+    /**
+     * Constructor, params get autowired (injected) by Spring
+     * @param redisGameRepository
+     * @param historyService
+     */
     @Autowired
     public GameService(RedisGameRepository redisGameRepository, HistoryService historyService) {
         this.redisGameRepository = redisGameRepository;
         this.historyService = historyService;
     }
 
+    /**
+     * Creates a new game and saves it to the database
+     * @param gameModel
+     * @return
+     * @throws Exception
+     */
     public GameEntity createGame(GameModel gameModel) throws Exception {
         Game game = new Game();
+        Random random = new SecureRandom();
+
+        //Loads standard board configuration
         game.loadFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
-        Random random = new SecureRandom();
         UUID whitePlayerId;
         UUID blackPlayerId;
+
+        //Randomly assigns white and black player
         if (random.nextBoolean()) {
             whitePlayerId = gameModel.getPlayer1();
             blackPlayerId = gameModel.getPlayer2();
@@ -54,97 +69,104 @@ public class GameService {
             blackPlayerId = gameModel.getPlayer1();
         }
 
+        //Creates a new chess clock with 5 minutes for each player
         ChessClock chessClock = new ChessClock(300000);
         chessClock.startClock(0);
+
+        //Saves the game to the database
         GameEntity gameEntity = redisGameRepository.save(new GameEntity(game,
-                gameModel.getLobbyId().toString(),
-                gameModel.getLobbyId(),
-                gameModel.getPlayer1(),
-                gameModel.getPlayer2(),
-                whitePlayerId,
-                blackPlayerId,
-                chessClock));
+                                gameModel.getLobbyId().toString(),
+                                gameModel.getLobbyId(),
+                                gameModel.getPlayer1(),
+                                gameModel.getPlayer2(),
+                                whitePlayerId,
+                                blackPlayerId,
+                                chessClock));
         return gameEntity;
     }
 
+    /**
+     * Returns a game by id wrapped in an optional
+     */
     public Optional<GameEntity> getGameOptional(String id) {
         return redisGameRepository.findById(id);
 
     }
 
+    /**
+     * Returns a game by id
+     */
     public GameEntity getGameEntity(String id){
         return redisGameRepository.findById(id).get();
     }
 
-    public Game getGame(String id) throws GameNotFoundException {
-        if (id == null) {
-            throw new IllegalArgumentException("id cannot be null");
-        }
-
-        return Optional.ofNullable(redisGameRepository.findById(id))
-                .map(gameEntity -> gameEntity.get().getGame())
-                .orElseThrow(GameNotFoundException::new);
-    }
-
-
-
-    public Game createDebugGame(){
-        Game game = new Game();
-        this.game = game;
-        return game;
-    }
-
-    public Game createDebugGame(String fenString) throws Exception {
-        Game game = new Game(fenString);
-        System.out.println("[GAMESERVICE] created new debug game with fen: "+fenString);
-
-        this.game = game;
-        return this.game;
-    }
-
-    public Game loadPosition(String fenString) throws Exception {
-        if(game != null){
-            game.load(fenString);
-            return game;
-        }
-        return null;
-    }
-
-    public Game getDebugGame(){
-        return game;
-    }
-
-    public MoveInfo makeMove(MoveDebugModel moveModel) {
-        MoveAction moveAction = new MoveAction(moveModel.getMove(), moveModel.getPromoteTo());
-        return game.execute(moveAction);
-    }
-
+    /**
+     * Accepts a move and executes it on the game
+     * @param moveModel
+     */
     public ResponseModelRecord makeGameMove(GameMoveModel moveModel) throws GameNotFoundException {
-        GameEntity gameEntity = getGameEntity(moveModel.getGameId());
-        Game game1 = gameEntity.getGame();
 
+        //Gets the game from the database
+        GameEntity gameEntity = getGameEntity(moveModel.getGameId());
+        Game game = gameEntity.getGame();
+
+        //Compares the player id to the white and black player id to determine the color of the player
         String playerID = moveModel.getPlayerId();
         int playerColor = Objects.equals(playerID, gameEntity.getWhitePlayerId().toString()) ? 0 : 1;
-        System.out.println("PlayerID: " + playerID);
-        System.out.println("PlayerID gameentity: " + gameEntity.getWhitePlayerId());
-        System.out.println("Player has color: " + playerColor);
 
-        System.out.println("Active Color: " + game1.getActiveColor());
+        //Creates a move action from the move model
         MoveAction moveAction = new MoveAction(moveModel.getMove(), moveModel.getPromoteTo());
 
-        if(playerColor != game1.getActiveColor()){
-            MoveInfo result = game1.execute(moveAction);
+        //Checks if the player is allowed to make a move
+        if(playerColor != game.getActiveColor()){
+            MoveInfo result = game.execute(moveAction);
             result.setLegal(false);
             return new ResponseModelRecord(result, 0, 0);
         }
 
-        MoveInfo result = game1.execute(moveAction);
+        //Executes the move and saves the game to the database
+        MoveInfo result = game.execute(moveAction);
         if(result.isLegal()){
-            //historyService.addMoveToHistory(gameEntity.getId(), result);
             gameEntity.getChessClock().setActivePlayer(gameEntity.getChessClock().getActivePlayer() == 0 ? 1 : 0);
         }
         redisGameRepository.save(gameEntity);
         return new ResponseModelRecord(result, gameEntity.getChessClock().getWhiteTimeLeft(), gameEntity.getChessClock().getBlackTimeLeft());
+    }
+
+    /**
+     * Creates a new debug game
+     */
+    public Game createDebugGame(){
+        Game game = new Game();
+        this.gameDebug = game;
+        return game;
+    }
+
+    /**
+     * Creates a new debug game with a given fen string
+     */
+    public Game createDebugGame(String fenString) throws Exception {
+        Game game = new Game(fenString);
+        System.out.println("[GAMESERVICE] created new debug game with fen: "+fenString);
+
+        this.gameDebug = game;
+        return this.gameDebug;
+    }
+
+    /**
+     * Loads a position into the debug game
+     */
+    public Game loadPosition(String fenString) throws Exception {
+        if(gameDebug != null){
+            gameDebug.load(fenString);
+            return gameDebug;
+        }
+        return null;
+    }
+
+    public MoveInfo makeDebugMove(DebugMoveModel moveModel) {
+        MoveAction moveAction = new MoveAction(moveModel.getMove(), moveModel.getPromoteTo());
+        return gameDebug.execute(moveAction);
     }
 
 }

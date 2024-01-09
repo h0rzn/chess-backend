@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
+/**
+ * Spring Controller for game
+ */
 @RestController
 public class GameController {
 
@@ -20,6 +23,9 @@ public class GameController {
     private HistoryService historyService;
     private SimpMessagingTemplate messagingTemplate;
 
+    /**
+     * Constructor for GameController
+     */
     @Autowired
     public GameController(GameService gameService, SimpMessagingTemplate messagingTemplate, HistoryService historyService) {
         this.gameService = gameService;
@@ -27,17 +33,26 @@ public class GameController {
         this.historyService = historyService;
     }
 
+    /**
+     * Get game by id
+     */
     @GetMapping("/game/{id}")
     public ResponseEntity<GameEntity> getGameByID(@PathVariable("id") String id){
         Optional<GameEntity> game = gameService.getGameOptional(id);
         return game.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    /**
+     * Creates a new game
+     */
     @PostMapping("/game")
     public ResponseEntity<GameEntity> createGame(@RequestBody GameModel gameModel) throws Exception {
+
+        //Create game
         GameEntity gameEntity = gameService.createGame(gameModel);
         historyService.createHistory(gameEntity.getId());
-        System.out.println("GameLobby: " + gameEntity.getLobbyId());
+
+        //Sends a websocket message to the lobby
         messagingTemplate.convertAndSend("/topic/lobby/" + gameEntity.getLobbyId(), "Joined");
         return new ResponseEntity<>(gameEntity, HttpStatus.CREATED);
     }

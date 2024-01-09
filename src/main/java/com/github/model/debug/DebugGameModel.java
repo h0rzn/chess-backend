@@ -5,7 +5,7 @@ import lombok.*;
 @Getter
 @Setter
 @NoArgsConstructor
-public class GameDebugModel{
+public class DebugGameModel {
     private Integer id;
     private String fen;
 }

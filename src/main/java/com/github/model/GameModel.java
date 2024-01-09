@@ -5,6 +5,9 @@ import lombok.Getter;
 
 import java.util.UUID;
 
+/**
+ * Model for game creation
+ */
 @Getter
 @AllArgsConstructor
 public class GameModel {
