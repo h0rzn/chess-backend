@@ -32,6 +32,7 @@ public class GameService {
 
     private final RedisGameRepository redisGameRepository;
     private final HistoryService historyService;
+    private final UserService userService;
 
     /**
      * Constructor, params get autowired (injected) by Spring
@@ -39,9 +40,10 @@ public class GameService {
      * @param historyService
      */
     @Autowired
-    public GameService(RedisGameRepository redisGameRepository, HistoryService historyService) {
+    public GameService(RedisGameRepository redisGameRepository, HistoryService historyService, UserService userService){
         this.redisGameRepository = redisGameRepository;
         this.historyService = historyService;
+        this.userService = userService;
     }
 
     /**
@@ -60,13 +62,23 @@ public class GameService {
         UUID whitePlayerId;
         UUID blackPlayerId;
 
+        String whitePlayerName;
+        String blackPlayerName;
+
         //Randomly assigns white and black player
         if (random.nextBoolean()) {
             whitePlayerId = gameModel.getPlayer1();
             blackPlayerId = gameModel.getPlayer2();
+
+            whitePlayerName = userService.getUserByID(whitePlayerId).get().getUsername();
+            blackPlayerName = userService.getUserByID(blackPlayerId).get().getUsername();
+
         } else {
             whitePlayerId = gameModel.getPlayer2();
             blackPlayerId = gameModel.getPlayer1();
+
+            whitePlayerName = userService.getUserByID(whitePlayerId).get().getUsername();
+            blackPlayerName = userService.getUserByID(blackPlayerId).get().getUsername();
         }
 
         //Creates a new chess clock with 5 minutes for each player
@@ -81,7 +93,11 @@ public class GameService {
                                 gameModel.getPlayer2(),
                                 whitePlayerId,
                                 blackPlayerId,
-                                chessClock));
+                                chessClock,
+                                whitePlayerName,
+                                blackPlayerName,
+                                false
+                                ));
         return gameEntity;
     }
 
@@ -91,6 +107,16 @@ public class GameService {
     public Optional<GameEntity> getGameOptional(String id) {
         return redisGameRepository.findById(id);
 
+    }
+
+    public boolean isWhite(String gameID, String playerID){
+        return this.getGameEntity(gameID).getWhitePlayerId().toString().equals(playerID);
+    }
+
+    public void setOver(String gameID){
+        GameEntity gameEntity = this.getGameEntity(gameID);
+        gameEntity.setOver(true);
+        redisGameRepository.save(gameEntity);
     }
 
     /**

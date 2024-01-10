@@ -8,6 +8,8 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
+import java.util.UUID;
+
 /**
  * Websocket Controller for game
  */
@@ -44,7 +46,14 @@ public class GameWSController {
     public void receiveAction(GameActionModel gameActionModel){
         System.out.println("[Game-WS::receiveAction][" + gameActionModel.getId() + "]"+  " action: " + gameActionModel.getAction() + " player: " + gameActionModel.getPlayerId());
         if (gameActionModel.getAction().equals("resign")) {
-            GameActionResponseModel gameActionResponseModel = new GameActionResponseModel(gameActionModel.getId(), gameActionModel.getGameId(), gameActionModel.getPlayerId(), gameActionModel.getAction());
+            boolean whiteResigns = gameService.isWhite(gameActionModel.getGameId(), gameActionModel.getPlayerId());
+            gameService.setOver(gameActionModel.getGameId());
+            if(whiteResigns){
+                GameActionResponseModel gameActionResponseModel = new GameActionResponseModel(gameActionModel.getId(), gameActionModel.getGameId(), gameActionModel.getPlayerId(), gameActionModel.getAction(), "white");
+                messagingTemplate.convertAndSend("/topic/game/action/", gameActionResponseModel);
+                return;
+            }
+            GameActionResponseModel gameActionResponseModel = new GameActionResponseModel(gameActionModel.getId(), gameActionModel.getGameId(), gameActionModel.getPlayerId(), gameActionModel.getAction(), "black");
             messagingTemplate.convertAndSend("/topic/game/action/", gameActionResponseModel);
         }
 

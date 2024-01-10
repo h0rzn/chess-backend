@@ -4,6 +4,7 @@ import com.github.engine.Game;
 import com.github.utils.ChessClock;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 
@@ -33,5 +34,13 @@ public class GameEntity {
     private UUID blackPlayerId;
 
     private ChessClock chessClock;
+
+    private String whitePlayerName;
+
+    private String blackPlayerName;
+
+    @Setter
+    private boolean isOver;
+
 
 }
