@@ -12,6 +12,7 @@ public class KingMoveGenerator implements IGenerator {
     public KingMoveGenerator(int playerColor, GameBoard gameBoard) {
         long[] mergedPieces = gameBoard.mergePlayerBoardsWithExclusion(playerColor, 3);
         this.mergedPlayerPieces = mergedPieces[0];
+
     }
 
     // King: Move Generation

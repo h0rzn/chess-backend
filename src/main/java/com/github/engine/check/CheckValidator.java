@@ -134,6 +134,7 @@ public class CheckValidator {
         Generator generator = new Generator(playerColor, gameBoard);
         int playerKingSquare = Bitboard.bitscanSingle(playerPieces[5]);
         int playerKingColumn = playerKingSquare % 8;
+        System.out.println("+ GEN ALL FOR "+playerColor);
         long[] playerMoves = generator.generateAll();
 
         for (int attackPiece = 0; attackPiece < 6; attackPiece++) {
@@ -156,17 +157,18 @@ public class CheckValidator {
                         // player king cannot a2d enemy piece that is covered
                         if (playerPiece == 5) {
                             if ((playerMoves[5] & enemyCovers) != 0) {
-                                continue;
+                                System.out.println("# A2D (king): playerMoves[5] "+playerMoves[5]+" enemyCovers "+enemyCovers);
+
                             }
                         }
-
                         System.out.println("# A2D register; playerMoves "+playerMoves[playerPiece]+" enemyPiece "+enemyPieces[attackPiece]);
                         // store piece position in piece group board
                         // TODO check if we should store attacked enemy piece in bitboard as well
                         attack2Defend[playerPiece] |= (1L << pieceSquare);
                         a2dResolvable = true;
-                    }
 
+
+                    }
 
                     //
                     // BLOCK 2 DEFEND
@@ -231,7 +233,7 @@ public class CheckValidator {
         return new CheckResolveInfo(a2dResolvable||b2dResolvable, attack2Defend, block2Defend);
     }
 
-    public static List<Integer> isolateBlocks(List<Integer> matches, int pPieceSquare, int pPieceType, int ePieceSquare, int kingSquare, int kingColumn) {
+    private List<Integer> isolateBlocks(List<Integer> matches, int pPieceSquare, int pPieceType, int ePieceSquare, int kingSquare, int kingColumn) {
         List<Integer> blocks = new ArrayList<>();
 
         if (pPieceSquare == 5) {

@@ -102,6 +102,7 @@ public class Game extends GameBoard implements IGame {
     // the corresponding move method depending
     // on the move type
     public MoveInfo execute(IUserAction action) {
+        System.out.println("------------" + Long.toBinaryString(72340172838076673L));
         MoveInfo info = new MoveInfo();
         if (isGameOver()) {
             return info.WithGameOver(gameState);
@@ -188,7 +189,7 @@ public class Game extends GameBoard implements IGame {
         CheckInfo playerCheckInfo = playerCheckValidator.inCheck(getActiveColor());
         if (playerCheckInfo.isCheck()) {
             System.out.println("+ player check: "+playerCheckInfo);
-            info.pushLog("enemy: in check");
+            info.pushLog("player: in check");
             CheckResolveInfo playerResolveInfo = playerCheckValidator.isCheckResolvable(getActiveColor(), playerCheckInfo);
             if (playerResolveInfo.resolvable()) {
                 // look up if move is legal resolve move
@@ -274,7 +275,7 @@ public class Game extends GameBoard implements IGame {
     // extend move
     // 1) fill pieceTypes (if toPiece -1 -> fromPiece type)
     // 2) castle or promotion move type
-    public Move extendMove(Move move) {
+    private Move extendMove(Move move) {
         long[] playerPieces;
         long [] enemyPieces;
         int enemyColor;
@@ -310,27 +311,31 @@ public class Game extends GameBoard implements IGame {
         }
 
         if (move.getTo().noPiece()) {
+            // Promotion
+            if (move.getFrom().getPieceType() == 0) {
+                // Promotion
+                int fromSquare = move.getFrom().getIndex();
+                int toSquare = move.getTo().getIndex();
+                if (getActiveColor() == 0) {
+                    if ((fromSquare >= 48 && fromSquare <= 55) && toSquare >= 56) {
+                        move.setMoveType(Promotion);
+                        return move;
+                    }
+                } else {
+                    if ((fromSquare >= 8 && fromSquare <= 15) && toSquare >= 0 && toSquare <= 7) {
+                        move.setMoveType(Promotion);
+                        return move;
+                    }
+                }
+            }
             // Normal
             // to square is empty -> set piece type to type of
             // piece making the move so sync works with the same board
             // and not -1
             move.getTo().setPieceType(move.getFrom().getPieceType());
             move.setMoveType(Normal);
-        } else if (move.getFrom().getPieceType() == 0) {
-            // Promotion
-            int fromSquare = move.getFrom().getIndex();
-            int toSquare = move.getTo().getIndex();
-            if (getActiveColor() == 0) {
-                if ((fromSquare >= 48 && fromSquare <= 55) && toSquare >= 56) {
-                    move.setMoveType(Promotion);
-                    return move;
-                }
-            } else {
-                if ((fromSquare > 48 && fromSquare <= 55) && toSquare >= 56) {
-                    move.setMoveType(Promotion);
-                    return move;
-                }
-            }
+            return move;
+
         } else if (Math.abs(move.getTo().getIndex()-move.getFrom().getIndex()) == 16) {
             // PawnDouble
             move.setMoveType(PawnDouble);
@@ -345,7 +350,7 @@ public class Game extends GameBoard implements IGame {
     }
 
     // check if potential castle is legal
-    public boolean isCastleLegal(Move move) {
+    private boolean isCastleLegal(Move move) {
         long castleRange = switch (move.getFrom().getIndex()) {
             case 0 -> 0xeL;
             case 7 -> 0x60L;
@@ -385,12 +390,11 @@ public class Game extends GameBoard implements IGame {
     // promote a piece if game is in promotion mode
     public MoveInfo movePromotion(IUserAction action) {
         MoveInfo info = new MoveInfo();
-        Move move = action.getMove();
 
         // TODO check if move values are set
 
         // extend move?
-        move = extendMove(move);
+        Move move = extendMove(action.getMove());
         if (move.getMoveType() != Promotion) {
             return info.WithFailure("extending move did not detect promotion type", move);
         }
@@ -482,7 +486,7 @@ public class Game extends GameBoard implements IGame {
         this.lastMoveFen = FenSerializer.serializeUpdate(this, move);
     }
 
-    public long[] syncCastle(Move move, long[] playerBoards) {
+    private long[] syncCastle(Move move, long[] playerBoards) {
         // rook has been removed from board
 
         switch (move.getFrom().getIndex()) {

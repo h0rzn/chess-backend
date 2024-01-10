@@ -8,6 +8,8 @@ import com.github.engine.move.Position;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Arrays;
+
 // Generator class is the top level class
 // of the move generation and acts as a
 // distributor for the corresponding move generation
@@ -62,7 +64,7 @@ public class Generator {
     // of each piece in that group combined
     public long[] generateAll() {
         long[] generated = new long[6];
-        long[] playerPieces = (playerColor == 0) ? gameBoard.getSetWhite() : gameBoard.getSetBlack();
+        long[] playerPieces = (getPlayerColor() == 0) ? gameBoard.getSetWhite() : gameBoard.getSetBlack();
 
         for (int pieceType = 0; pieceType < 6; pieceType++) {
             for (Integer square : Bitboard.bitscanMulti(playerPieces[pieceType])) {
