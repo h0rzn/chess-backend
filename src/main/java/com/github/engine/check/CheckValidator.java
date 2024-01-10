@@ -158,7 +158,7 @@ public class CheckValidator {
                         if (playerPiece == 5) {
                             if ((playerMoves[5] & enemyCovers) != 0) {
                                 System.out.println("# A2D (king): playerMoves[5] "+playerMoves[5]+" enemyCovers "+enemyCovers);
-
+                                continue;
                             }
                         }
                         System.out.println("# A2D register; playerMoves "+playerMoves[playerPiece]+" enemyPiece "+enemyPieces[attackPiece]);

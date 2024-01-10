@@ -24,15 +24,15 @@ public class KingMoveGenerator implements IGenerator {
 
         long pos = 1L << position.getIndex();
         // north axis
-        currentMoves |= (pos << 8) | (pos >> 8);
+        currentMoves |= (pos << 8) | (pos >>> 8);
         // east
         currentMoves |= (pos << 1) & Bitboard.NOT_A_FILE;
         // west
-        currentMoves |= (pos >> 1) & Bitboard.NOT_H_FILE;
+        currentMoves |= (pos >>> 1) & Bitboard.NOT_H_FILE;
         // east dia
-        currentMoves |= ((pos << 9) | (pos >> 7)) & Bitboard.NOT_A_FILE;
+        currentMoves |= ((pos << 9) | (pos >>> 7)) & Bitboard.NOT_A_FILE;
         // west dia
-        currentMoves |= ((pos << 7) | (pos >> 9) & Bitboard.NOT_H_FILE);
+        currentMoves |= ((pos << 7) | (pos >>> 9) & Bitboard.NOT_H_FILE);
 
         return currentMoves;
         // return currentMoves &~ mergedPlayerPieces;
