@@ -39,7 +39,6 @@ public class Game extends GameBoard implements IGame {
     private int activeColor;
     @Getter
     private String lastMoveFen;
-    private Move lastMove;
 
     public Game(){
         super();
