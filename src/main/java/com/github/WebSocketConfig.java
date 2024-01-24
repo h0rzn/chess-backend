@@ -16,12 +16,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(org.springframework.web.socket.config.annotation.StompEndpointRegistry registry) {
-        registry.addEndpoint("/history").setAllowedOrigins("http://localhost:3000", "https://master--timely-sundae-a39916.netlify.app/");
-        registry.addEndpoint("/game").setAllowedOrigins("http://localhost:3000", "https://master--timely-sundae-a39916.netlify.app/");
-        registry.addEndpoint("/game/").setAllowedOrigins("http://localhost:3000", "https://master--timely-sundae-a39916.netlify.app/");
-        registry.addEndpoint("/test").setAllowedOrigins("http://localhost:3000", "https://master--timely-sundae-a39916.netlify.app/");
-        registry.addEndpoint("/debug").setAllowedOrigins("http://localhost:3000", "https://master--timely-sundae-a39916.netlify.app/");
-        registry.addEndpoint("/lobby").setAllowedOrigins("http://localhost:3000");
-        registry.addEndpoint("/lobby/{id}").setAllowedOrigins("http://localhost:3000");
+        registry.addEndpoint("/history").setAllowedOrigins("http://localhost:3000", "https://master--timely-sundae-a39916.netlify.app/", "/**");
+        registry.addEndpoint("/game").setAllowedOrigins("http://localhost:3000", "https://master--timely-sundae-a39916.netlify.app/", "/**");
+        registry.addEndpoint("/game/").setAllowedOrigins("http://localhost:3000", "https://master--timely-sundae-a39916.netlify.app/", "/**");
+        registry.addEndpoint("/test").setAllowedOrigins("http://localhost:3000", "https://master--timely-sundae-a39916.netlify.app/", "/**");
+        registry.addEndpoint("/debug").setAllowedOrigins("http://localhost:3000", "https://master--timely-sundae-a39916.netlify.app/", "/**");
+        registry.addEndpoint("/lobby").setAllowedOrigins("http://localhost:3000", "/**");
+        registry.addEndpoint("/lobby/{id}").setAllowedOrigins("http://localhost:3000", "/**");
     }
 }
